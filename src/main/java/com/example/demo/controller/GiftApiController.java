@@ -24,58 +24,72 @@ public class GiftApiController {
             @RequestParam("message") String message,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "audio", required = false) MultipartFile audio
-    ) throws Exception {
+    ) {
 
-        Gift gift = new Gift();
-        gift.setMessage(message);
+        try {
 
-        /* ================= AUDIO ================= */
-        String voiceUrl = null;
+            Gift gift = new Gift();
+            gift.setMessage(message);
 
-        if (audio != null && !audio.isEmpty()) {
+            /* ================= AUDIO (SAFE) ================= */
+            if (audio != null && !audio.isEmpty()) {
 
-            String audioName = System.currentTimeMillis() + "_" + audio.getOriginalFilename();
+                String original = audio.getOriginalFilename();
+                if (original == null || original.isEmpty()) {
+                    original = "voice.webm";
+                }
 
-            File audioDir = new File("uploads/audio/");
-            if (!audioDir.exists()) audioDir.mkdirs();
+                String audioName = System.currentTimeMillis() + "_" + original;
 
-            File audioFile = new File(audioDir, audioName);
-            audio.transferTo(audioFile);
+                File audioDir = new File("/tmp/audio/");
+                if (!audioDir.exists()) audioDir.mkdirs();
 
-            voiceUrl = "/uploads/audio/" + audioName;
-        }
+                File audioFile = new File(audioDir, audioName);
+                audio.transferTo(audioFile);
 
-        gift.setVoiceUrl(voiceUrl);
-
-        /* ================= IMAGES ================= */
-        List<GiftImage> imageList = new ArrayList<>();
-
-        if (images != null) {
-            for (MultipartFile file : images) {
-
-                if (file.isEmpty()) continue;
-
-                String imgName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-                File imgDir = new File("uploads/images/");
-                if (!imgDir.exists()) imgDir.mkdirs();
-
-                File dest = new File(imgDir, imgName);
-                file.transferTo(dest);
-
-                GiftImage img = new GiftImage();
-                img.setImageUrl("/uploads/images/" + imgName);
-                img.setGift(gift);
-
-                imageList.add(img);
+                gift.setVoiceUrl("/uploads/audio/" + audioName);
             }
+
+            /* ================= IMAGES (SAFE) ================= */
+            List<GiftImage> imageList = new ArrayList<>();
+
+            if (images != null && images.length > 0) {
+
+                for (MultipartFile file : images) {
+
+                    if (file == null || file.isEmpty()) continue;
+
+                    String originalName = file.getOriginalFilename();
+                    if (originalName == null || originalName.isEmpty()) {
+                        originalName = "image.jpg";
+                    }
+
+                    String imgName = System.currentTimeMillis() + "_" + originalName;
+
+                    File imgDir = new File("/tmp/images/");
+                    if (!imgDir.exists()) imgDir.mkdirs();
+
+                    File dest = new File(imgDir, imgName);
+                    file.transferTo(dest);
+
+                    GiftImage img = new GiftImage();
+                    img.setImageUrl("/uploads/images/" + imgName);
+                    img.setGift(gift);
+
+                    imageList.add(img);
+                }
+            }
+
+            gift.setImages(imageList);
+
+            /* ================= SAVE DB ================= */
+            Gift saved = giftRepository.save(gift);
+
+            return ResponseEntity.ok(saved.getId().toString());
+
+        } catch (Exception e) {
+            e.printStackTrace(); // quan trọng để debug Railway logs
+            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
         }
-
-        gift.setImages(imageList);
-
-        /* ================= SAVE DB ================= */
-        Gift saved = giftRepository.save(gift);
-
-        return ResponseEntity.ok(saved.getId().toString());
     }
 }
