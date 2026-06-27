@@ -39,11 +39,6 @@ body{
     align-items:center;
     justify-content:center;
     cursor:pointer;
-    transition:.3s;
-}
-
-.image-box:hover{
-    background:#fafafa;
 }
 
 textarea{
@@ -54,17 +49,14 @@ textarea{
 .voice{
     display:flex;
     align-items:center;
-    gap:15px;
-    margin-top:20px;
+    gap:10px;
+    flex-wrap:wrap;
 }
 
 audio{
     width:100%;
 }
 
-/* ================== UI STATE ================== */
-
-/* 1 ảnh -> center + to */
 .single-mode{
     display:flex !important;
     justify-content:center;
@@ -80,7 +72,6 @@ audio{
     border-radius:16px;
 }
 
-/* image item */
 .img-item img{
     height:120px;
     width:100%;
@@ -97,24 +88,17 @@ audio{
 
 <form id="giftForm" enctype="multipart/form-data">
 
-<!-- INPUT -->
-<input type="file"
-       id="imageInput"
-       name="images"
-       accept="image/*"
-       multiple
-       hidden>
+<!-- ================= IMAGES ================= -->
+<input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
 
-<!-- ================= ALBUM ================= -->
 <div class="section-title">
     <h3>Album</h3>
 </div>
 
 <div class="row g-3" id="previewContainer">
 
-    <!-- IMAGE BOX + -->
     <div class="col-4" id="addBox">
-        <div class="image-box" onclick="document.getElementById('imageInput').click()">
+        <div class="image-box" onclick="imageInput.click()">
             <div style="text-align:center">
                 <i class="bi bi-plus-lg fs-1"></i>
                 <div style="font-size:12px;color:#888">Thêm ảnh</div>
@@ -140,15 +124,19 @@ audio{
 
 <div class="voice">
 
-    <input type="file"
-           id="audioInput"
-           name="audio"
-           accept="audio/*"
-           class="form-control">
+    <!-- RECORD -->
+    <button type="button" id="recordBtn" class="btn btn-danger">
+        🎤 Record
+    </button>
 
-    <audio id="audioPreview" controls></audio>
+    <span id="recordStatus"></span>
+
+    <!-- UPLOAD -->
+    <input type="file" id="audioInput" accept="audio/*" class="form-control" style="max-width:200px">
 
 </div>
+
+<audio id="audioPreview" controls class="mt-2"></audio>
 
 <!-- SAVE -->
 <div class="text-center mt-4">
@@ -163,6 +151,7 @@ audio{
 
 <script>
 
+/* ================= IMAGE ================= */
 const imageInput = document.getElementById("imageInput");
 const previewContainer = document.getElementById("previewContainer");
 const addBox = document.getElementById("addBox");
@@ -170,7 +159,7 @@ const addBox = document.getElementById("addBox");
 let selectedImages = [];
 let audioFile = null;
 
-/* ================= ADD IMAGE ================= */
+/* ---------------- ADD IMAGE ---------------- */
 imageInput.addEventListener("change", function () {
 
     const files = Array.from(this.files);
@@ -190,21 +179,17 @@ imageInput.addEventListener("change", function () {
 
             col.innerHTML = `
                 <div class="position-relative">
-
                     <img src="${e.target.result}">
-
                     <button type="button"
                             class="btn btn-danger btn-sm position-absolute top-0 end-0"
                             onclick="removeImage(this)">
                         <i class="bi bi-x"></i>
                     </button>
-
                 </div>
             `;
 
             previewContainer.insertBefore(col, addBox);
-
-            updateImageLayout();
+            updateLayout();
         };
 
         reader.readAsDataURL(file);
@@ -213,46 +198,72 @@ imageInput.addEventListener("change", function () {
     this.value = "";
 });
 
-/* ================= REMOVE IMAGE ================= */
 function removeImage(btn){
     btn.closest(".img-item").remove();
     selectedImages.pop();
-    updateImageLayout();
+    updateLayout();
 }
 
-/* ================= UPDATE UI ================= */
-function updateImageLayout(){
+function updateLayout(){
+    if (selectedImages.length >= 6) addBox.style.display = "none";
+    else addBox.style.display = "block";
 
-    const items = document.querySelectorAll(".img-item");
-
-    /* ẨN + BOX KHI ĐỦ 6 */
-    if (selectedImages.length >= 6) {
-        addBox.style.display = "none";
-    } else {
-        addBox.style.display = "block";
-    }
-
-    /* RESET */
     previewContainer.classList.remove("single-mode");
 
-    /* 1 ẢNH -> CENTER + TO */
     if (selectedImages.length === 1) {
         previewContainer.classList.add("single-mode");
     }
 }
 
-/* ================= AUDIO ================= */
+/* ================= AUDIO UPLOAD ================= */
 const audioInput = document.getElementById("audioInput");
 const audioPreview = document.getElementById("audioPreview");
 
 audioInput.addEventListener("change", function () {
-
-    audioFile = this.files[0];
-
-    if (audioFile) {
+    if (this.files.length > 0) {
+        audioFile = this.files[0];
         audioPreview.src = URL.createObjectURL(audioFile);
-        audioPreview.load();
     }
+});
+
+/* ================= AUDIO RECORD ================= */
+let mediaRecorder;
+let chunks = [];
+
+const recordBtn = document.getElementById("recordBtn");
+const recordStatus = document.getElementById("recordStatus");
+
+recordBtn.addEventListener("click", async () => {
+
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        recordBtn.innerText = "🎤 Record";
+        recordStatus.innerText = "Stopped";
+        return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+
+    mediaRecorder.ondataavailable = e => {
+        chunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const file = new File([blob], "voice.webm", { type: "audio/webm" });
+
+        audioFile = file;
+        audioPreview.src = URL.createObjectURL(file);
+    };
+
+    mediaRecorder.start();
+
+    recordBtn.innerText = "⏹ Stop";
+    recordStatus.innerText = "Recording...";
 });
 
 /* ================= SUBMIT ================= */
@@ -262,32 +273,29 @@ document.getElementById("giftForm").addEventListener("submit", function(e){
 
     const formData = new FormData(this);
 
-    selectedImages.forEach(file=>{
+    selectedImages.forEach(file => {
         formData.append("images", file);
     });
 
-    if(audioFile){
+    if (audioFile) {
         formData.append("audio", audioFile);
     }
 
     fetch("/api/gift/save", {
-    method: "POST",
-    body: formData
-})
-.then(res => {
-    if (!res.ok) {
-        throw new Error("Lưu thất bại");
-    }
-    return res.text(); // Nhận ID vừa tạo
-})
-.then(id => {
-    // Chuyển sang trang xem quà
-    window.location.href = "/gift/view/" + id;
-})
-.catch(err => {
-    console.error(err);
-    alert("Không thể lưu dữ liệu!");
-});
+        method: "POST",
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("fail");
+        return res.text();
+    })
+    .then(id => {
+        window.location.href = "/gift/view/" + id;
+    })
+    .catch(err => {
+        alert("Save failed!");
+        console.log(err);
+    });
 
 });
 

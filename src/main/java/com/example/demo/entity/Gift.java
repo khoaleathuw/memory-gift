@@ -21,47 +21,20 @@ public class Gift {
     @OneToMany(mappedBy = "gift", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<GiftImage> images;
 
-    
-   
-    // getter & setter
+    // getter setter
 
-    public Integer getId() {
-        return id;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getVoiceUrl() { return voiceUrl; }
+    public void setVoiceUrl(String voiceUrl) { this.voiceUrl = voiceUrl; }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getVoiceUrl() {
-        return voiceUrl;
-    }
-
-    public void setVoiceUrl(String voiceUrl) {
-        this.voiceUrl = voiceUrl;
-    }
-
-    public List<GiftImage> getImages() {
-        return images;
-    }
-
-    public void setImages(List<GiftImage> images) {
-        this.images = images;
-    }
+    public List<GiftImage> getImages() { return images; }
+    public void setImages(List<GiftImage> images) { this.images = images; }
 }
