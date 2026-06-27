@@ -14,37 +14,45 @@ public class GiftViewController {
     @Autowired
     private GiftRepository giftRepository;
 
-    // ===================== NFC VIEW =====================
+    // ===================== VIEW GIFT =====================
     @GetMapping("/view/{id}")
     public String viewGift(@PathVariable Integer id, Model model) {
 
-        Gift gift = giftRepository.findById(id).orElse(null);
+        Gift gift = giftRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Gift not found"));
 
-        if (gift == null) {
-            return "error"; // hoặc redirect /gift/not-found
+        // FIX URL audio nếu null
+        if (gift.getVoiceUrl() == null) {
+            gift.setVoiceUrl("");
+        }
+
+        // đảm bảo images không null
+        if (gift.getImages() == null) {
+            gift.setImages(new java.util.ArrayList<>());
         }
 
         model.addAttribute("gift", gift);
 
-        return "gift"; // templates/gift.html
+        return "gift";
     }
 
     // ===================== EDIT PAGE =====================
     @GetMapping("/edit/{id}")
     public String editGift(@PathVariable Integer id, Model model) {
 
-        Gift gift = giftRepository.findById(id).orElse(null);
+        Gift gift = giftRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Gift not found"));
 
-        if (gift == null) {
-            return "error";
+        if (gift.getImages() == null) {
+            gift.setImages(new java.util.ArrayList<>());
         }
 
         model.addAttribute("gift", gift);
 
-        return "gift-edit"; // templates/gift-edit.html
+        return "gift-edit";
     }
 
-    // ===================== OPTIONAL: DEBUG =====================
+    // ===================== DEBUG =====================
     @GetMapping("/ping")
     @ResponseBody
     public String ping() {
