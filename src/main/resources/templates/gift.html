@@ -9,13 +9,11 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-
 body{
     background: linear-gradient(135deg,#f5f7fa,#c3cfe2);
     font-family: Arial;
 }
 
-/* CARD */
 .gift-card{
     max-width: 720px;
     margin: 12px auto;
@@ -25,7 +23,6 @@ body{
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
-/* TITLE */
 .title{
     text-align:center;
     font-size:22px;
@@ -33,7 +30,6 @@ body{
     margin-bottom:10px;
 }
 
-/* MESSAGE */
 .message{
     font-size:16px;
     background:#f8f9fa;
@@ -42,45 +38,30 @@ body{
     margin-bottom:15px;
 }
 
-/* MAIN IMAGE CENTER FIT */
 .main-img{
     width:100%;
     max-height:70vh;
-    object-fit:contain;   /* ⭐ quan trọng nhất */
-    background:#000;      /* giống gallery app */
+    object-fit:contain;
+    background:#000;
     border-radius:14px;
-    display:block;
-    margin:0 auto;
-    transition: opacity 0.2s ease;
 }
 
-/* THUMBNAIL */
 .thumb-container{
     display:flex;
     gap:10px;
     overflow-x:auto;
     margin-top:12px;
-    padding-bottom:5px;
     justify-content:center;
 }
 
 .thumb{
-    flex:0 0 auto;
     width:70px;
     height:70px;
     object-fit:cover;
     border-radius:10px;
     cursor:pointer;
-    border:2px solid transparent;
-    transition:0.2s;
 }
 
-.thumb:hover{
-    border:2px solid #007bff;
-    transform: scale(1.05);
-}
-
-/* AUDIO */
 .audio-box{
     margin-top:15px;
     padding:12px;
@@ -91,7 +72,6 @@ body{
 audio{
     width:100%;
 }
-
 </style>
 </head>
 
@@ -99,13 +79,9 @@ audio{
 
 <div class="gift-card">
 
-    <!-- TITLE -->
     <div class="title">🎁 Memory Gift</div>
 
-    <!-- MESSAGE -->
-    <div class="message" th:text="${gift.message}">
-        Message here
-    </div>
+    <div class="message" th:text="${gift.message}"></div>
 
     <!-- ================= IMAGE ================= -->
     <div th:if="${gift.images != null and !#lists.isEmpty(gift.images)}">
@@ -113,41 +89,28 @@ audio{
         <!-- MAIN IMAGE -->
         <img id="mainImage"
              class="main-img"
-             th:src="@{'/uploads/' + ${gift.images[0].imageUrl}}">
+             th:src="${gift.images[0].imageUrl}">
 
         <!-- THUMBNAILS -->
         <div class="thumb-container">
 
             <img th:each="img : ${gift.images}"
-                 th:src="@{'/uploads/' + ${img.imageUrl}}"
+                 th:src="${img.imageUrl}"
                  class="thumb"
-                 onclick="changeImage(this)">
+                 onclick="document.getElementById('mainImage').src=this.src">
 
         </div>
 
     </div>
 
-    <!-- AUDIO -->
+    <!-- ================= AUDIO ================= -->
     <div class="audio-box" th:if="${gift.voiceUrl != null}">
         <audio controls>
-            <source th:src="@{'/uploads/' + ${gift.voiceUrl}}">
+            <source th:src="${gift.voiceUrl}" type="audio/webm">
         </audio>
     </div>
 
 </div>
-
-<script>
-function changeImage(el){
-    const main = document.getElementById("mainImage");
-
-    main.style.opacity = 0;
-
-    setTimeout(() => {
-        main.src = el.src;
-        main.style.opacity = 1;
-    }, 150);
-}
-</script>
 
 </body>
 </html>
