@@ -19,77 +19,68 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-    @PostMapping("/save")
-    public ResponseEntity<String> saveGift(
-            @RequestParam("message") String message,
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
-            @RequestParam(value = "audio", required = false) MultipartFile audio
-    ) {
+@PostMapping("/save")
+public ResponseEntity<String> saveGift(
+        @RequestParam("message") String message,
+        @RequestParam(value = "images", required = false) MultipartFile[] images,
+        @RequestParam(value = "audio", required = false) MultipartFile audio
+) {
 
-        try {
+    try {
 
-            Gift gift = new Gift();
-            gift.setMessage(message);
+        Gift gift = new Gift();
+        gift.setMessage(message);
 
-            /* ================= AUDIO (SAFE) ================= */
-            if (audio != null && !audio.isEmpty()) {
+        /* ================= AUDIO ================= */
+        if (audio != null && !audio.isEmpty()) {
 
-                String original = audio.getOriginalFilename();
-                if (original == null || original.isEmpty()) {
-                    original = "voice.webm";
-                }
+            String audioName = System.currentTimeMillis() + "_" + audio.getOriginalFilename();
 
-                String audioName = System.currentTimeMillis() + "_" + original;
+            String audioPath = System.getProperty("user.dir") + "/uploads/audio/";
+            File audioDir = new File(audioPath);
+            if (!audioDir.exists()) audioDir.mkdirs();
 
-                File audioDir = new File("/tmp/audio/");
-                if (!audioDir.exists()) audioDir.mkdirs();
+            File audioFile = new File(audioDir, audioName);
+            audio.transferTo(audioFile);
 
-                File audioFile = new File(audioDir, audioName);
-                audio.transferTo(audioFile);
-
-                gift.setVoiceUrl("/uploads/audio/" + audioName);
-            }
-
-            /* ================= IMAGES (SAFE) ================= */
-            List<GiftImage> imageList = new ArrayList<>();
-
-            if (images != null && images.length > 0) {
-
-                for (MultipartFile file : images) {
-
-                    if (file == null || file.isEmpty()) continue;
-
-                    String originalName = file.getOriginalFilename();
-                    if (originalName == null || originalName.isEmpty()) {
-                        originalName = "image.jpg";
-                    }
-
-                    String imgName = System.currentTimeMillis() + "_" + originalName;
-
-                    File imgDir = new File("/tmp/images/");
-                    if (!imgDir.exists()) imgDir.mkdirs();
-
-                    File dest = new File(imgDir, imgName);
-                    file.transferTo(dest);
-
-                    GiftImage img = new GiftImage();
-                    img.setImageUrl("/uploads/images/" + imgName);
-                    img.setGift(gift);
-
-                    imageList.add(img);
-                }
-            }
-
-            gift.setImages(imageList);
-
-            /* ================= SAVE DB ================= */
-            Gift saved = giftRepository.save(gift);
-
-            return ResponseEntity.ok(saved.getId().toString());
-
-        } catch (Exception e) {
-            e.printStackTrace(); // quan trọng để debug Railway logs
-            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+            gift.setVoiceUrl("/uploads/audio/" + audioName);
         }
+
+        /* ================= IMAGES ================= */
+        List<GiftImage> list = new ArrayList<>();
+
+        if (images != null) {
+            for (MultipartFile f : images) {
+
+                if (f == null || f.isEmpty()) continue;
+
+                String imgName = System.currentTimeMillis() + "_" + f.getOriginalFilename();
+
+                String imgPath = System.getProperty("user.dir") + "/uploads/images/";
+                File imgDir = new File(imgPath);
+                if (!imgDir.exists()) imgDir.mkdirs();
+
+                File imgFile = new File(imgDir, imgName);
+                f.transferTo(imgFile);
+
+                GiftImage img = new GiftImage();
+                img.setImageUrl("/uploads/images/" + imgName);
+                img.setGift(gift);
+
+                list.add(img);
+            }
+        }
+
+        gift.setImages(list);
+
+        /* ================= SAVE DB ================= */
+        Gift saved = giftRepository.save(gift);
+
+        return ResponseEntity.ok(saved.getId().toString());
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body(e.getMessage());
     }
+}
 }
