@@ -16,13 +16,14 @@ public class GiftViewController {
     @Autowired
     private GiftRepository giftRepository;
 
-    // ===================== VIEW GIFT =====================
+    /* ================= VIEW ================= */
     @GetMapping("/view/{id}")
     public String viewGift(@PathVariable Long id, Model model) {
 
         Gift gift = giftRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Gift not found"));
 
+        // safe null
         if (gift.getVoiceUrl() == null) {
             gift.setVoiceUrl("");
         }
@@ -33,10 +34,10 @@ public class GiftViewController {
 
         model.addAttribute("gift", gift);
 
-        return "gift";
+        return "gift"; // templates/gift.html
     }
 
-    // ===================== EDIT PAGE =====================
+    /* ================= EDIT PAGE ================= */
     @GetMapping("/edit/{id}")
     public String editGift(@PathVariable Long id, Model model) {
 
@@ -49,10 +50,10 @@ public class GiftViewController {
 
         model.addAttribute("gift", gift);
 
-        return "gift-edit";
+        return "gift-edit"; // templates/gift-edit.html
     }
 
-    // ===================== DEBUG =====================
+    /* ================= DEBUG ================= */
     @GetMapping("/ping")
     @ResponseBody
     public String ping() {

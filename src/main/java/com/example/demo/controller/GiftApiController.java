@@ -22,7 +22,9 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-    private final String BASE_DIR = System.getProperty("user.home") + "/uploads";
+    // ⚠️ FIX: dùng user.dir để ổn định khi deploy
+    private final String BASE_DIR =
+            System.getProperty("user.dir") + "/uploads";
 
     /* ================= CREATE ================= */
     @PostMapping("/save")
@@ -54,9 +56,9 @@ public class GiftApiController {
     ) {
         try {
 
-            /* ================= LOAD OR CREATE ================= */
             Gift gift;
 
+            // ================= LOAD OR CREATE =================
             if (id != null) {
                 gift = giftRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Gift not found"));
@@ -67,7 +69,7 @@ public class GiftApiController {
 
             gift.setMessage(message);
 
-            /* ================= AUDIO (ONLY IF NEW UPLOAD) ================= */
+            // ================= AUDIO (REPLACE ONLY IF NEW) =================
             if (audio != null && !audio.isEmpty()) {
 
                 String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
@@ -76,18 +78,19 @@ public class GiftApiController {
                 Files.createDirectories(audioDir);
 
                 Path audioPath = audioDir.resolve(audioName);
+
                 audio.transferTo(audioPath.toFile());
 
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
 
-            /* ================= IMAGES (APPEND NOT REPLACE) ================= */
+            // ================= IMAGES (APPEND MODE) =================
             if (images != null && images.length > 0) {
 
-                List<GiftImage> currentImages = gift.getImages();
+                List<GiftImage> list = gift.getImages();
 
-                if (currentImages == null) {
-                    currentImages = new ArrayList<>();
+                if (list == null) {
+                    list = new ArrayList<>();
                 }
 
                 for (MultipartFile f : images) {
@@ -100,24 +103,25 @@ public class GiftApiController {
                     Files.createDirectories(imgDir);
 
                     Path imgPath = imgDir.resolve(imgName);
+
                     f.transferTo(imgPath.toFile());
 
                     GiftImage img = new GiftImage();
                     img.setImageUrl("/files/images/" + imgName);
                     img.setGift(gift);
 
-                    currentImages.add(img);
+                    list.add(img);
                 }
 
-                gift.setImages(currentImages);
+                gift.setImages(list);
             }
 
-            /* ================= SAVE ================= */
             Gift saved = giftRepository.save(gift);
 
             return ResponseEntity.ok(saved.getId().toString());
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
