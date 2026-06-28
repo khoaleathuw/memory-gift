@@ -103,73 +103,50 @@ audio{
 
 <div class="gift-card">
 
-    <!-- TITLE -->
     <div class="title">🎁 Memory Gift</div>
 
-    <!-- ================= MESSAGE ================= -->
+    <!-- MESSAGE -->
     <div class="section-box">
-
         <div class="section-header">
             <h5>Message</h5>
-
-            <a th:href="@{'/gift/edit/' + ${gift.id} + '#message'}" class="edit-icon">
-                <i class="bi bi-pencil-square"></i>
-            </a>
+            <a th:href="@{'/gift/edit/' + ${gift.id}}" class="edit-icon">✏️</a>
         </div>
 
         <div class="message" th:text="${gift.message}"></div>
     </div>
 
-    <!-- ================= IMAGES ================= -->
+    <!-- IMAGE -->
     <div class="section-box">
-
         <div class="section-header">
             <h5>Images</h5>
-
-            <a th:href="@{'/gift/edit/' + ${gift.id} + '#images'}" class="edit-icon">
-                <i class="bi bi-pencil-square"></i>
-            </a>
+            <a th:href="@{'/gift/edit/' + ${gift.id}}" class="edit-icon">✏️</a>
         </div>
 
-        <div th:if="${gift.images != null and !#lists.isEmpty(gift.images)}">
+        <img id="mainImage"
+             class="main-img"
+             th:if="${!#lists.isEmpty(gift.images)}"
+             th:src="${gift.images[0].imageUrl}">
 
-            <img id="mainImage"
-                 class="main-img"
-                 th:src="@{${gift.images[0].imageUrl}}">
-
-            <div class="thumb-container">
-
-                <img th:each="img : ${gift.images}"
-                     th:src="@{${img.imageUrl}}"
-                     class="thumb"
-                     onclick="document.getElementById('mainImage').src=this.src">
-
-            </div>
-
+        <div class="thumb-container">
+            <img th:each="img : ${gift.images}"
+                 th:src="${img.imageUrl}"
+                 class="thumb"
+                 onclick="document.getElementById('mainImage').src=this.src">
         </div>
-
     </div>
 
-    <!-- ================= AUDIO ================= -->
+    <!-- AUDIO -->
     <div class="section-box">
-
         <div class="section-header">
             <h5>Voice</h5>
-
-            <a th:href="@{'/gift/edit/' + ${gift.id} + '#audio'}" class="edit-icon">
-                <i class="bi bi-pencil-square"></i>
-            </a>
+            <a th:href="@{'/gift/edit/' + ${gift.id}}" class="edit-icon">✏️</a>
         </div>
 
-        <div th:if="${gift.voiceUrl != null}">
-            <audio controls>
-                <source th:src="@{${gift.voiceUrl}}" type="audio/*">
-            </audio>
-        </div>
-
+        <audio controls th:if="${gift.voiceUrl != null}">
+            <source th:src="${gift.voiceUrl}" type="audio/webm">
+        </audio>
     </div>
 
 </div>
-
 </body>
 </html>
