@@ -22,16 +22,16 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-    // ⚠️ FIX: dùng user.dir để ổn định khi deploy
+    // ✅ FIX CHUẨN (KHÔNG DÙNG user.dir)
     private final String BASE_DIR =
-            System.getProperty("user.dir") + "/uploads";
+            System.getProperty("java.io.tmpdir") + "/uploads";
 
     /* ================= CREATE ================= */
     @PostMapping("/save")
     public ResponseEntity<String> saveGift(
-            @RequestParam("message") String message,
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
-            @RequestParam(value = "audio", required = false) MultipartFile audio
+            @RequestParam String message,
+            @RequestParam(required = false) MultipartFile[] images,
+            @RequestParam(required = false) MultipartFile audio
     ) {
         return saveOrUpdate(null, message, images, audio);
     }
@@ -40,9 +40,9 @@ public class GiftApiController {
     @PostMapping("/update/{id}")
     public ResponseEntity<String> updateGift(
             @PathVariable Long id,
-            @RequestParam("message") String message,
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
-            @RequestParam(value = "audio", required = false) MultipartFile audio
+            @RequestParam String message,
+            @RequestParam(required = false) MultipartFile[] images,
+            @RequestParam(required = false) MultipartFile audio
     ) {
         return saveOrUpdate(id, message, images, audio);
     }
@@ -56,20 +56,14 @@ public class GiftApiController {
     ) {
         try {
 
-            Gift gift;
-
-            // ================= LOAD OR CREATE =================
-            if (id != null) {
-                gift = giftRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Gift not found"));
-            } else {
-                gift = new Gift();
-                gift.setImages(new ArrayList<>());
-            }
+            Gift gift = (id != null)
+                    ? giftRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Gift not found"))
+                    : new Gift();
 
             gift.setMessage(message);
 
-            // ================= AUDIO (REPLACE ONLY IF NEW) =================
+            /* ================= AUDIO ================= */
             if (audio != null && !audio.isEmpty()) {
 
                 String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
@@ -81,18 +75,15 @@ public class GiftApiController {
 
                 audio.transferTo(audioPath.toFile());
 
+                // ✅ URL public
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
 
-            // ================= IMAGES (APPEND MODE) =================
-            if (images != null && images.length > 0) {
+            /* ================= IMAGES ================= */
+            List<GiftImage> list = gift.getImages();
+            if (list == null) list = new ArrayList<>();
 
-                List<GiftImage> list = gift.getImages();
-
-                if (list == null) {
-                    list = new ArrayList<>();
-                }
-
+            if (images != null) {
                 for (MultipartFile f : images) {
 
                     if (f == null || f.isEmpty()) continue;
@@ -112,9 +103,9 @@ public class GiftApiController {
 
                     list.add(img);
                 }
-
-                gift.setImages(list);
             }
+
+            gift.setImages(list);
 
             Gift saved = giftRepository.save(gift);
 
@@ -122,7 +113,8 @@ public class GiftApiController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(e.getMessage());
+            return ResponseEntity.status(500)
+                    .body("ERROR: " + e.getMessage());
         }
     }
 }

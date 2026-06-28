@@ -142,9 +142,9 @@ audio{
             <a th:href="@{'/gift/edit/' + ${gift.id}}" class="edit-icon">✏️</a>
         </div>
 
-        <audio controls th:if="${gift.voiceUrl != null}">
-            <source th:src="${gift.voiceUrl}" type="audio/webm">
-        </audio>
+    <audio controls th:if="${gift.voiceUrl != null}">
+        <source th:src="${gift.voiceUrl}" type="audio/webm">
+    </audio>
     </div>
 
 </div>
