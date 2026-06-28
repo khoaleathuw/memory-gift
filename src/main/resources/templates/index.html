@@ -102,6 +102,7 @@ const previewContainer = document.getElementById("previewContainer");
 const addBox = document.getElementById("addBox");
 
 imageInput.addEventListener("change", function () {
+
     Array.from(this.files).forEach(file => {
 
         if (selectedImages.length >= 6) return;
@@ -109,8 +110,8 @@ imageInput.addEventListener("change", function () {
         selectedImages.push(file);
 
         const reader = new FileReader();
-        reader.onload = e => {
 
+        reader.onload = e => {
             const div = document.createElement("div");
             div.className = "col-4 img-item";
 
@@ -136,6 +137,7 @@ imageInput.addEventListener("change", function () {
 function removeImage(btn){
     const items = document.querySelectorAll(".img-item");
     const index = Array.from(items).indexOf(btn.closest(".img-item"));
+
     if(index > -1) selectedImages.splice(index,1);
 
     btn.closest(".img-item").remove();
@@ -159,7 +161,7 @@ audioInput.addEventListener("change", function(){
     }
 });
 
-// ================= RECORD FIX MOBILE =================
+// ================= RECORD =================
 function stopMic(){
     if(stream){
         stream.getTracks().forEach(t => t.stop());
@@ -170,7 +172,7 @@ function stopMic(){
 document.getElementById("recordBtn").addEventListener("click", async () => {
 
     if (!navigator.mediaDevices?.getUserMedia) {
-        alert("Trình duyệt không hỗ trợ record");
+        alert("Mic not supported");
         return;
     }
 
@@ -210,17 +212,19 @@ document.getElementById("recordBtn").addEventListener("click", async () => {
         document.getElementById("recordStatus").innerText = "Recording...";
 
     } catch (err) {
-        alert("Mic error: " + err.message);
+        alert(err.message);
     }
 });
 
-// ================= SUBMIT =================
+// ================= SUBMIT FIXED =================
 document.getElementById("giftForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
 
-    formData.append("message", document.querySelector("textarea[name='message']").value);
+    formData.append("message",
+        document.querySelector("textarea[name='message']").value
+    );
 
     selectedImages.forEach(i => formData.append("images", i));
 
@@ -228,13 +232,28 @@ document.getElementById("giftForm").addEventListener("submit", async (e) => {
         formData.append("audio", audioFile);
     }
 
-    const res = await fetch("/api/gift/save", {
-        method: "POST",
-        body: formData
-    });
+    // 🔥 FIX QUAN TRỌNG NHẤT
+    const url = window.location.origin + "/api/gift/save";
 
-    const id = await res.text();
-    window.location.href = "/gift/view/" + id;
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            alert("ERROR: " + err);
+            return;
+        }
+
+        const id = await res.text();
+        window.location.href = "/gift/view/" + id;
+
+    } catch (err) {
+        alert("Network error");
+        console.log(err);
+    }
 });
 
 </script>
