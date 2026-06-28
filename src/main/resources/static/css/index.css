@@ -1,27 +1,61 @@
-/* Hiệu ứng 3D nhẹ cho toàn bộ hộp quà khi rê chuột vào */
+/* ================= TỔNG THỂ NỀN & FONT CHỮ ================= */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #333;
+    padding: 20px;
+}
+
+/* Card chứa toàn bộ form tạo mới */
 .card-box {
     max-width: 700px;
     margin: 40px auto;
     background: #ffffff;
     border-radius: 24px;
     padding: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    
-    /* Gốc hiệu ứng 3D */
-    transform-style: preserve-3d;
-    perspective: 1000px;
     box-shadow: 0 10px 30px rgba(160, 170, 190, 0.2);
-    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1), 
-                box-shadow 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-.card-box:hover {
-    /* Nghiêng nhẹ hộp quà lên trên để tạo không gian 3D */
-    transform: translateY(-4px) rotateX(2deg);
-    box-shadow: 0 20px 40px rgba(100, 110, 140, 0.25);
+/* Tiêu đề các phân khu Album, Message, Voice */
+.section-title h3 {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    margin: 30px 0 15px;
+    display: flex;
+    align-items: center;
 }
 
-/* Hiệu ứng lật góc 3D cho ô "Thêm ảnh" */
+.section-title h3::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+    margin-left: 15px;
+}
+
+/* Ô nhập chữ lời nhắn */
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    background-color: #f8fafc;
+}
+
+.form-control:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    background-color: #fff;
+}
+
+/* ================= GIAO DIỆN KHUNG ALBUM ẢNH ================= */
+/* Ô trống "Thêm ảnh" nét đứt */
 .image-box {
     border: 2px dashed #cbd5e1;
     border-radius: 16px;
@@ -33,24 +67,20 @@
     color: #64748b;
     cursor: pointer;
     background: #f8fafc;
-    
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-style: preserve-3d;
+    transition: all 0.2s ease;
 }
 
 .image-box:hover {
     border-color: #6366f1;
     color: #6366f1;
     background: #f0f2ff;
-    /* Nghiêng nhẹ khi hover */
-    transform: scale(1.03) rotateY(5deg);
 }
 
-/* Hiệu ứng nổi khối 3D cho các ảnh trong album */
+/* Khung bọc từng tấm ảnh được chọn */
 .img-item {
     position: relative;
+    overflow: hidden;
     border-radius: 16px;
-    perspective: 800px;
 }
 
 .img-item img {
@@ -59,13 +89,130 @@
     object-fit: cover;
     border-radius: 16px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                box-shadow 0.4s ease;
+    transition: transform 0.3s ease;
 }
 
 .img-item:hover img {
-    /* Ảnh bay lên và xoay nhẹ góc nhìn 3D */
-    transform: translateZ(15px) rotateX(4deg) rotateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    transform: scale(1.04);
+}
+
+/* Nút X xóa ảnh (Trượt nhẹ và hiện khi hover vào ảnh) */
+.img-item .btn-danger {
+    top: 8px !important;
+    right: 8px !important;
+    background: rgba(239, 68, 68, 0.9) !important;
+    backdrop-filter: blur(4px);
+    border: none !important;
+    width: 28px;
+    height: 28px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.img-item:hover .btn-danger {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.img-item .btn-danger:hover {
+    background: #dc2626 !important;
+    transform: scale(1.1) !important;
+}
+
+/* Chế độ hiển thị khi chỉ có duy nhất 1 ảnh */
+.single-mode .img-item {
+    transition: all 0.3s ease;
+}
+
+/* ================= KHU VỰC VOICE GHI ÂM ================= */
+.voice {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+/* Nút Record/Stop mượt mà */
+#recordBtn {
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+    border: none;
+    background: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+#recordBtn:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+/* Chuyển màu đỏ nhấp nháy (Pulse) khi đang ghi âm */
+#recordBtn.btn-danger, /* Nhận diện class thay đổi từ JS */
+#recordBtn[innerText*="Stop"] { 
+    background: #ef4444 !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Dòng text trạng thái ghi âm (Recording... / Stopped) */
+#recordStatus {
+    font-weight: 600;
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* Ô chọn File Audio từ máy tính */
+#audioInput {
+    max-width: 250px !important;
+}
+
+/* Trình nghe thử âm thanh Preview */
+audio {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 10px;
+    background: #f1f5f9;
+}
+
+/* ================= NÚT SAVE CHÍNH Ở CUỐI ================= */
+.btn-success {
+    background: #10b981;
+    border: none;
+    padding: 14px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+hr {
+    border-top: 1px dashed #cbd5e1;
+    opacity: 1;
+    margin: 30px 0;
 }
