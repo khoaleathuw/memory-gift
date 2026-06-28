@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,13 +54,20 @@ public class GiftApiController {
     ) {
         try {
 
-            Gift gift = (id != null)
-                    ? giftRepository.findById(id).orElse(new Gift())
-                    : new Gift();
+            /* ================= LOAD OR CREATE ================= */
+            Gift gift;
+
+            if (id != null) {
+                gift = giftRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Gift not found"));
+            } else {
+                gift = new Gift();
+                gift.setImages(new ArrayList<>());
+            }
 
             gift.setMessage(message);
 
-            /* ================= AUDIO ================= */
+            /* ================= AUDIO (ONLY IF NEW UPLOAD) ================= */
             if (audio != null && !audio.isEmpty()) {
 
                 String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
@@ -75,10 +81,15 @@ public class GiftApiController {
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
 
-            /* ================= IMAGES ================= */
-            List<GiftImage> list = new ArrayList<>();
+            /* ================= IMAGES (APPEND NOT REPLACE) ================= */
+            if (images != null && images.length > 0) {
 
-            if (images != null) {
+                List<GiftImage> currentImages = gift.getImages();
+
+                if (currentImages == null) {
+                    currentImages = new ArrayList<>();
+                }
+
                 for (MultipartFile f : images) {
 
                     if (f == null || f.isEmpty()) continue;
@@ -95,12 +106,13 @@ public class GiftApiController {
                     img.setImageUrl("/files/images/" + imgName);
                     img.setGift(gift);
 
-                    list.add(img);
+                    currentImages.add(img);
                 }
+
+                gift.setImages(currentImages);
             }
 
-            gift.setImages(list);
-
+            /* ================= SAVE ================= */
             Gift saved = giftRepository.save(gift);
 
             return ResponseEntity.ok(saved.getId().toString());
