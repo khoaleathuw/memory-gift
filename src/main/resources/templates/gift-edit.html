@@ -1,165 +1,261 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Edit Gift</title>
+    <meta charset="UTF-8">
+    <title>Edit Gift</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<style>
-body{background:#f5f5f5;}
-.card-box{
-    max-width:700px;
-    margin:30px auto;
-    background:white;
-    padding:25px;
-    border-radius:18px;
-    box-shadow:0 5px 20px rgba(0,0,0,.1);
-}
-
-.img-item img{
-    width:100%;
-    height:120px;
-    object-fit:cover;
-    border-radius:12px;
-}
-
-.section-title{
-    font-weight:bold;
-    margin-top:15px;
-}
-</style>
+    <style>
+        body {
+            background: #f5f5f5;
+        }
+        .card-box {
+            max-width: 760px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.1);
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+        }
+        .img-item {
+            position: relative;
+        }
+        .img-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .recording {
+            background: red !important;
+            color: white !important;
+            border-color: red !important;
+        }
+        audio {
+            width: 100%;
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="card-box">
+    <h2>Edit Gift</h2>
 
-<h3>Edit Gift</h3>
+    <form id="giftForm">
+        <input type="hidden" id="giftId" th:value="${gift.id}">
 
-<form id="giftForm">
+        <div class="section-title">Message</div>
+        <textarea id="message" class="form-control" rows="5" th:text="${gift.message}"></textarea>
 
-<!-- ID -->
-<input type="hidden" id="giftId" th:value="${gift.id}">
+        <div class="section-title">Images</div>
+        <input type="file" multiple accept="image/*" id="imageInput" class="form-control">
 
-<!-- ================= MESSAGE ================= -->
-<div class="section-title">Message</div>
-<textarea id="message" class="form-control"
-          rows="4"
-          th:text="${gift.message}"></textarea>
+        <div class="row mt-3 g-3" id="previewContainer">
+            <div class="col-4 img-item" th:each="img : ${gift.images}">
+                <img th:src="@{${img.imageUrl}}">
+                <button type="button" class="btn btn-danger btn-sm remove-btn old-image" th:data-url="${img.imageUrl}">
+                    X
+                </button>
+            </div>
+        </div>
 
-<!-- ================= IMAGES ================= -->
-<div class="section-title">Images</div>
+        <div class="section-title">Voice</div>
+        
+        <div id="oldAudioBox">
+            <div th:if="${gift.voiceUrl != null && gift.voiceUrl != ''}">
+                <audio controls>
+                    <source th:src="@{${gift.voiceUrl}}">
+                </audio>
+                <button type="button" id="removeOldAudio" class="btn btn-danger mt-2">
+                    Remove Audio
+                </button>
+            </div>
+        </div>
 
-<input type="file" id="imageInput" multiple accept="image/*" class="form-control">
+        <hr>
 
-<div class="row g-2 mt-2" id="previewContainer">
+        <input type="file" accept="audio/*" id="audioInput" class="form-control">
 
-    <!-- OLD IMAGES -->
-    <div class="col-4 img-item"
-         th:each="img : ${gift.images}">
-        <img th:src="@{${img.imageUrl}}">
-    </div>
+        <button type="button" id="recordBtn" class="btn btn-primary mt-3">
+            🎤 Record
+        </button>
 
-</div>
+        <div class="mt-3">
+            <audio id="audioPreview" controls></audio>
+        </div>
 
-<!-- ================= AUDIO ================= -->
-<div class="section-title">Voice</div>
+        <hr>
 
-<div th:if="${gift.voiceUrl != null}">
-    <audio controls style="width:100%">
-        <source th:src="@{${gift.voiceUrl}}">
-    </audio>
-</div>
-
-<input type="file" id="audioInput" accept="audio/*" class="form-control mt-2">
-
-<audio id="audioPreview" controls style="width:100%;margin-top:10px;"></audio>
-
-<!-- SAVE -->
-<button class="btn btn-success mt-3">Save</button>
-
-</form>
-
+        <button type="submit" class="btn btn-success w-100">Save</button>
+    </form>
 </div>
 
 <script>
+    const giftId = document.getElementById("giftId").value;
+    const previewContainer = document.getElementById("previewContainer");
+    const audioPreview = document.getElementById("audioPreview");
+    const oldAudioBox = document.getElementById("oldAudioBox");
 
-const giftId = document.getElementById("giftId").value;
+    let newImages = [];
+    let deletedImages = [];
+    let newAudio = null;
+    let removeOldAudio = false;
 
-let newImages = [];
-let newAudio = null;
-
-/* ================= IMAGE ================= */
-document.getElementById("imageInput").addEventListener("change", function(){
-
-    Array.from(this.files).forEach(file => {
-
-        newImages.push(file);
-
-        const reader = new FileReader();
-
-        reader.onload = e => {
-
-            const div = document.createElement("div");
-            div.className = "col-4 img-item";
-
-            div.innerHTML = `<img src="${e.target.result}">`;
-
-            document.getElementById("previewContainer").appendChild(div);
+    /* ================= XÓA ẢNH CŨ ================= */
+    document.querySelectorAll(".old-image").forEach(btn => {
+        btn.onclick = () => {
+            deletedImages.push(btn.dataset.url);
+            btn.parentElement.remove();
         };
-
-        reader.readAsDataURL(file);
-    });
-});
-
-/* ================= AUDIO ================= */
-document.getElementById("audioInput").addEventListener("change", function(){
-
-    if(this.files.length > 0){
-        newAudio = this.files[0];
-        document.getElementById("audioPreview").src =
-            URL.createObjectURL(newAudio);
-    }
-});
-
-/* ================= SUBMIT ================= */
-document.getElementById("giftForm").addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    formData.append("message",
-        document.getElementById("message").value
-    );
-
-    newImages.forEach(img => {
-        formData.append("images", img);
     });
 
-    if(newAudio){
-        formData.append("audio", newAudio);
-    }
+    /* ================= THÊM ẢNH MỚI ================= */
+    document.getElementById("imageInput").addEventListener("change", function() {
+        Array.from(this.files).forEach(file => {
+            newImages.push(file);
 
-    const res = await fetch("/api/gift/update/" + giftId, {
-        method: "POST",
-        body: formData
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement("div");
+                div.className = "col-4 img-item";
+                div.innerHTML = `
+                    <img src="${e.target.result}">
+                    <button type="button" class="btn btn-danger btn-sm remove-btn">X</button>
+                `;
+
+                div.querySelector("button").onclick = () => {
+                    const index = newImages.indexOf(file);
+                    if (index > -1) newImages.splice(index, 1);
+                    div.remove();
+                };
+
+                previewContainer.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
     });
 
-    const text = await res.text();
+    /* ================= UPLOAD AUDIO ================= */
+    document.getElementById("audioInput").addEventListener("change", function() {
+        if (this.files.length) {
+            newAudio = this.files[0];
+            audioPreview.src = URL.createObjectURL(newAudio);
+            
+            // Nếu upload file mới, tự động ẩn file ghi âm cũ đi
+            if (oldAudioBox) {
+                removeOldAudio = true;
+                oldAudioBox.style.display = "none";
+            }
+        }
+    });
 
-    if(res.ok){
-        alert("Update success");
-        window.location.href = "/gift/view/" + giftId;
-    } else {
-        alert("Error: " + text);
+    /* ================= XÓA AUDIO CŨ ================= */
+    const removeBtn = document.getElementById("removeOldAudio");
+    if (removeBtn) {
+        removeBtn.onclick = () => {
+            removeOldAudio = true;
+            oldAudioBox.style.display = "none";
+        };
     }
-});
 
+    /* ================= RECORD AUDIO ================= */
+    let recorder;
+    let chunks = [];
+    let stream = null;
+    const recordBtn = document.getElementById("recordBtn");
+
+    recordBtn.onclick = async () => {
+        if (recorder && recorder.state === "recording") {
+            recorder.stop();
+            return;
+        }
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+
+            recorder.ondataavailable = e => {
+                chunks.push(e.data);
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: recorder.mimeType });
+                
+                newAudio = new File([blob], "record.webm", { type: recorder.mimeType });
+                audioPreview.src = URL.createObjectURL(newAudio);
+
+                stream.getTracks().forEach(t => t.stop());
+                recordBtn.classList.remove("recording");
+                recordBtn.innerHTML = "🎤 Record";
+
+                // Tự động ẩn audio cũ khi hoàn thành ghi âm mới
+                if (oldAudioBox) {
+                    removeOldAudio = true;
+                    oldAudioBox.style.display = "none";
+                }
+            };
+
+            recorder.start();
+            recordBtn.classList.add("recording");
+            recordBtn.innerHTML = "⏹ Stop";
+        } catch (e) {
+            alert("Không mở được microphone hoặc quyền bị từ chối.");
+        }
+    };
+
+    /* ================= SUBMIT FORM ================= */
+    document.getElementById("giftForm").onsubmit = async function(e) {
+        e.preventDefault();
+
+        const fd = new FormData();
+        fd.append("message", document.getElementById("message").value);
+
+        newImages.forEach(i => {
+            fd.append("images", i);
+        });
+
+        if (newAudio) {
+            fd.append("audio", newAudio);
+        }
+
+        fd.append("removeOldAudio", removeOldAudio);
+
+        deletedImages.forEach(i => {
+            fd.append("deleteImages", i);
+        });
+
+        try {
+            const res = await fetch("/api/gift/update/" + giftId, {
+                method: "POST",
+                body: fd
+            });
+
+            const text = await res.text();
+
+            if (res.ok) {
+                alert("Update thành công");
+                location.href = "/gift/view/" + giftId;
+            } else {
+                alert("Lỗi từ server: " + text);
+            }
+        } catch (error) {
+            alert("Có lỗi xảy ra trong quá trình gửi dữ liệu.");
+        }
+    };
 </script>
-
 </body>
 </html>
