@@ -1,14 +1,13 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
 @Entity
 @Table(name = "gift_image")
 public class GiftImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String imageUrl;
 
@@ -16,13 +15,11 @@ public class GiftImage {
     @JoinColumn(name = "gift_id")
     private Gift gift;
 
-    // getter & setter
-
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -41,4 +38,5 @@ public class GiftImage {
     public void setGift(Gift gift) {
         this.gift = gift;
     }
+
 }
