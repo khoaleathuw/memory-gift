@@ -52,13 +52,29 @@ audio{width:100%;}
 <hr>
 
 <!-- AUDIO -->
-<div class="section-title"><h3>Voice</h3></div>
+<div class="section-title">
+    <h3>Voice</h3>
+</div>
 
 <div class="voice">
-    <button type="button" id="recordBtn" class="btn btn-danger">🎤 Record</button>
+
+    <!-- RECORD -->
+    <button type="button" id="recordBtn" class="btn btn-danger">
+        🎤 Record
+    </button>
+
     <span id="recordStatus"></span>
 
-    <input type="file" id="audioInput" accept="audio/*" class="form-control" style="max-width:200px">
+    <!-- UPLOAD FILE -->
+    <input 
+        type="file" 
+        id="audioInput" 
+        name="audio"
+        accept="audio/*"
+        class="form-control"
+        style="max-width:200px"
+    >
+
 </div>
 
 <audio id="audioPreview" controls></audio>

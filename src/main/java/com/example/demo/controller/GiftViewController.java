@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @Controller
 @RequestMapping("/gift")
 public class GiftViewController {
@@ -16,19 +18,17 @@ public class GiftViewController {
 
     // ===================== VIEW GIFT =====================
     @GetMapping("/view/{id}")
-    public String viewGift(@PathVariable Integer id, Model model) {
+    public String viewGift(@PathVariable Long id, Model model) {
 
         Gift gift = giftRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Gift not found"));
 
-        // FIX URL audio nếu null
         if (gift.getVoiceUrl() == null) {
             gift.setVoiceUrl("");
         }
 
-        // đảm bảo images không null
         if (gift.getImages() == null) {
-            gift.setImages(new java.util.ArrayList<>());
+            gift.setImages(new ArrayList<>());
         }
 
         model.addAttribute("gift", gift);
@@ -38,13 +38,13 @@ public class GiftViewController {
 
     // ===================== EDIT PAGE =====================
     @GetMapping("/edit/{id}")
-    public String editGift(@PathVariable Integer id, Model model) {
+    public String editGift(@PathVariable Long id, Model model) {
 
         Gift gift = giftRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Gift not found"));
 
         if (gift.getImages() == null) {
-            gift.setImages(new java.util.ArrayList<>());
+            gift.setImages(new ArrayList<>());
         }
 
         model.addAttribute("gift", gift);

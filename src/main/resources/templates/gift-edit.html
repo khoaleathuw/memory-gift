@@ -21,6 +21,7 @@ body{background:#f5f5f5;}
 
 <form id="giftForm">
 
+<!-- ID -->
 <input type="hidden" id="giftId" th:value="${gift.id}">
 
 <!-- ================= IMAGES ================= -->
@@ -46,7 +47,7 @@ body{background:#f5f5f5;}
 
 <audio id="audioPreview" controls style="width:100%;margin-top:10px;">
     <source th:if="${gift.voiceUrl != null}"
-            th:src="@{'/uploads/' + ${gift.voiceUrl}}">
+            th:src="${gift.voiceUrl}">
 </audio>
 
 <button class="btn btn-success mt-3">Save</button>
@@ -57,35 +58,36 @@ body{background:#f5f5f5;}
 
 <script th:inline="javascript">
 
-/* ================= SAFE DATA ================= */
-let giftId = [[{$gift,id}]];
-
-/* SAFE IMAGE ARRAY */
+/* ================= FIX THYMELEAF ================= */
+let giftId = /*[[${gift.id}]]*/ 0;
 let existingImages = /*[[${gift.images}]]*/ [];
 
+/* ================= DOM ================= */
 const previewContainer = document.getElementById("previewContainer");
 const addBox = document.getElementById("addBox");
 
-/* render old images */
-if(existingImages != null){
+/* ================= RENDER OLD IMAGES ================= */
+if (existingImages && existingImages.length > 0) {
+
     existingImages.forEach(img => {
 
         const col = document.createElement("div");
         col.className = "col-4 img-item";
 
-        col.innerHTML = `<img src="/uploads/${img.imageUrl}">`;
+        col.innerHTML = `
+            <img src="${img.imageUrl}">
+        `;
 
         previewContainer.insertBefore(col, addBox);
     });
 }
 
-/* ADD NEW IMAGE */
+/* ================= NEW IMAGES ================= */
 let selectedImages = [];
 
-document.getElementById("imageInput").addEventListener("change", function(){
+document.getElementById("imageInput").addEventListener("change", function () {
 
     Array.from(this.files).forEach(file => {
-
         selectedImages.push(file);
 
         const reader = new FileReader();
@@ -104,35 +106,48 @@ document.getElementById("imageInput").addEventListener("change", function(){
     });
 });
 
-/* AUDIO PREVIEW */
-document.getElementById("audioInput").addEventListener("change", function(){
+/* ================= AUDIO ================= */
+document.getElementById("audioInput").addEventListener("change", function () {
+
+    const file = this.files[0];
+    if (!file) return;
+
     document.getElementById("audioPreview").src =
-        URL.createObjectURL(this.files[0]);
+        URL.createObjectURL(file);
 });
 
-/* SAVE */
-document.getElementById("giftForm").addEventListener("submit", function(e){
-
+/* ================= SUBMIT ================= */
+document.getElementById("giftForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
     const formData = new FormData();
 
-    formData.append("message", document.getElementById("messageBox").value);
+    formData.append("message",
+        document.getElementById("messageBox").value
+    );
 
-    selectedImages.forEach(f=>{
+    selectedImages.forEach(f => {
         formData.append("images", f);
     });
 
-    if(document.getElementById("audioInput").files[0]){
-        formData.append("audio",
-            document.getElementById("audioInput").files[0]);
+    const audio = document.getElementById("audioInput").files[0];
+    if (audio) {
+        formData.append("audio", audio);
     }
 
     fetch("/api/gift/update/" + giftId, {
         method: "POST",
         body: formData
-    }).then(r => r.text())
-      .then(d => alert("OK update"));
+    })
+    .then(r => r.text())
+    .then(() => {
+        alert("Update success");
+        location.reload();
+    })
+    .catch(err => {
+        console.log(err);
+        alert("Update failed");
+    });
 });
 
 </script>

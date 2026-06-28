@@ -2,13 +2,33 @@ package com.example.demo.dto;
 
 public class GiftResponse {
 
-    private String message;
     private boolean success;
+    private String message;
+    private Object data;
 
     public GiftResponse() {}
 
-    public GiftResponse(String message, boolean success) {
+    public GiftResponse(boolean success, String message, Object data) {
+        this.success = success;
         this.message = message;
+        this.data = data;
+    }
+
+    // ================= FACTORY =================
+    public static GiftResponse success(Object data) {
+        return new GiftResponse(true, "OK", data);
+    }
+
+    public static GiftResponse fail(String message) {
+        return new GiftResponse(false, message, null);
+    }
+
+    // ================= GETTER SETTER =================
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
         this.success = success;
     }
 
@@ -20,11 +40,11 @@ public class GiftResponse {
         this.message = message;
     }
 
-    public boolean isSuccess() {
-        return success;
+    public Object getData() {
+        return data;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

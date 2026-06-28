@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <style>
 body{
@@ -16,7 +17,7 @@ body{
 
 .gift-card{
     max-width: 720px;
-    margin: 12px auto;
+    margin: 15px auto;
     background: white;
     border-radius: 18px;
     padding: 15px;
@@ -24,10 +25,35 @@ body{
 }
 
 .title{
-    text-align:center;
-    font-size:22px;
+    font-size:20px;
     font-weight:bold;
     margin-bottom:10px;
+    text-align:center;
+}
+
+.section-box{
+    margin-bottom:15px;
+    padding:12px;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+
+.section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.edit-icon{
+    font-size:18px;
+    color:#555;
+    text-decoration:none;
+}
+
+.edit-icon:hover{
+    color:#0d6efd;
 }
 
 .message{
@@ -35,12 +61,12 @@ body{
     background:#f8f9fa;
     padding:12px;
     border-radius:12px;
-    margin-bottom:15px;
 }
 
+/* IMAGE */
 .main-img{
     width:100%;
-    max-height:70vh;
+    max-height:65vh;
     object-fit:contain;
     background:#000;
     border-radius:14px;
@@ -48,10 +74,9 @@ body{
 
 .thumb-container{
     display:flex;
-    gap:10px;
+    gap:8px;
     overflow-x:auto;
-    margin-top:12px;
-    justify-content:center;
+    margin-top:10px;
 }
 
 .thumb{
@@ -60,15 +85,14 @@ body{
     object-fit:cover;
     border-radius:10px;
     cursor:pointer;
+    border:2px solid transparent;
 }
 
-.audio-box{
-    margin-top:15px;
-    padding:12px;
-    background:#f1f3f5;
-    border-radius:12px;
+.thumb:hover{
+    border:2px solid #0d6efd;
 }
 
+/* AUDIO */
 audio{
     width:100%;
 }
@@ -79,35 +103,70 @@ audio{
 
 <div class="gift-card">
 
+    <!-- TITLE -->
     <div class="title">🎁 Memory Gift</div>
 
-    <div class="message" th:text="${gift.message}"></div>
+    <!-- ================= MESSAGE ================= -->
+    <div class="section-box">
 
-    <!-- ================= IMAGE ================= -->
-    <div th:if="${gift.images != null and !#lists.isEmpty(gift.images)}">
+        <div class="section-header">
+            <h5>Message</h5>
 
-        <!-- MAIN IMAGE -->
-        <img id="mainImage"
-             class="main-img"
-             th:src="${gift.images[0].imageUrl}">
+            <a th:href="@{'/gift/edit/' + ${gift.id} + '#message'}" class="edit-icon">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+        </div>
 
-        <!-- THUMBNAILS -->
-        <div class="thumb-container">
+        <div class="message" th:text="${gift.message}"></div>
+    </div>
 
-            <img th:each="img : ${gift.images}"
-                 th:src="${img.imageUrl}"
-                 class="thumb"
-                 onclick="document.getElementById('mainImage').src=this.src">
+    <!-- ================= IMAGES ================= -->
+    <div class="section-box">
+
+        <div class="section-header">
+            <h5>Images</h5>
+
+            <a th:href="@{'/gift/edit/' + ${gift.id} + '#images'}" class="edit-icon">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+        </div>
+
+        <div th:if="${gift.images != null and !#lists.isEmpty(gift.images)}">
+
+            <img id="mainImage"
+                 class="main-img"
+                 th:src="@{${gift.images[0].imageUrl}}">
+
+            <div class="thumb-container">
+
+                <img th:each="img : ${gift.images}"
+                     th:src="@{${img.imageUrl}}"
+                     class="thumb"
+                     onclick="document.getElementById('mainImage').src=this.src">
+
+            </div>
 
         </div>
 
     </div>
 
     <!-- ================= AUDIO ================= -->
-    <div class="audio-box" th:if="${gift.voiceUrl != null}">
-        <audio controls>
-            <source th:src="${gift.voiceUrl}" type="audio/webm">
-        </audio>
+    <div class="section-box">
+
+        <div class="section-header">
+            <h5>Voice</h5>
+
+            <a th:href="@{'/gift/edit/' + ${gift.id} + '#audio'}" class="edit-icon">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+        </div>
+
+        <div th:if="${gift.voiceUrl != null}">
+            <audio controls>
+                <source th:src="@{${gift.voiceUrl}}" type="audio/*">
+            </audio>
+        </div>
+
     </div>
 
 </div>

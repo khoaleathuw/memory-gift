@@ -25,16 +25,40 @@ public class GiftApiController {
 
     private final String BASE_DIR = "uploads";
 
+    /* ================= CREATE ================= */
     @PostMapping("/save")
     public ResponseEntity<String> saveGift(
             @RequestParam("message") String message,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "audio", required = false) MultipartFile audio
     ) {
+        return saveOrUpdate(null, message, images, audio);
+    }
 
+    /* ================= UPDATE ================= */
+    @PostMapping("/update/{id}")
+    public ResponseEntity<String> updateGift(
+            @PathVariable Long id,
+            @RequestParam("message") String message,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "audio", required = false) MultipartFile audio
+    ) {
+        return saveOrUpdate(id, message, images, audio);
+    }
+
+    /* ================= CORE ================= */
+    private ResponseEntity<String> saveOrUpdate(
+            Long id,
+            String message,
+            MultipartFile[] images,
+            MultipartFile audio
+    ) {
         try {
 
-            Gift gift = new Gift();
+            Gift gift = (id != null)
+                    ? giftRepository.findById(id).orElse(new Gift())
+                    : new Gift();
+
             gift.setMessage(message);
 
             /* ================= AUDIO ================= */
@@ -46,7 +70,7 @@ public class GiftApiController {
                 Files.createDirectories(audioDir);
 
                 Path audioPath = audioDir.resolve(audioName);
-                audio.transferTo(audioPath);
+                audio.transferTo(audioPath.toFile());
 
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
@@ -65,7 +89,7 @@ public class GiftApiController {
                     Files.createDirectories(imgDir);
 
                     Path imgPath = imgDir.resolve(imgName);
-                    f.transferTo(imgPath);
+                    f.transferTo(imgPath.toFile());
 
                     GiftImage img = new GiftImage();
                     img.setImageUrl("/files/images/" + imgName);
@@ -82,7 +106,6 @@ public class GiftApiController {
             return ResponseEntity.ok(saved.getId().toString());
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }

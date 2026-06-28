@@ -9,7 +9,7 @@ public class Gift {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String title;
 
@@ -21,20 +21,45 @@ public class Gift {
     @OneToMany(mappedBy = "gift", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<GiftImage> images;
 
-    // getter setter
+    // ================= GETTER SETTER =================
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public String getTitle() {
+        return title;
+    }
 
-    public String getVoiceUrl() { return voiceUrl; }
-    public void setVoiceUrl(String voiceUrl) { this.voiceUrl = voiceUrl; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public List<GiftImage> getImages() { return images; }
-    public void setImages(List<GiftImage> images) { this.images = images; }
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getVoiceUrl() {
+        return voiceUrl;
+    }
+
+    public void setVoiceUrl(String voiceUrl) {
+        this.voiceUrl = voiceUrl;
+    }
+
+    public List<GiftImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<GiftImage> images) {
+        this.images = images;
+    }
 }
