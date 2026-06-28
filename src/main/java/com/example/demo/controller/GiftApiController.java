@@ -22,7 +22,7 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-    private final String BASE_DIR = "uploads";
+    private final String BASE_DIR = System.getProperty("user.home") + "/uploads";
 
     /* ================= CREATE ================= */
     @PostMapping("/save")
