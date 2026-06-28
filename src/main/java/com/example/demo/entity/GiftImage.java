@@ -8,7 +8,7 @@ public class GiftImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String imageUrl;
 
@@ -16,8 +16,7 @@ public class GiftImage {
     @JoinColumn(name = "gift_id")
     private Gift gift;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }

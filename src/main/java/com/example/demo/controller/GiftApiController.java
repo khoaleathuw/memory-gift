@@ -22,13 +22,11 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-    // ✅ FIX CHUẨN (KHÔNG DÙNG user.dir)
     private final String BASE_DIR =
-            System.getProperty("java.io.tmpdir") + "/uploads";
+            System.getProperty("user.home") + "/memory-gift/uploads";
 
-    /* ================= CREATE ================= */
     @PostMapping("/save")
-    public ResponseEntity<String> saveGift(
+    public ResponseEntity<?> saveGift(
             @RequestParam String message,
             @RequestParam(required = false) MultipartFile[] images,
             @RequestParam(required = false) MultipartFile audio
@@ -36,9 +34,8 @@ public class GiftApiController {
         return saveOrUpdate(null, message, images, audio);
     }
 
-    /* ================= UPDATE ================= */
     @PostMapping("/update/{id}")
-    public ResponseEntity<String> updateGift(
+    public ResponseEntity<?> updateGift(
             @PathVariable Long id,
             @RequestParam String message,
             @RequestParam(required = false) MultipartFile[] images,
@@ -47,8 +44,7 @@ public class GiftApiController {
         return saveOrUpdate(id, message, images, audio);
     }
 
-    /* ================= CORE ================= */
-    private ResponseEntity<String> saveOrUpdate(
+    private ResponseEntity<?> saveOrUpdate(
             Long id,
             String message,
             MultipartFile[] images,
@@ -57,43 +53,37 @@ public class GiftApiController {
         try {
 
             Gift gift = (id != null)
-                    ? giftRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Gift not found"))
+                    ? giftRepository.findById(id).orElseThrow()
                     : new Gift();
 
             gift.setMessage(message);
 
-            /* ================= AUDIO ================= */
+            // ================= AUDIO =================
             if (audio != null && !audio.isEmpty()) {
 
                 String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
 
-                Path audioDir = Paths.get(BASE_DIR, "audio");
-                Files.createDirectories(audioDir);
-
-                Path audioPath = audioDir.resolve(audioName);
+                Path audioPath = Paths.get(BASE_DIR, "audio", audioName);
+                Files.createDirectories(audioPath.getParent());
 
                 audio.transferTo(audioPath.toFile());
 
-                // ✅ URL public
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
 
-            /* ================= IMAGES ================= */
-            List<GiftImage> list = gift.getImages();
-            if (list == null) list = new ArrayList<>();
+            // ================= IMAGES =================
+            List<GiftImage> imgs = gift.getImages();
+            if (imgs == null) imgs = new ArrayList<>();
 
             if (images != null) {
                 for (MultipartFile f : images) {
 
-                    if (f == null || f.isEmpty()) continue;
+                    if (f.isEmpty()) continue;
 
                     String imgName = UUID.randomUUID() + "_" + f.getOriginalFilename();
 
-                    Path imgDir = Paths.get(BASE_DIR, "images");
-                    Files.createDirectories(imgDir);
-
-                    Path imgPath = imgDir.resolve(imgName);
+                    Path imgPath = Paths.get(BASE_DIR, "images", imgName);
+                    Files.createDirectories(imgPath.getParent());
 
                     f.transferTo(imgPath.toFile());
 
@@ -101,20 +91,18 @@ public class GiftApiController {
                     img.setImageUrl("/files/images/" + imgName);
                     img.setGift(gift);
 
-                    list.add(img);
+                    imgs.add(img);
                 }
             }
 
-            gift.setImages(list);
+            gift.setImages(imgs);
 
             Gift saved = giftRepository.save(gift);
 
-            return ResponseEntity.ok(saved.getId().toString());
+            return ResponseEntity.ok(saved.getId());
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                    .body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 }
