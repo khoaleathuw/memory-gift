@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/gift")
@@ -19,68 +23,67 @@ public class GiftApiController {
     @Autowired
     private GiftRepository giftRepository;
 
-@PostMapping("/save")
-public ResponseEntity<String> saveGift(
-        @RequestParam("message") String message,
-        @RequestParam(value = "images", required = false) MultipartFile[] images,
-        @RequestParam(value = "audio", required = false) MultipartFile audio
-) {
+    private final String BASE_DIR = "uploads";
 
-    try {
+    @PostMapping("/save")
+    public ResponseEntity<String> saveGift(
+            @RequestParam("message") String message,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "audio", required = false) MultipartFile audio
+    ) {
 
-        Gift gift = new Gift();
-        gift.setMessage(message);
+        try {
 
-        /* ================= AUDIO ================= */
-        if (audio != null && !audio.isEmpty()) {
+            Gift gift = new Gift();
+            gift.setMessage(message);
 
-            String audioName = System.currentTimeMillis() + "_" + audio.getOriginalFilename();
+            /* ================= AUDIO ================= */
+            if (audio != null && !audio.isEmpty()) {
 
-            String audioPath = System.getProperty("user.dir") + "/uploads/audio/";
-            File audioDir = new File(audioPath);
-            if (!audioDir.exists()) audioDir.mkdirs();
+                String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
 
-            File audioFile = new File(audioDir, audioName);
-            audio.transferTo(audioFile);
+                Path audioDir = Paths.get(BASE_DIR, "audio");
+                Files.createDirectories(audioDir);
 
-            gift.setVoiceUrl("/uploads/audio/" + audioName);
-        }
+                Path audioPath = audioDir.resolve(audioName);
+                audio.transferTo(audioPath);
 
-        /* ================= IMAGES ================= */
-        List<GiftImage> list = new ArrayList<>();
-
-        if (images != null) {
-            for (MultipartFile f : images) {
-
-                if (f == null || f.isEmpty()) continue;
-
-                String imgName = System.currentTimeMillis() + "_" + f.getOriginalFilename();
-
-                String imgPath = System.getProperty("user.dir") + "/uploads/images/";
-                File imgDir = new File(imgPath);
-                if (!imgDir.exists()) imgDir.mkdirs();
-
-                File imgFile = new File(imgDir, imgName);
-                f.transferTo(imgFile);
-
-                GiftImage img = new GiftImage();
-                img.setImageUrl("/uploads/images/" + imgName);
-                img.setGift(gift);
-
-                list.add(img);
+                gift.setVoiceUrl("/files/audio/" + audioName);
             }
+
+            /* ================= IMAGES ================= */
+            List<GiftImage> list = new ArrayList<>();
+
+            if (images != null) {
+                for (MultipartFile f : images) {
+
+                    if (f == null || f.isEmpty()) continue;
+
+                    String imgName = UUID.randomUUID() + "_" + f.getOriginalFilename();
+
+                    Path imgDir = Paths.get(BASE_DIR, "images");
+                    Files.createDirectories(imgDir);
+
+                    Path imgPath = imgDir.resolve(imgName);
+                    f.transferTo(imgPath);
+
+                    GiftImage img = new GiftImage();
+                    img.setImageUrl("/files/images/" + imgName);
+                    img.setGift(gift);
+
+                    list.add(img);
+                }
+            }
+
+            gift.setImages(list);
+
+            Gift saved = giftRepository.save(gift);
+
+            return ResponseEntity.ok(saved.getId().toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
         }
-
-        gift.setImages(list);
-
-        /* ================= SAVE DB ================= */
-        Gift saved = giftRepository.save(gift);
-
-        return ResponseEntity.ok(saved.getId().toString());
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body(e.getMessage());
     }
-}
 }

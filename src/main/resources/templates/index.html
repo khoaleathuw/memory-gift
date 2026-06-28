@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <style>
-
 body{
     background:#f5f5f5;
 }
@@ -78,7 +77,6 @@ audio{
     object-fit:cover;
     border-radius:14px;
 }
-
 </style>
 </head>
 
@@ -86,10 +84,10 @@ audio{
 
 <div class="card-box">
 
-<form id="giftForm" enctype="multipart/form-data">
+<form id="giftForm">
 
 <!-- ================= IMAGES ================= -->
-<input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
+<input type="file" id="imageInput" accept="image/*" multiple hidden>
 
 <div class="section-title">
     <h3>Album</h3>
@@ -124,15 +122,13 @@ audio{
 
 <div class="voice">
 
-    <!-- RECORD -->
     <button type="button" id="recordBtn" class="btn btn-danger">
         🎤 Record
     </button>
 
     <span id="recordStatus"></span>
 
-    <!-- UPLOAD -->
-    <input type="file" id="audioInput" accept="audio/*" class="form-control" style="max-width:200px">
+    <input type="file" id="audioInput" accept="audio/*" capture class="form-control" style="max-width:200px">
 
 </div>
 
@@ -159,7 +155,15 @@ const addBox = document.getElementById("addBox");
 let selectedImages = [];
 let audioFile = null;
 
-/* ---------------- ADD IMAGE ---------------- */
+/* ================= AUDIO ================= */
+const audioInput = document.getElementById("audioInput");
+const audioPreview = document.getElementById("audioPreview");
+
+let mediaRecorder;
+let chunks = [];
+let stream = null;
+
+/* ================= IMAGE UPLOAD ================= */
 imageInput.addEventListener("change", function () {
 
     const files = Array.from(this.files);
@@ -199,39 +203,44 @@ imageInput.addEventListener("change", function () {
 });
 
 function removeImage(btn){
+    const items = document.querySelectorAll(".img-item");
+    const index = Array.from(items).indexOf(btn.closest(".img-item"));
+
+    if (index > -1) selectedImages.splice(index, 1);
+
     btn.closest(".img-item").remove();
-    selectedImages.pop();
     updateLayout();
 }
 
 function updateLayout(){
-    if (selectedImages.length >= 6) addBox.style.display = "none";
-    else addBox.style.display = "block";
+    addBox.style.display = selectedImages.length >= 6 ? "none" : "block";
 
-    previewContainer.classList.remove("single-mode");
-
-    if (selectedImages.length === 1) {
-        previewContainer.classList.add("single-mode");
-    }
+    previewContainer.classList.toggle(
+        "single-mode",
+        selectedImages.length === 1
+    );
 }
 
-/* ================= AUDIO UPLOAD ================= */
-const audioInput = document.getElementById("audioInput");
-const audioPreview = document.getElementById("audioPreview");
-
+/* ================= AUDIO INPUT ================= */
 audioInput.addEventListener("change", function () {
     if (this.files.length > 0) {
         audioFile = this.files[0];
         audioPreview.src = URL.createObjectURL(audioFile);
+
+        stopStream();
     }
 });
 
-/* ================= AUDIO RECORD ================= */
-let mediaRecorder;
-let chunks = [];
-
+/* ================= RECORD ================= */
 const recordBtn = document.getElementById("recordBtn");
 const recordStatus = document.getElementById("recordStatus");
+
+function stopStream(){
+    if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+    }
+}
 
 recordBtn.addEventListener("click", async () => {
 
@@ -242,36 +251,47 @@ recordBtn.addEventListener("click", async () => {
         return;
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    mediaRecorder = new MediaRecorder(stream);
-    chunks = [];
+        mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.ondataavailable = e => {
-        chunks.push(e.data);
-    };
+        chunks = [];
 
-    mediaRecorder.onstop = () => {
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const file = new File([blob], "voice.webm", { type: "audio/webm" });
+        mediaRecorder.onstop = () => {
 
-        audioFile = file;
-        audioPreview.src = URL.createObjectURL(file);
-    };
+            const blob = new Blob(chunks, { type: "audio/webm" });
 
-    mediaRecorder.start();
+            audioFile = new File([blob], "voice.webm", {
+                type: "audio/webm"
+            });
 
-    recordBtn.innerText = "⏹ Stop";
-    recordStatus.innerText = "Recording...";
+            audioPreview.src = URL.createObjectURL(audioFile);
+
+            stopStream();
+        };
+
+        mediaRecorder.start();
+
+        recordBtn.innerText = "⏹ Stop";
+        recordStatus.innerText = "Recording...";
+
+    } catch (err) {
+        alert("Mic error: " + err.message);
+    }
 });
 
 /* ================= SUBMIT ================= */
 document.getElementById("giftForm").addEventListener("submit", function(e){
-
     e.preventDefault();
 
-    const formData = new FormData(this);
+    const formData = new FormData();
+
+    formData.append("message",
+        document.querySelector("textarea[name='message']").value
+    );
 
     selectedImages.forEach(file => {
         formData.append("images", file);
@@ -285,18 +305,14 @@ document.getElementById("giftForm").addEventListener("submit", function(e){
         method: "POST",
         body: formData
     })
-    .then(res => {
-        if (!res.ok) throw new Error("fail");
-        return res.text();
-    })
+    .then(res => res.text())
     .then(id => {
         window.location.href = "/gift/view/" + id;
     })
     .catch(err => {
-        alert("Save failed!");
         console.log(err);
+        alert("Save failed!");
     });
-
 });
 
 </script>
