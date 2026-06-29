@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,72 +10,106 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" th:href="@{/css/index.css}">
 
+
+
 </head>
 
 <body>
 
-<div class="card-box">
+<!-- TOP BAR -->
+<div class="ig-topbar">
+    <button class="ig-back" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+    <span class="ig-title">New post</span>
+    <button class="ig-share-top" type="submit" form="giftForm">Share</button>
+</div>
 
 <form id="giftForm" enctype="multipart/form-data">
 
-<!-- IMAGE -->
-<input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
-
-<div class="section-title"><h3>Album</h3></div>
-
-<div class="row g-3" id="previewContainer">
-    <div class="col-4" id="addBox">
-        <div class="image-box" onclick="imageInput.click()">
-            <div>
-                <i class="bi bi-plus-lg fs-1"></i>
-                <div style="font-size:12px;">Thêm ảnh</div>
-            </div>
+    <!-- AVATAR ROW -->
+    <div class="ig-avatar-row">
+        <div class="ig-avatar-ring">
+            <div class="ig-avatar-inner">Y</div>
+        </div>
+        <div>
+            <div class="ig-username">your_username</div>
+            <div class="ig-sublabel">Memory capsule</div>
         </div>
     </div>
-</div>
 
-<!-- TEXT -->
-<div class="section-title mt-4"><h3>Message</h3></div>
-<textarea class="form-control" name="message" rows="5"></textarea>
+    <!-- IMAGE GRID -->
+    <input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
 
-<hr>
+    <div id="previewContainer">
+        <div id="addBox" onclick="imageInput.click()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add photo</span>
+        </div>
+    </div>
 
-<!-- AUDIO -->
-<div class="section-title">
-    <h3>Voice</h3>
-</div>
+    <div class="ig-divider"></div>
 
-<div class="voice">
+    <!-- CAPTION -->
+    <div class="ig-caption-wrap">
+        <div class="ig-avatar-ring" style="width:32px;height:32px;flex-shrink:0">
+            <div class="ig-avatar-inner" style="font-size:11px">Y</div>
+        </div>
+        <textarea name="message" placeholder="Write a caption…" maxlength="2200" oninput="updateCount(this)"></textarea>
+    </div>
+    <div class="ig-charcount"><span id="cCount">0</span> / 2,200</div>
 
-    <!-- RECORD -->
-    <button type="button" id="recordBtn" class="btn btn-danger">
-        🎤 Record
+    <div class="ig-divider"></div>
+
+    <!-- VOICE -->
+    <div class="ig-label">Voice note</div>
+
+    <div class="voice">
+        <button type="button" id="recordBtn">
+            <i class="bi bi-mic"></i>
+            <span id="recordLabel">Record</span>
+        </button>
+
+        <span id="recordStatus"></span>
+
+        <label class="ig-file-label" for="audioInput">
+            <i class="bi bi-upload"></i> Upload
+        </label>
+
+        <input
+            type="file"
+            id="audioInput"
+            name="audio"
+            accept="audio/*"
+        >
+    </div>
+
+    <audio id="audioPreview" controls></audio>
+
+    <div class="ig-divider"></div>
+
+    <!-- EXTRA IG ROWS -->
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-person-plus"></i> Tag people</span>
+        <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-geo-alt"></i> Add location</span>
+        <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-people"></i> Audience</span>
+        <span class="ig-row-right">Everyone <i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+
+    <!-- SHARE BUTTON -->
+    <button type="submit" class="ig-share-btn" id="shareBtn">
+        <i class="bi bi-send" id="shareIco"></i>
+        <span id="shareLbl">Share</span>
     </button>
 
-    <span id="recordStatus"></span>
-
-    <!-- UPLOAD FILE -->
-    <input 
-        type="file" 
-        id="audioInput" 
-        name="audio"
-        accept="audio/*"
-        class="form-control"
-        style="max-width:200px"
-    >
-
-</div>
-
-<audio id="audioPreview" controls></audio>
-
-<!-- SAVE -->
-<div class="text-center mt-4">
-    <button class="btn btn-success">Save</button>
-</div>
-
 </form>
-
-</div>
 
 <script>
 
@@ -90,75 +125,70 @@ const previewContainer = document.getElementById("previewContainer");
 const addBox = document.getElementById("addBox");
 
 imageInput.addEventListener("change", function () {
-
     Array.from(this.files).forEach(file => {
-
-        if (selectedImages.length >= 6) return;
-
+        if (selectedImages.length >= 9) return;
         selectedImages.push(file);
-
         const reader = new FileReader();
-
         reader.onload = e => {
-            const div = document.createElement("div");
-            div.className = "col-4 img-item";
-
-            div.innerHTML = `
-                <div style="position:relative">
-                    <img src="${e.target.result}">
-                    <button type="button"
-                        onclick="removeImage(this)"
-                        class="btn btn-danger btn-sm position-absolute top-0 end-0">X</button>
-                </div>
+            const wrap = document.createElement("div");
+            wrap.className = "img-item-wrap img-item";
+            wrap.innerHTML = `
+                <img src="${e.target.result}" alt="">
+                <button type="button" class="btn-remove" onclick="removeImage(this)">
+                    <i class="bi bi-x"></i>
+                </button>
             `;
-
-            previewContainer.insertBefore(div, addBox);
+            previewContainer.insertBefore(wrap, addBox);
             updateLayout();
         };
-
         reader.readAsDataURL(file);
     });
-
     this.value = "";
 });
 
-function removeImage(btn){
+function removeImage(btn) {
     const items = document.querySelectorAll(".img-item");
     const index = Array.from(items).indexOf(btn.closest(".img-item"));
-
-    if(index > -1) selectedImages.splice(index,1);
-
+    if (index > -1) selectedImages.splice(index, 1);
     btn.closest(".img-item").remove();
     updateLayout();
 }
 
-function updateLayout(){
-    addBox.style.display = selectedImages.length >= 6 ? "none" : "block";
-    previewContainer.classList.toggle("single-mode", selectedImages.length === 1);
+function updateLayout() {
+    addBox.style.display = selectedImages.length >= 9 ? "none" : "flex";
+}
+
+// ================= CAPTION COUNT =================
+function updateCount(el) {
+    document.getElementById("cCount").textContent = el.value.length;
 }
 
 // ================= AUDIO UPLOAD =================
 const audioInput = document.getElementById("audioInput");
 const audioPreview = document.getElementById("audioPreview");
 
-audioInput.addEventListener("change", function(){
-    if(this.files.length){
+audioInput.addEventListener("change", function () {
+    if (this.files.length) {
         audioFile = this.files[0];
         audioPreview.src = URL.createObjectURL(audioFile);
+        audioPreview.style.display = "block";
         stopMic();
     }
 });
 
 // ================= RECORD =================
-function stopMic(){
-    if(stream){
+function stopMic() {
+    if (stream) {
         stream.getTracks().forEach(t => t.stop());
         stream = null;
     }
 }
 
-document.getElementById("recordBtn").addEventListener("click", async () => {
+const recordBtn = document.getElementById("recordBtn");
+const recordLabel = document.getElementById("recordLabel");
+const recordStatus = document.getElementById("recordStatus");
 
+recordBtn.addEventListener("click", async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
         alert("Mic not supported");
         return;
@@ -166,80 +196,80 @@ document.getElementById("recordBtn").addEventListener("click", async () => {
 
     if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
-        document.getElementById("recordBtn").innerText = "🎤 Record";
-        document.getElementById("recordStatus").innerText = "Stopped";
+        recordBtn.classList.remove("recording");
+        recordLabel.textContent = "Record";
+        recordBtn.querySelector(".bi").className = "bi bi-mic";
+        recordStatus.textContent = "Done";
+        recordStatus.className = "";
         return;
     }
 
     try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
         mediaRecorder = new MediaRecorder(stream);
         chunks = [];
 
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
         mediaRecorder.onstop = () => {
-
-            const mimeType = MediaRecorder.isTypeSupported("audio/webm")
-                ? "audio/webm"
-                : "audio/mp4";
-
+            const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
             const blob = new Blob(chunks, { type: mimeType });
-
             audioFile = new File([blob], "voice.webm", { type: mimeType });
-
             audioPreview.src = URL.createObjectURL(audioFile);
-
+            audioPreview.style.display = "block";
             stopMic();
         };
 
         mediaRecorder.start();
-
-        document.getElementById("recordBtn").innerText = "⏹ Stop";
-        document.getElementById("recordStatus").innerText = "Recording...";
+        recordBtn.classList.add("recording");
+        recordLabel.textContent = "Stop";
+        recordBtn.querySelector(".bi").className = "bi bi-stop-fill";
+        recordStatus.textContent = "Recording…";
+        recordStatus.className = "active";
 
     } catch (err) {
         alert(err.message);
     }
 });
 
-// ================= SUBMIT FIXED =================
+// ================= SUBMIT =================
 document.getElementById("giftForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const btn = document.getElementById("shareBtn");
+    btn.disabled = true;
+    document.getElementById("shareLbl").textContent = "Sharing…";
+
     const formData = new FormData();
-
-    formData.append("message",
-        document.querySelector("textarea[name='message']").value
-    );
-
+    formData.append("message", document.querySelector("textarea[name='message']").value);
     selectedImages.forEach(i => formData.append("images", i));
-
-    if(audioFile){
-        formData.append("audio", audioFile);
-    }
+    if (audioFile) formData.append("audio", audioFile);
 
     const url = window.location.origin + "/api/gift/save";
 
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            body: formData
-        });
+        const res = await fetch(url, { method: "POST", body: formData });
 
         if (!res.ok) {
             const err = await res.text();
             alert("ERROR: " + err);
+            btn.disabled = false;
+            document.getElementById("shareLbl").textContent = "Share";
             return;
         }
 
+        btn.classList.add("done");
+        document.getElementById("shareLbl").textContent = "Posted!";
+        document.getElementById("shareIco").className = "bi bi-check-lg";
+
         const id = await res.text();
-        window.location.href = "/gift/view/" + id;
+        setTimeout(() => { window.location.href = "/gift/view/" + id; }, 800);
 
     } catch (err) {
         alert("Network error");
         console.log(err);
+        btn.disabled = false;
+        document.getElementById("shareLbl").textContent = "Share";
     }
 });
 

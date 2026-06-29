@@ -1,374 +1,245 @@
-/* ================= BASE ================= */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
-    padding: 20px;
+    background: #000;
     min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #fff;
 }
 
-/* ================= CARD ================= */
-.card-box {
-    max-width: 700px;
-    margin: 40px auto;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 2rem 2.25rem;
-    border: 1px solid #e8eaf0;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
-/* ================= CARD HEADER ================= */
-.card-header {
+/* ── TOP BAR ── */
+.ig-topbar {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding-bottom: 1.25rem;
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid #f0f2f5;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 0.5px solid #262626;
+    position: sticky;
+    top: 0;
+    background: #000;
+    z-index: 10;
 }
+.ig-topbar .ig-back { font-size: 22px; color: #fff; cursor: pointer; line-height: 1; background: none; border: none; }
+.ig-topbar .ig-title { font-size: 16px; font-weight: 700; letter-spacing: 0.2px; }
+.ig-topbar .ig-share-top { font-size: 14px; font-weight: 700; color: #0095f6; cursor: pointer; background: none; border: none; }
+.ig-topbar .ig-share-top:hover { color: #1aa3ff; }
 
-.card-header-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    background: #eff0ff;
+/* ── AVATAR ROW ── */
+.ig-avatar-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 20px;
+    gap: 10px;
+    padding: 14px 16px 10px;
+}
+.ig-avatar-ring {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    padding: 2px;
     flex-shrink: 0;
-    color: #5b5fcf;
 }
-
-.card-header h2 {
-    font-size: 17px;
-    font-weight: 600;
-    color: #1a1a2e;
+.ig-avatar-inner {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
 }
+.ig-username { font-size: 13px; font-weight: 700; }
+.ig-sublabel { font-size: 11px; color: #a8a8a8; margin-top: 1px; }
 
-.card-header p {
-    font-size: 13px;
-    color: #8a8fa8;
-    margin-top: 2px;
-}
-
-/* ================= SECTION LABELS ================= */
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #8a8fa8;
-    margin: 1.5rem 0 0.75rem;
-}
-
-.section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #f0f2f5;
-}
-
-.section-title i {
-    font-size: 14px;
-}
-
-/* ================= PHOTO GRID ================= */
-.photo-grid {
+/* ── PHOTO GRID ── */
+#previewContainer {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 2px;
+    background: #000;
+    margin: 0;
 }
 
-.image-box {
-    border: 1.5px dashed #d1d5e8;
-    border-radius: 12px;
-    height: 120px;
+/* Add box */
+#addBox {
+    aspect-ratio: 1;
+    background: #111;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: #8a8fa8;
     cursor: pointer;
-    background: #fafbff;
-    font-size: 12px;
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    color: #555;
+    font-size: 11px;
+    transition: background 0.15s;
 }
+#addBox:hover { background: #1a1a1a; color: #888; }
+#addBox .bi { font-size: 28px; }
+/* hide bootstrap col classes inside grid */
+#previewContainer > .col-4 { all: unset; display: contents; }
 
-.image-box i {
-    font-size: 22px;
-}
-
-.image-box:hover {
-    border-color: #5b5fcf;
-    background: #eff0ff;
-    color: #5b5fcf;
-}
-
-.img-item {
+/* Image items */
+.img-item-wrap {
+    aspect-ratio: 1;
     position: relative;
-    border-radius: 12px;
     overflow: hidden;
-    height: 120px;
+    background: #111;
 }
-
-.img-item img {
-    width: 100%;
-    height: 100%;
+.img-item-wrap img {
+    width: 100%; height: 100%;
     object-fit: cover;
     display: block;
     transition: transform 0.25s ease;
 }
-
-.img-item:hover img {
-    transform: scale(1.04);
-}
-
-.img-item .btn-remove {
+.img-item-wrap:hover img { transform: scale(1.04); }
+.img-item-wrap .btn-remove {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
+    top: 6px; right: 6px;
+    width: 24px; height: 24px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0,0,0,0.65);
     border: none;
-    color: #ffffff;
-    font-size: 12px;
+    color: #fff;
+    font-size: 11px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     opacity: 0;
-    transform: translateY(-4px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-    backdrop-filter: blur(4px);
+    transition: opacity 0.15s;
+    padding: 0;
 }
+.img-item-wrap:hover .btn-remove { opacity: 1; }
 
-.img-item:hover .btn-remove {
-    opacity: 1;
-    transform: translateY(0);
+/* ── DIVIDER ── */
+.ig-divider { height: 0.5px; background: #262626; margin: 0; }
+
+/* ── CAPTION ── */
+.ig-caption-wrap {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    align-items: flex-start;
 }
-
-.img-item .btn-remove:hover {
-    background: rgba(220, 38, 38, 0.85);
-}
-
-/* ================= MESSAGE TEXTAREA ================= */
-.form-control {
-    width: 100%;
-    resize: vertical;
-    min-height: 100px;
-    border: 1px solid #e2e5f0;
-    border-radius: 10px;
-    padding: 12px 14px;
+.ig-caption-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
     font-size: 14px;
     font-family: inherit;
-    background: #fafbff;
-    color: #1a1a2e;
-    outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.6;
+}
+.ig-caption-wrap textarea::placeholder { color: #555; }
+.ig-charcount { font-size: 11px; color: #555; text-align: right; padding: 0 16px 10px; }
+
+/* ── SECTION LABEL ── */
+.ig-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #a8a8a8;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    padding: 12px 16px 6px;
 }
 
-.form-control:focus {
-    border-color: #5b5fcf;
-    box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.12);
-    background: #ffffff;
-}
-
-.form-control::placeholder {
-    color: #b0b5cc;
-}
-
-.char-count {
-    font-size: 12px;
-    color: #b0b5cc;
-    text-align: right;
-    margin-top: 5px;
-}
-
-/* ================= MOOD TAGS ================= */
-.tag-row {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
-
-.tag {
-    background: #fafbff;
-    border: 1px solid #e2e5f0;
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 12px;
-    color: #5a6080;
-    cursor: pointer;
-    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-    user-select: none;
-}
-
-.tag:hover {
-    background: #eff0ff;
-    border-color: #c2c4f0;
-    color: #5b5fcf;
-}
-
-.tag.active {
-    background: #eff0ff;
-    border-color: #5b5fcf;
-    color: #5b5fcf;
-    font-weight: 600;
-}
-
-/* ================= VOICE RECORDER ================= */
+/* ── VOICE ROW ── */
 .voice {
     display: flex;
     align-items: center;
     gap: 10px;
+    padding: 10px 16px 14px;
     flex-wrap: wrap;
 }
 
 #recordBtn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: 1px solid #c2c4f0;
-    background: #eff0ff;
-    color: #5b5fcf;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 8px 16px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
+    color: #fff;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    transition: border-color 0.15s, color 0.15s;
 }
-
-#recordBtn i {
-    font-size: 16px;
-}
-
-#recordBtn:hover {
-    background: #e2e4fd;
-    border-color: #5b5fcf;
-}
-
+#recordBtn:hover { border-color: #555; }
 #recordBtn.recording {
-    background: #fff0f0;
-    border-color: #fca5a5;
-    color: #dc2626;
+    border-color: #e02020;
+    color: #e02020;
     animation: rpulse 1.5s ease infinite;
 }
-
-@keyframes rpulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.65; }
-}
+@keyframes rpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
 #recordStatus {
-    font-size: 13px;
-    color: #b0b5cc;
-    min-width: 80px;
-}
-
-#recordStatus.active {
-    color: #dc2626;
-    font-weight: 600;
-}
-
-.or-divider {
     font-size: 12px;
-    color: #b0b5cc;
+    color: #555;
 }
+#recordStatus.active { color: #e02020; }
 
-.file-label {
+.ig-file-label {
     display: flex;
     align-items: center;
     gap: 6px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 8px 16px;
     font-size: 13px;
-    color: #5a6080;
-    border: 1px solid #e2e5f0;
-    padding: 8px 14px;
-    border-radius: 8px;
+    color: #a8a8a8;
     cursor: pointer;
-    background: #fafbff;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: border-color 0.15s, color 0.15s;
 }
+.ig-file-label:hover { border-color: #555; color: #fff; }
 
-.file-label:hover {
-    background: #f0f2f5;
-    border-color: #c8cce0;
-}
+#audioInput { display: none !important; }
 
-.file-label i {
-    font-size: 16px;
-}
-
-audio {
-    width: 100%;
+#audioPreview {
+    width: calc(100% - 32px);
+    margin: 0 16px 14px;
     border-radius: 8px;
-    margin-top: 10px;
-    display: block;
+    display: none;
+    filter: invert(1) hue-rotate(180deg);
 }
 
-/* ================= DIVIDER ================= */
-hr {
-    border: none;
-    border-top: 1px dashed #e2e5f0;
-    margin: 1.75rem 0;
-}
-
-/* ================= SAVE BUTTON ================= */
-.save-row {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid #f0f2f5;
-}
-
-.btn-success {
+/* ── EXTRA ROWS ── */
+.ig-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: #10b981;
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 11px 28px;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
     font-size: 14px;
-    font-weight: 600;
+}
+.ig-row:hover { background: #0a0a0a; }
+.ig-row-left { display: flex; align-items: center; gap: 12px; color: #fff; }
+.ig-row-left .bi { font-size: 20px; }
+.ig-row-right { display: flex; align-items: center; gap: 6px; color: #a8a8a8; font-size: 13px; }
+.ig-row-right .bi { font-size: 15px; }
+
+/* ── SHARE BUTTON ── */
+.ig-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 32px);
+    margin: 16px;
+    background: #0095f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    transition: background 0.15s;
 }
-
-.btn-success:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
-.btn-success:active {
-    transform: scale(0.98);
-}
-
-.btn-success i {
-    font-size: 16px;
-}
-
-.btn-success.saved {
-    background: #059669;
-}
+.ig-share-btn:hover { background: #1aa3ff; }
+.ig-share-btn.done { background: #1d9c5f; }
