@@ -1,14 +1,11 @@
 package com.example.demo.repository;
 
+import com.example.demo.entity.NfcTag;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.example.demo.entity.NfcTag;
-
-@Repository
-public interface NfcTagRepository extends JpaRepository<NfcTag, Integer> {
+public interface NfcTagRepository extends JpaRepository<NfcTag, Long> {
 
     Optional<NfcTag> findByUid(String uid);
 
