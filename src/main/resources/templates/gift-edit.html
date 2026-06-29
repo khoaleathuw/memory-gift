@@ -1,222 +1,617 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Edit Gift</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" th:href="@{/css/gift-edit.css}">
-   
+<meta charset="UTF-8">
+<title>Edit Gift</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" th:href="@{/css/gift-edit.css}">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: #000;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #fff;
+    padding-bottom: 80px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* ── TOPBAR ── */
+.ig-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-bottom: 0.5px solid #262626;
+    position: sticky;
+    top: 0;
+    background: #000;
+    z-index: 10;
+}
+.ig-topbar button, .ig-topbar a {
+    font-size: 14px; font-weight: 700;
+    background: none; border: none; cursor: pointer;
+    font-family: inherit; padding: 0; text-decoration: none;
+}
+.ig-topbar .ig-cancel { color: #fff; font-size: 22px; }
+.ig-topbar .ig-title { font-size: 16px; font-weight: 700; color: #fff; }
+.ig-topbar .ig-done { color: #0095f6; }
+.ig-topbar .ig-done:hover { color: #1aa3ff; }
+
+/* ── PROFILE ROW ── */
+.ig-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px 10px;
+}
+.ig-avatar-ring {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    padding: 2px; flex-shrink: 0;
+}
+.ig-avatar-inner {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+}
+.ig-username { font-size: 13px; font-weight: 700; }
+.ig-sublabel { font-size: 11px; color: #a8a8a8; margin-top: 2px; }
+
+/* ── PHOTO GRID ── */
+.ig-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+}
+.ig-add-slot {
+    aspect-ratio: 1;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #555;
+    font-size: 11px;
+    transition: background 0.15s, color 0.15s;
+}
+.ig-add-slot:hover { background: #1a1a1a; color: #888; }
+.ig-add-slot .bi { font-size: 26px; }
+.ig-photo-item {
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+}
+.ig-photo-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s;
+}
+.ig-photo-item:hover img { transform: scale(1.04); }
+.ig-photo-item .del-btn {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    border: none; color: #fff;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+    backdrop-filter: blur(4px);
+}
+.ig-photo-item:hover .del-btn { opacity: 1; }
+
+/* ── DIVIDER ── */
+.ig-divider { height: 0.5px; background: #262626; }
+
+/* ── CAPTION / TEXTAREA ── */
+.ig-caption-wrap {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    align-items: flex-start;
+}
+.ig-caption-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: none; outline: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.6;
+}
+.ig-caption-wrap textarea::placeholder { color: #555; }
+.ig-charcount {
+    font-size: 11px; color: #555;
+    text-align: right; padding: 0 16px 10px;
+}
+
+/* ── SECTION LABEL ── */
+.ig-label {
+    font-size: 11px; font-weight: 700;
+    color: #a8a8a8; text-transform: uppercase;
+    letter-spacing: 0.7px;
+    padding: 12px 16px 6px;
+}
+
+/* ── EXISTING AUDIO ── */
+.ig-existing-audio {
+    margin: 0 16px 10px;
+    background: #111;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ig-existing-audio .ig-play-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%; background: #fff;
+    border: none; color: #000;
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.1s;
+}
+.ig-existing-audio .ig-play-btn:active { transform: scale(0.9); }
+.ig-existing-audio .ig-audio-right { flex: 1; }
+.ig-audio-progress {
+    width: 100%; height: 3px;
+    background: #333; border-radius: 2px;
+    cursor: pointer; margin-bottom: 5px;
+}
+.ig-audio-bar {
+    height: 100%; background: #fff;
+    border-radius: 2px; width: 0%;
+    transition: width 0.1s linear;
+    pointer-events: none;
+}
+.ig-audio-times {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: #a8a8a8;
+}
+.ig-remove-audio {
+    background: none; border: none;
+    color: #a8a8a8; font-size: 18px;
+    cursor: pointer; padding: 4px;
+    transition: color 0.15s;
+}
+.ig-remove-audio:hover { color: #ed4956; }
+audio#hiddenOldAudio, audio#audioPreview { display: none; }
+
+/* ── VOICE ROW ── */
+.ig-voice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 14px;
+    flex-wrap: wrap;
+}
+.ig-rec-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent;
+    border: 1px solid #333; border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px; font-weight: 700;
+    color: #fff; cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+.ig-rec-btn:hover { border-color: #555; }
+.ig-rec-btn.recording { border-color: #e02020; color: #e02020; animation: rpulse 1.5s ease infinite; }
+@keyframes rpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.ig-upload-label {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent;
+    border: 1px solid #333; border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px; color: #a8a8a8;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+.ig-upload-label:hover { border-color: #555; color: #fff; }
+#recStatus { font-size: 12px; color: #555; }
+#recStatus.active { color: #e02020; }
+
+/* ── NEW AUDIO PREVIEW ── */
+.ig-new-audio {
+    margin: 0 16px 14px;
+    background: #111; border-radius: 12px;
+    padding: 12px 14px;
+    display: none;
+    align-items: center; gap: 12px;
+}
+.ig-new-audio .ig-play-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%; background: #fff;
+    border: none; color: #000;
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── IG ROWS ── */
+.ig-row {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px; cursor: pointer;
+    font-size: 14px;
+    transition: background 0.1s;
+}
+.ig-row:hover { background: #0a0a0a; }
+.ig-row-left { display: flex; align-items: center; gap: 12px; }
+.ig-row-left .bi { font-size: 20px; }
+.ig-row-right { color: #a8a8a8; font-size: 20px; }
+
+/* ── BOTTOM SAVE ── */
+.ig-bottom-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #000;
+    border-top: 0.5px solid #262626;
+    padding: 10px 16px 16px;
+    z-index: 10;
+}
+.ig-save-btn {
+    width: 100%;
+    background: #0095f6; color: #fff;
+    border: none; border-radius: 8px;
+    padding: 13px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ig-save-btn:hover { background: #1aa3ff; }
+.ig-save-btn.saving { background: #333; }
+.ig-save-btn.done { background: #1d9c5f; }
+</style>
 </head>
 <body>
 
-<div class="card-box">
-    <h2>Edit Gift</h2>
+<!-- TOPBAR -->
+<div class="ig-topbar">
+    <button class="ig-cancel" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
+    <span class="ig-title">Edit post</span>
+    <button class="ig-done" form="giftForm" type="submit">Done</button>
+</div>
 
-    <form id="giftForm">
-        <input type="hidden" id="giftId" th:value="${gift.id}">
+<form id="giftForm">
+<input type="hidden" id="giftId" th:value="${gift.id}">
 
-        <div class="section-title">Message</div>
-        <textarea id="message" class="form-control" rows="5" th:text="${gift.message}"></textarea>
+<!-- PROFILE ROW -->
+<div class="ig-profile">
+    <div class="ig-avatar-ring"><div class="ig-avatar-inner">Y</div></div>
+    <div>
+        <div class="ig-username">your_username</div>
+        <div class="ig-sublabel">Memory capsule</div>
+    </div>
+</div>
 
-        <div class="section-title">Images</div>
-        <input type="file" multiple accept="image/*" id="imageInput" class="form-control">
-
-        <div class="row mt-3 g-3" id="previewContainer">
-            <div class="col-4 img-item" th:each="img : ${gift.images}">
-                <img th:src="@{${img.imageUrl}}">
-                <button type="button" class="btn btn-danger btn-sm remove-btn old-image" th:data-url="${img.imageUrl}">
-                    X
-                </button>
-            </div>
-        </div>
-
-        <div class="section-title">Voice</div>
-        
-        <div id="oldAudioBox">
-            <div th:if="${gift.voiceUrl != null && gift.voiceUrl != ''}">
-                <audio controls>
-                    <source th:src="@{${gift.voiceUrl}}">
-                </audio>
-                <button type="button" id="removeOldAudio" class="btn btn-danger mt-2">
-                    Remove Audio
-                </button>
-            </div>
-        </div>
-
-        <hr>
-
-        <input type="file" accept="audio/*" id="audioInput" class="form-control">
-
-        <button type="button" id="recordBtn" class="btn btn-primary mt-3">
-            🎤 Record
+<!-- PHOTO GRID -->
+<input type="file" id="imageInput" accept="image/*" multiple hidden>
+<div class="ig-photo-grid" id="previewContainer">
+    <div class="ig-photo-item" th:each="img : ${gift.images}">
+        <img th:src="@{${img.imageUrl}}" alt="">
+        <button type="button" class="del-btn old-image" th:data-url="${img.imageUrl}">
+            <i class="bi bi-x"></i>
         </button>
+    </div>
+    <div class="ig-add-slot" id="addSlot" onclick="imageInput.click()">
+        <i class="bi bi-plus-lg"></i>
+        <span>Add photo</span>
+    </div>
+</div>
 
-        <div class="mt-3">
-            <audio id="audioPreview" controls></audio>
+<div class="ig-divider"></div>
+
+<!-- CAPTION -->
+<div class="ig-caption-wrap">
+    <div class="ig-avatar-ring" style="width:32px;height:32px;flex-shrink:0">
+        <div class="ig-avatar-inner" style="font-size:11px">Y</div>
+    </div>
+    <textarea id="message" placeholder="Write a caption…" maxlength="2200"
+              th:text="${gift.message}" oninput="updateCount(this)"></textarea>
+</div>
+<div class="ig-charcount"><span id="cCount">0</span> / 2,200</div>
+
+<div class="ig-divider"></div>
+
+<!-- EXISTING AUDIO -->
+<div id="oldAudioBox" th:if="${gift.voiceUrl != null && gift.voiceUrl != ''}">
+    <div class="ig-label">Current voice note</div>
+    <div class="ig-existing-audio">
+        <button type="button" class="ig-play-btn" id="oldPlayBtn" onclick="toggleOldAudio()">
+            <i class="bi bi-play-fill" id="oldPlayIco"></i>
+        </button>
+        <div class="ig-audio-right">
+            <div class="ig-audio-progress" id="oldProgressBar" onclick="seekOld(event)">
+                <div class="ig-audio-bar" id="oldBar"></div>
+            </div>
+            <div class="ig-audio-times">
+                <span id="oldCur">0:00</span>
+                <span id="oldDur">0:00</span>
+            </div>
         </div>
+        <button type="button" class="ig-remove-audio" onclick="doRemoveOldAudio()" aria-label="Remove">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+    <audio id="hiddenOldAudio"><source th:src="@{${gift.voiceUrl}}"></audio>
+</div>
 
-        <hr>
+<!-- NEW VOICE -->
+<div class="ig-label">Voice note</div>
+<div class="ig-voice-row">
+    <button type="button" class="ig-rec-btn" id="recordBtn" onclick="toggleRecord()">
+        <i class="bi bi-mic" id="recIco"></i>
+        <span id="recLabel">Record</span>
+    </button>
+    <span id="recStatus"></span>
+    <label class="ig-upload-label" for="audioInput">
+        <i class="bi bi-upload"></i> Upload
+    </label>
+    <input type="file" id="audioInput" accept="audio/*" hidden>
+</div>
 
-        <button type="submit" class="btn btn-success w-100">Save</button>
-    </form>
+<!-- NEW AUDIO PREVIEW -->
+<div class="ig-new-audio" id="newAudioWrap">
+    <button type="button" class="ig-play-btn" id="newPlayBtn" onclick="toggleNewAudio()">
+        <i class="bi bi-play-fill" id="newPlayIco"></i>
+    </button>
+    <div class="ig-audio-right">
+        <div class="ig-audio-progress" id="newProgressBar" onclick="seekNew(event)">
+            <div class="ig-audio-bar" id="newBar"></div>
+        </div>
+        <div class="ig-audio-times">
+            <span id="newCur">0:00</span>
+            <span id="newDur">0:00</span>
+        </div>
+    </div>
+</div>
+<audio id="audioPreview"></audio>
+
+<div class="ig-divider"></div>
+
+<div class="ig-row">
+    <span class="ig-row-left"><i class="bi bi-person-plus"></i> Tag people</span>
+    <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+</div>
+<div class="ig-divider"></div>
+<div class="ig-row">
+    <span class="ig-row-left"><i class="bi bi-geo-alt"></i> Add location</span>
+    <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+</div>
+<div class="ig-divider"></div>
+
+</form>
+
+<!-- BOTTOM BAR -->
+<div class="ig-bottom-bar">
+    <button class="ig-save-btn" id="saveBtn" onclick="submitForm()">
+        <i class="bi bi-check-lg" id="saveIco"></i>
+        <span id="saveLbl">Save changes</span>
+    </button>
 </div>
 
 <script>
-    const giftId = document.getElementById("giftId").value;
-    const previewContainer = document.getElementById("previewContainer");
-    const audioPreview = document.getElementById("audioPreview");
-    const oldAudioBox = document.getElementById("oldAudioBox");
+const giftId = document.getElementById("giftId").value;
+const previewContainer = document.getElementById("previewContainer");
+const addSlot = document.getElementById("addSlot");
 
-    let newImages = [];
-    let deletedImages = [];
-    let newAudio = null;
-    let removeOldAudio = false;
+let newImages = [];
+let deletedImages = [];
+let newAudio = null;
+let removeOldAudio = false;
 
-    /* ================= XÓA ẢNH CŨ ================= */
-    document.querySelectorAll(".old-image").forEach(btn => {
-        btn.onclick = () => {
-            deletedImages.push(btn.dataset.url);
-            btn.parentElement.remove();
-        };
-    });
+/* ── CHAR COUNT ── */
+function updateCount(el){
+    document.getElementById("cCount").textContent = el.value.length;
+}
+const msgEl = document.getElementById("message");
+if(msgEl) document.getElementById("cCount").textContent = msgEl.value.length;
 
-    /* ================= THÊM ẢNH MỚI ================= */
-    document.getElementById("imageInput").addEventListener("change", function() {
-        Array.from(this.files).forEach(file => {
-            newImages.push(file);
+/* ── DELETE OLD IMAGES ── */
+document.querySelectorAll(".old-image").forEach(btn => {
+    btn.onclick = () => {
+        deletedImages.push(btn.dataset.url);
+        btn.closest(".ig-photo-item").remove();
+        updateAddSlot();
+    };
+});
 
-            const reader = new FileReader();
-            reader.onload = e => {
-                const div = document.createElement("div");
-                div.className = "col-4 img-item";
-                div.innerHTML = `
-                    <img src="${e.target.result}">
-                    <button type="button" class="btn btn-danger btn-sm remove-btn">X</button>
-                `;
-
-                div.querySelector("button").onclick = () => {
-                    const index = newImages.indexOf(file);
-                    if (index > -1) newImages.splice(index, 1);
-                    div.remove();
-                };
-
-                previewContainer.appendChild(div);
+/* ── ADD NEW IMAGES ── */
+document.getElementById("imageInput").addEventListener("change", function(){
+    Array.from(this.files).forEach(file => {
+        newImages.push(file);
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement("div");
+            div.className = "ig-photo-item";
+            div.innerHTML = `<img src="${e.target.result}" alt=""><button type="button" class="del-btn"><i class="bi bi-x"></i></button>`;
+            div.querySelector("button").onclick = () => {
+                const i = newImages.indexOf(file);
+                if(i > -1) newImages.splice(i,1);
+                div.remove();
+                updateAddSlot();
             };
-            reader.readAsDataURL(file);
-        });
-    });
-
-    /* ================= UPLOAD AUDIO ================= */
-    document.getElementById("audioInput").addEventListener("change", function() {
-        if (this.files.length) {
-            newAudio = this.files[0];
-            audioPreview.src = URL.createObjectURL(newAudio);
-            
-            // Nếu upload file mới, tự động ẩn file ghi âm cũ đi
-            if (oldAudioBox) {
-                removeOldAudio = true;
-                oldAudioBox.style.display = "none";
-            }
-        }
-    });
-
-    /* ================= XÓA AUDIO CŨ ================= */
-    const removeBtn = document.getElementById("removeOldAudio");
-    if (removeBtn) {
-        removeBtn.onclick = () => {
-            removeOldAudio = true;
-            oldAudioBox.style.display = "none";
+            previewContainer.insertBefore(div, addSlot);
+            updateAddSlot();
         };
+        reader.readAsDataURL(file);
+    });
+    this.value = "";
+});
+
+function updateAddSlot(){
+    const count = previewContainer.querySelectorAll(".ig-photo-item").length;
+    addSlot.style.display = count >= 9 ? "none" : "flex";
+}
+
+/* ── OLD AUDIO PLAYER ── */
+const oldAudio = document.getElementById("hiddenOldAudio");
+function fmt(s){ const m=Math.floor(s/60); return m+":"+(Math.floor(s%60)+"").padStart(2,"0"); }
+if(oldAudio){
+    oldAudio.addEventListener("loadedmetadata", () => {
+        document.getElementById("oldDur").textContent = fmt(oldAudio.duration);
+    });
+    oldAudio.addEventListener("timeupdate", () => {
+        const p = oldAudio.duration ? oldAudio.currentTime/oldAudio.duration*100 : 0;
+        document.getElementById("oldBar").style.width = p+"%";
+        document.getElementById("oldCur").textContent = fmt(oldAudio.currentTime);
+    });
+    oldAudio.addEventListener("ended", () => {
+        document.getElementById("oldPlayIco").className = "bi bi-play-fill";
+    });
+}
+function toggleOldAudio(){
+    if(!oldAudio) return;
+    if(oldAudio.paused){ oldAudio.play(); document.getElementById("oldPlayIco").className="bi bi-pause-fill"; }
+    else { oldAudio.pause(); document.getElementById("oldPlayIco").className="bi bi-play-fill"; }
+}
+function seekOld(e){
+    if(!oldAudio||!oldAudio.duration) return;
+    const r = document.getElementById("oldProgressBar").getBoundingClientRect();
+    oldAudio.currentTime = ((e.clientX-r.left)/r.width)*oldAudio.duration;
+}
+function doRemoveOldAudio(){
+    removeOldAudio = true;
+    document.getElementById("oldAudioBox").style.display = "none";
+}
+
+/* ── NEW AUDIO PLAYER ── */
+const newAudioEl = document.getElementById("audioPreview");
+function showNewAudio(url){
+    newAudioEl.src = url;
+    document.getElementById("newAudioWrap").style.display = "flex";
+    newAudioEl.addEventListener("loadedmetadata", () => {
+        document.getElementById("newDur").textContent = fmt(newAudioEl.duration);
+    }, {once:true});
+    newAudioEl.addEventListener("timeupdate", () => {
+        const p = newAudioEl.duration ? newAudioEl.currentTime/newAudioEl.duration*100 : 0;
+        document.getElementById("newBar").style.width = p+"%";
+        document.getElementById("newCur").textContent = fmt(newAudioEl.currentTime);
+    });
+    newAudioEl.addEventListener("ended", () => {
+        document.getElementById("newPlayIco").className = "bi bi-play-fill";
+    }, {once:true});
+}
+function toggleNewAudio(){
+    if(newAudioEl.paused){ newAudioEl.play(); document.getElementById("newPlayIco").className="bi bi-pause-fill"; }
+    else { newAudioEl.pause(); document.getElementById("newPlayIco").className="bi bi-play-fill"; }
+}
+function seekNew(e){
+    if(!newAudioEl.duration) return;
+    const r = document.getElementById("newProgressBar").getBoundingClientRect();
+    newAudioEl.currentTime = ((e.clientX-r.left)/r.width)*newAudioEl.duration;
+}
+
+/* ── UPLOAD AUDIO ── */
+document.getElementById("audioInput").addEventListener("change", function(){
+    if(this.files.length){
+        newAudio = this.files[0];
+        showNewAudio(URL.createObjectURL(newAudio));
+        removeOldAudio = true;
+        const ob = document.getElementById("oldAudioBox");
+        if(ob) ob.style.display = "none";
     }
+});
 
-    /* ================= RECORD AUDIO ================= */
-    let recorder;
-    let chunks = [];
-    let stream = null;
-    const recordBtn = document.getElementById("recordBtn");
+/* ── RECORD AUDIO ── */
+let recorder, chunks=[], stream=null;
+async function toggleRecord(){
+    const btn = document.getElementById("recordBtn");
+    if(recorder && recorder.state==="recording"){
+        recorder.stop(); return;
+    }
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, {type: recorder.mimeType});
+            newAudio = new File([blob], "record.webm", {type: recorder.mimeType});
+            showNewAudio(URL.createObjectURL(newAudio));
+            stream.getTracks().forEach(t=>t.stop());
+            btn.classList.remove("recording");
+            document.getElementById("recIco").className = "bi bi-mic";
+            document.getElementById("recLabel").textContent = "Record";
+            document.getElementById("recStatus").textContent = "Done";
+            document.getElementById("recStatus").className = "";
+            removeOldAudio = true;
+            const ob = document.getElementById("oldAudioBox");
+            if(ob) ob.style.display = "none";
+        };
+        recorder.start();
+        btn.classList.add("recording");
+        document.getElementById("recIco").className = "bi bi-stop-fill";
+        document.getElementById("recLabel").textContent = "Stop";
+        document.getElementById("recStatus").textContent = "Recording…";
+        document.getElementById("recStatus").className = "active";
+    } catch(e){
+        alert("Không mở được microphone.");
+    }
+}
 
-    recordBtn.onclick = async () => {
-        if (recorder && recorder.state === "recording") {
-            recorder.stop();
-            return;
+/* ── SUBMIT ── */
+async function submitForm(){
+    const btn = document.getElementById("saveBtn");
+    btn.classList.add("saving");
+    document.getElementById("saveLbl").textContent = "Saving…";
+    document.getElementById("saveIco").className = "bi bi-hourglass-split";
+    btn.disabled = true;
+
+    const fd = new FormData();
+    fd.append("message", document.getElementById("message").value);
+    newImages.forEach(i => fd.append("images", i));
+    if(newAudio) fd.append("audio", newAudio);
+    fd.append("removeOldAudio", removeOldAudio);
+    deletedImages.forEach(i => fd.append("deleteImages", i));
+
+    try {
+        const res = await fetch("/api/gift/update/" + giftId, {method:"POST", body:fd});
+        const text = await res.text();
+        if(res.ok){
+            btn.classList.remove("saving");
+            btn.classList.add("done");
+            document.getElementById("saveLbl").textContent = "Saved!";
+            document.getElementById("saveIco").className = "bi bi-check-lg";
+            setTimeout(() => { location.href = "/gift/view/" + giftId; }, 700);
+        } else {
+            alert("Lỗi: " + text);
+            btn.classList.remove("saving");
+            btn.disabled = false;
+            document.getElementById("saveLbl").textContent = "Save changes";
+            document.getElementById("saveIco").className = "bi bi-check-lg";
         }
+    } catch(err){
+        alert("Network error");
+        btn.classList.remove("saving");
+        btn.disabled = false;
+        document.getElementById("saveLbl").textContent = "Save changes";
+        document.getElementById("saveIco").className = "bi bi-check-lg";
+    }
+}
 
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            chunks = [];
-            recorder = new MediaRecorder(stream);
-
-            recorder.ondataavailable = e => {
-                chunks.push(e.data);
-            };
-
-            recorder.onstop = () => {
-                const blob = new Blob(chunks, { type: recorder.mimeType });
-                
-                newAudio = new File([blob], "record.webm", { type: recorder.mimeType });
-                audioPreview.src = URL.createObjectURL(newAudio);
-
-                stream.getTracks().forEach(t => t.stop());
-                recordBtn.classList.remove("recording");
-                recordBtn.innerHTML = "🎤 Record";
-
-                // Tự động ẩn audio cũ khi hoàn thành ghi âm mới
-                if (oldAudioBox) {
-                    removeOldAudio = true;
-                    oldAudioBox.style.display = "none";
-                }
-            };
-
-            recorder.start();
-            recordBtn.classList.add("recording");
-            recordBtn.innerHTML = "⏹ Stop";
-        } catch (e) {
-            alert("Không mở được microphone hoặc quyền bị từ chối.");
-        }
-    };
-
-    /* ================= SUBMIT FORM ================= */
-    document.getElementById("giftForm").onsubmit = async function(e) {
-        e.preventDefault();
-
-        const fd = new FormData();
-        fd.append("message", document.getElementById("message").value);
-
-        newImages.forEach(i => {
-            fd.append("images", i);
-        });
-
-        if (newAudio) {
-            fd.append("audio", newAudio);
-        }
-
-        fd.append("removeOldAudio", removeOldAudio);
-
-        deletedImages.forEach(i => {
-            fd.append("deleteImages", i);
-        });
-
-        try {
-            const res = await fetch("/api/gift/update/" + giftId, {
-                method: "POST",
-                body: fd
-            });
-
-            const text = await res.text();
-
-            if (res.ok) {
-                alert("Update thành công");
-                location.href = "/gift/view/" + giftId;
-            } else {
-                alert("Lỗi từ server: " + text);
-            }
-        } catch (error) {
-            alert("Có lỗi xảy ra trong quá trình gửi dữ liệu.");
-        }
-    };
+document.getElementById("giftForm").addEventListener("submit", e => { e.preventDefault(); submitForm(); });
 </script>
+
 </body>
 </html>
