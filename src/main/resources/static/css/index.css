@@ -1,218 +1,374 @@
-/* ================= TỔNG THỂ NỀN & FONT CHỮ ================= */
-body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-    min-height: 100vh;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #333;
-    padding: 20px;
+/* ================= BASE ================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-/* Card chứa toàn bộ form tạo mới */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* ================= CARD ================= */
 .card-box {
     max-width: 700px;
     margin: 40px auto;
     background: #ffffff;
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 10px 30px rgba(160, 170, 190, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    padding: 2rem 2.25rem;
+    border: 1px solid #e8eaf0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* Tiêu đề các phân khu Album, Message, Voice */
-.section-title h3 {
-    font-size: 16px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #64748b;
-    margin: 30px 0 15px;
+/* ================= CARD HEADER ================= */
+.card-header {
     display: flex;
     align-items: center;
+    gap: 14px;
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f2f5;
 }
 
-.section-title h3::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #e2e8f0;
-    margin-left: 15px;
-}
-
-/* Ô nhập chữ lời nhắn */
-.form-control {
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 15px;
-    transition: all 0.2s ease;
-    background-color: #f8fafc;
-}
-
-.form-control:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-    background-color: #fff;
-}
-
-/* ================= GIAO DIỆN KHUNG ALBUM ẢNH ================= */
-/* Ô trống "Thêm ảnh" nét đứt */
-.image-box {
-    border: 2px dashed #cbd5e1;
-    border-radius: 16px;
-    height: 140px;
+.card-header-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #eff0ff;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    color: #64748b;
+    font-size: 20px;
+    flex-shrink: 0;
+    color: #5b5fcf;
+}
+
+.card-header h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.card-header p {
+    font-size: 13px;
+    color: #8a8fa8;
+    margin-top: 2px;
+}
+
+/* ================= SECTION LABELS ================= */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #8a8fa8;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #f0f2f5;
+}
+
+.section-title i {
+    font-size: 14px;
+}
+
+/* ================= PHOTO GRID ================= */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.image-box {
+    border: 1.5px dashed #d1d5e8;
+    border-radius: 12px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #8a8fa8;
     cursor: pointer;
-    background: #f8fafc;
-    transition: all 0.2s ease;
+    background: #fafbff;
+    font-size: 12px;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.image-box i {
+    font-size: 22px;
 }
 
 .image-box:hover {
-    border-color: #6366f1;
-    color: #6366f1;
-    background: #f0f2ff;
+    border-color: #5b5fcf;
+    background: #eff0ff;
+    color: #5b5fcf;
 }
 
-/* Khung bọc từng tấm ảnh được chọn */
 .img-item {
     position: relative;
+    border-radius: 12px;
     overflow: hidden;
-    border-radius: 16px;
+    height: 120px;
 }
 
 .img-item img {
     width: 100%;
-    height: 140px;
+    height: 100%;
     object-fit: cover;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    transition: transform 0.3s ease;
+    display: block;
+    transition: transform 0.25s ease;
 }
 
 .img-item:hover img {
     transform: scale(1.04);
 }
 
-/* Nút X xóa ảnh (Trượt nhẹ và hiện khi hover vào ảnh) */
-.img-item .btn-danger {
-    top: 8px !important;
-    right: 8px !important;
-    background: rgba(239, 68, 68, 0.9) !important;
-    backdrop-filter: blur(4px);
-    border: none !important;
-    width: 28px;
-    height: 28px;
-    border-radius: 50% !important;
+.img-item .btn-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
     opacity: 0;
-    transform: translateY(-5px);
-    transition: all 0.2s ease;
-    padding: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    backdrop-filter: blur(4px);
 }
 
-.img-item:hover .btn-danger {
+.img-item:hover .btn-remove {
     opacity: 1;
     transform: translateY(0);
 }
 
-.img-item .btn-danger:hover {
-    background: #dc2626 !important;
-    transform: scale(1.1) !important;
+.img-item .btn-remove:hover {
+    background: rgba(220, 38, 38, 0.85);
 }
 
-/* Chế độ hiển thị khi chỉ có duy nhất 1 ảnh */
-.single-mode .img-item {
-    transition: all 0.3s ease;
+/* ================= MESSAGE TEXTAREA ================= */
+.form-control {
+    width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    border: 1px solid #e2e5f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fafbff;
+    color: #1a1a2e;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
-/* ================= KHU VỰC VOICE GHI ÂM ================= */
+.form-control:focus {
+    border-color: #5b5fcf;
+    box-shadow: 0 0 0 3px rgba(91, 95, 207, 0.12);
+    background: #ffffff;
+}
+
+.form-control::placeholder {
+    color: #b0b5cc;
+}
+
+.char-count {
+    font-size: 12px;
+    color: #b0b5cc;
+    text-align: right;
+    margin-top: 5px;
+}
+
+/* ================= MOOD TAGS ================= */
+.tag-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.tag {
+    background: #fafbff;
+    border: 1px solid #e2e5f0;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #5a6080;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    user-select: none;
+}
+
+.tag:hover {
+    background: #eff0ff;
+    border-color: #c2c4f0;
+    color: #5b5fcf;
+}
+
+.tag.active {
+    background: #eff0ff;
+    border-color: #5b5fcf;
+    color: #5b5fcf;
+    font-weight: 600;
+}
+
+/* ================= VOICE RECORDER ================= */
 .voice {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
-/* Nút Record/Stop mượt mà */
 #recordBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid #c2c4f0;
+    background: #eff0ff;
+    color: #5b5fcf;
+    font-size: 13px;
     font-weight: 600;
-    border-radius: 12px;
-    padding: 10px 20px;
-    transition: all 0.2s ease;
-    border: none;
-    background: #6366f1;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+#recordBtn i {
+    font-size: 16px;
 }
 
 #recordBtn:hover {
-    background: #4f46e5;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+    background: #e2e4fd;
+    border-color: #5b5fcf;
 }
 
-/* Chuyển màu đỏ nhấp nháy (Pulse) khi đang ghi âm */
-#recordBtn.btn-danger, /* Nhận diện class thay đổi từ JS */
-#recordBtn[innerText*="Stop"] { 
-    background: #ef4444 !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
-    animation: pulse 1.5s infinite;
+#recordBtn.recording {
+    background: #fff0f0;
+    border-color: #fca5a5;
+    color: #dc2626;
+    animation: rpulse 1.5s ease infinite;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+@keyframes rpulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
 }
 
-/* Dòng text trạng thái ghi âm (Recording... / Stopped) */
 #recordStatus {
+    font-size: 13px;
+    color: #b0b5cc;
+    min-width: 80px;
+}
+
+#recordStatus.active {
+    color: #dc2626;
     font-weight: 600;
-    font-size: 14px;
-    color: #64748b;
 }
 
-/* Ô chọn File Audio từ máy tính */
-#audioInput {
-    max-width: 250px !important;
+.or-divider {
+    font-size: 12px;
+    color: #b0b5cc;
 }
 
-/* Trình nghe thử âm thanh Preview */
+.file-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a6080;
+    border: 1px solid #e2e5f0;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fafbff;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.file-label:hover {
+    background: #f0f2f5;
+    border-color: #c8cce0;
+}
+
+.file-label i {
+    font-size: 16px;
+}
+
 audio {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 8px;
     margin-top: 10px;
-    background: #f1f5f9;
+    display: block;
 }
 
-/* ================= NÚT SAVE CHÍNH Ở CUỐI ================= */
-.btn-success {
-    background: #10b981;
+/* ================= DIVIDER ================= */
+hr {
     border: none;
-    padding: 14px 40px;
-    font-size: 16px;
+    border-top: 1px dashed #e2e5f0;
+    margin: 1.75rem 0;
+}
+
+/* ================= SAVE BUTTON ================= */
+.save-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f0f2f5;
+}
+
+.btn-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 28px;
+    font-size: 14px;
     font-weight: 600;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
-    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .btn-success:hover {
     background: #059669;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
 }
 
-hr {
-    border-top: 1px dashed #cbd5e1;
-    opacity: 1;
-    margin: 30px 0;
+.btn-success:active {
+    transform: scale(0.98);
+}
+
+.btn-success i {
+    font-size: 16px;
+}
+
+.btn-success.saved {
+    background: #059669;
 }
