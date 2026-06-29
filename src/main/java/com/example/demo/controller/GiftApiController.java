@@ -72,27 +72,45 @@ public class GiftApiController {
                 audio.transferTo(audioPath.toFile());
                 gift.setVoiceUrl("/files/audio/" + audioName);
             }
-
             // ================= IMAGES =================
-            List<GiftImage> imgs = gift.getImages();
-            if (imgs == null) imgs = new ArrayList<>();
 
+            // 1. XÓA ẢNH CŨ (FILE + LIST)
+            if (gift.getImages() != null) {
+                for (GiftImage oldImg : gift.getImages()) {
+                    try {
+                        // lấy tên file từ URL
+                        String oldPath = oldImg.getImageUrl()
+                                .replace("/files/images/", "");
+
+                        Path filePath = Paths.get(BASE_DIR, "images", oldPath);
+                        Files.deleteIfExists(filePath);
+
+                    } catch (Exception e) {
+                        System.out.println("Không xóa được file: " + e.getMessage());
+                    }
+                }
+
+                gift.getImages().clear(); // QUAN TRỌNG
+            }
+
+            // 2. ADD ẢNH MỚI
             if (images != null) {
                 for (MultipartFile f : images) {
                     if (f.isEmpty()) continue;
 
                     String imgName = UUID.randomUUID() + "_" + f.getOriginalFilename();
                     Path imgPath = Paths.get(BASE_DIR, "images", imgName);
+
                     Files.createDirectories(imgPath.getParent());
                     f.transferTo(imgPath.toFile());
 
                     GiftImage img = new GiftImage();
                     img.setImageUrl("/files/images/" + imgName);
                     img.setGift(gift);
-                    imgs.add(img);
+
+                    gift.getImages().add(img);
                 }
             }
-            gift.setImages(imgs);
 
             // Lưu Gift trước để lấy được instance đã có ID (saved)
             Gift saved = giftRepository.save(gift);

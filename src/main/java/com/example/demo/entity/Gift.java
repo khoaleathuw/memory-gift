@@ -19,9 +19,23 @@ public class Gift {
 
     private String voiceUrl;
 
-    @OneToMany(mappedBy = "gift", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(
+            mappedBy = "gift",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
     private List<GiftImage> images = new ArrayList<>();
 
+        public void addImage(GiftImage image) {
+        images.add(image);
+        image.setGift(this);
+    }
+
+    public void removeImage(GiftImage image) {
+        images.remove(image);
+        image.setGift(null);
+    }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
