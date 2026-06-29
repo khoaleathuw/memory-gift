@@ -15,14 +15,39 @@ public class NfcTag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String uid;
 
     @OneToOne
     @JoinColumn(name = "gift_id")
     private Gift gift;
 
-    // getter & setter
+    public NfcTag() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public Gift getGift() {
+        return gift;
+    }
+
+    public void setGift(Gift gift) {
+        this.gift = gift;
+    }
 }
