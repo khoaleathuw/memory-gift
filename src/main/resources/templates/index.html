@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Gift</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" th:href="@{/css/index.css}">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: #000;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #fff;
+}
+
+/* ── TOP BAR ── */
+.ig-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 0.5px solid #262626;
+    position: sticky;
+    top: 0;
+    background: #000;
+    z-index: 10;
+}
+.ig-topbar .ig-back { font-size: 22px; color: #fff; cursor: pointer; line-height: 1; background: none; border: none; }
+.ig-topbar .ig-title { font-size: 16px; font-weight: 700; letter-spacing: 0.2px; }
+.ig-topbar .ig-share-top { font-size: 14px; font-weight: 700; color: #0095f6; cursor: pointer; background: none; border: none; }
+.ig-topbar .ig-share-top:hover { color: #1aa3ff; }
+
+/* ── AVATAR ROW ── */
+.ig-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+}
+.ig-avatar-ring {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    padding: 2px;
+    flex-shrink: 0;
+}
+.ig-avatar-inner {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+}
+.ig-username { font-size: 13px; font-weight: 700; }
+.ig-sublabel { font-size: 11px; color: #a8a8a8; margin-top: 1px; }
+
+/* ── PHOTO GRID ── */
+#previewContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: #000;
+    margin: 0;
+}
+
+/* Add box */
+#addBox {
+    aspect-ratio: 1;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #555;
+    font-size: 11px;
+    transition: background 0.15s;
+}
+#addBox:hover { background: #1a1a1a; color: #888; }
+#addBox .bi { font-size: 28px; }
+/* hide bootstrap col classes inside grid */
+#previewContainer > .col-4 { all: unset; display: contents; }
+
+/* Image items */
+.img-item-wrap {
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+}
+.img-item-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+}
+.img-item-wrap:hover img { transform: scale(1.04); }
+.img-item-wrap .btn-remove {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.65);
+    border: none;
+    color: #fff;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+    padding: 0;
+}
+.img-item-wrap:hover .btn-remove { opacity: 1; }
+
+/* ── DIVIDER ── */
+.ig-divider { height: 0.5px; background: #262626; margin: 0; }
+
+/* ── CAPTION ── */
+.ig-caption-wrap {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    align-items: flex-start;
+}
+.ig-caption-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.6;
+}
+.ig-caption-wrap textarea::placeholder { color: #555; }
+.ig-charcount { font-size: 11px; color: #555; text-align: right; padding: 0 16px 10px; }
+
+/* ── SECTION LABEL ── */
+.ig-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #a8a8a8;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    padding: 12px 16px 6px;
+}
+
+/* ── VOICE ROW ── */
+.voice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 14px;
+    flex-wrap: wrap;
+}
+
+#recordBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s, color 0.15s;
+}
+#recordBtn:hover { border-color: #555; }
+#recordBtn.recording {
+    border-color: #e02020;
+    color: #e02020;
+    animation: rpulse 1.5s ease infinite;
+}
+@keyframes rpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+#recordStatus {
+    font-size: 12px;
+    color: #555;
+}
+#recordStatus.active { color: #e02020; }
+
+.ig-file-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #a8a8a8;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+.ig-file-label:hover { border-color: #555; color: #fff; }
+
+#audioInput { display: none !important; }
+
+#audioPreview {
+    width: calc(100% - 32px);
+    margin: 0 16px 14px;
+    border-radius: 8px;
+    display: none;
+    filter: invert(1) hue-rotate(180deg);
+}
+
+/* ── EXTRA ROWS ── */
+.ig-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-size: 14px;
+}
+.ig-row:hover { background: #0a0a0a; }
+.ig-row-left { display: flex; align-items: center; gap: 12px; color: #fff; }
+.ig-row-left .bi { font-size: 20px; }
+.ig-row-right { display: flex; align-items: center; gap: 6px; color: #a8a8a8; font-size: 13px; }
+.ig-row-right .bi { font-size: 15px; }
+
+/* ── SHARE BUTTON ── */
+.ig-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 32px);
+    margin: 16px;
+    background: #0095f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.ig-share-btn:hover { background: #1aa3ff; }
+.ig-share-btn.done { background: #1d9c5f; }
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="ig-topbar">
+    <button class="ig-back" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+    <span class="ig-title">New post</span>
+    <button class="ig-share-top" type="submit" form="giftForm">Share</button>
+</div>
+
+<form id="giftForm" enctype="multipart/form-data">
+
+    <!-- AVATAR ROW -->
+    <div class="ig-avatar-row">
+        <div class="ig-avatar-ring">
+            <div class="ig-avatar-inner">Y</div>
+        </div>
+        <div>
+            <div class="ig-username">your_username</div>
+            <div class="ig-sublabel">Memory capsule</div>
+        </div>
+    </div>
+
+    <!-- IMAGE GRID -->
+    <input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
+
+    <div id="previewContainer">
+        <div id="addBox" onclick="imageInput.click()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add photo</span>
+        </div>
+    </div>
+
+    <div class="ig-divider"></div>
+
+    <!-- CAPTION -->
+    <div class="ig-caption-wrap">
+        <div class="ig-avatar-ring" style="width:32px;height:32px;flex-shrink:0">
+            <div class="ig-avatar-inner" style="font-size:11px">Y</div>
+        </div>
+        <textarea name="message" placeholder="Write a caption…" maxlength="2200" oninput="updateCount(this)"></textarea>
+    </div>
+    <div class="ig-charcount"><span id="cCount">0</span> / 2,200</div>
+
+    <div class="ig-divider"></div>
+
+    <!-- VOICE -->
+    <div class="ig-label">Voice note</div>
+
+    <div class="voice">
+        <button type="button" id="recordBtn">
+            <i class="bi bi-mic"></i>
+            <span id="recordLabel">Record</span>
+        </button>
+
+        <span id="recordStatus"></span>
+
+        <label class="ig-file-label" for="audioInput">
+            <i class="bi bi-upload"></i> Upload
+        </label>
+
+        <input
+            type="file"
+            id="audioInput"
+            name="audio"
+            accept="audio/*"
+        >
+    </div>
+
+    <audio id="audioPreview" controls></audio>
+
+    <div class="ig-divider"></div>
+
+    <!-- EXTRA IG ROWS -->
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-person-plus"></i> Tag people</span>
+        <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-geo-alt"></i> Add location</span>
+        <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+    <div class="ig-row">
+        <span class="ig-row-left"><i class="bi bi-people"></i> Audience</span>
+        <span class="ig-row-right">Everyone <i class="bi bi-chevron-right"></i></span>
+    </div>
+    <div class="ig-divider"></div>
+
+    <!-- SHARE BUTTON -->
+    <button type="submit" class="ig-share-btn" id="shareBtn">
+        <i class="bi bi-send" id="shareIco"></i>
+        <span id="shareLbl">Share</span>
+    </button>
+
+</form>
+
+<script>
+
+let selectedImages = [];
+let audioFile = null;
+let mediaRecorder;
+let chunks = [];
+let stream;
+
+// ================= IMAGE =================
+const imageInput = document.getElementById("imageInput");
+const previewContainer = document.getElementById("previewContainer");
+const addBox = document.getElementById("addBox");
+
+imageInput.addEventListener("change", function () {
+    Array.from(this.files).forEach(file => {
+        if (selectedImages.length >= 9) return;
+        selectedImages.push(file);
+        const reader = new FileReader();
+        reader.onload = e => {
+            const wrap = document.createElement("div");
+            wrap.className = "img-item-wrap img-item";
+            wrap.innerHTML = `
+                <img src="${e.target.result}" alt="">
+                <button type="button" class="btn-remove" onclick="removeImage(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            previewContainer.insertBefore(wrap, addBox);
+            updateLayout();
+        };
+        reader.readAsDataURL(file);
+    });
+    this.value = "";
+});
+
+function removeImage(btn) {
+    const items = document.querySelectorAll(".img-item");
+    const index = Array.from(items).indexOf(btn.closest(".img-item"));
+    if (index > -1) selectedImages.splice(index, 1);
+    btn.closest(".img-item").remove();
+    updateLayout();
+}
+
+function updateLayout() {
+    addBox.style.display = selectedImages.length >= 9 ? "none" : "flex";
+}
+
+// ================= CAPTION COUNT =================
+function updateCount(el) {
+    document.getElementById("cCount").textContent = el.value.length;
+}
+
+// ================= AUDIO UPLOAD =================
+const audioInput = document.getElementById("audioInput");
+const audioPreview = document.getElementById("audioPreview");
+
+audioInput.addEventListener("change", function () {
+    if (this.files.length) {
+        audioFile = this.files[0];
+        audioPreview.src = URL.createObjectURL(audioFile);
+        audioPreview.style.display = "block";
+        stopMic();
+    }
+});
+
+// ================= RECORD =================
+function stopMic() {
+    if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+    }
+}
+
+const recordBtn = document.getElementById("recordBtn");
+const recordLabel = document.getElementById("recordLabel");
+const recordStatus = document.getElementById("recordStatus");
+
+recordBtn.addEventListener("click", async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+        alert("Mic not supported");
+        return;
+    }
+
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        recordBtn.classList.remove("recording");
+        recordLabel.textContent = "Record";
+        recordBtn.querySelector(".bi").className = "bi bi-mic";
+        recordStatus.textContent = "Done";
+        recordStatus.className = "";
+        return;
+    }
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+            const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+            const blob = new Blob(chunks, { type: mimeType });
+            audioFile = new File([blob], "voice.webm", { type: mimeType });
+            audioPreview.src = URL.createObjectURL(audioFile);
+            audioPreview.style.display = "block";
+            stopMic();
+        };
+
+        mediaRecorder.start();
+        recordBtn.classList.add("recording");
+        recordLabel.textContent = "Stop";
+        recordBtn.querySelector(".bi").className = "bi bi-stop-fill";
+        recordStatus.textContent = "Recording…";
+        recordStatus.className = "active";
+
+    } catch (err) {
+        alert(err.message);
+    }
+});
+
+// ================= SUBMIT =================
+document.getElementById("giftForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const btn = document.getElementById("shareBtn");
+    btn.disabled = true;
+    document.getElementById("shareLbl").textContent = "Sharing…";
+
+    const formData = new FormData();
+    formData.append("message", document.querySelector("textarea[name='message']").value);
+    selectedImages.forEach(i => formData.append("images", i));
+    if (audioFile) formData.append("audio", audioFile);
+
+    const url = window.location.origin + "/api/gift/save";
+
+    try {
+        const res = await fetch(url, { method: "POST", body: formData });
+
+        if (!res.ok) {
+            const err = await res.text();
+            alert("ERROR: " + err);
+            btn.disabled = false;
+            document.getElementById("shareLbl").textContent = "Share";
+            return;
+        }
+
+        btn.classList.add("done");
+        document.getElementById("shareLbl").textContent = "Posted!";
+        document.getElementById("shareIco").className = "bi bi-check-lg";
+
+        const id = await res.text();
+        setTimeout(() => { window.location.href = "/gift/view/" + id; }, 800);
+
+    } catch (err) {
+        alert("Network error");
+        console.log(err);
+        btn.disabled = false;
+        document.getElementById("shareLbl").textContent = "Share";
+    }
+});
+
+</script>
+
+</body>
+</html>
