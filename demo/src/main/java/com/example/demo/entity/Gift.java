@@ -30,10 +30,10 @@ public class Gift {
 
 
     @OneToMany(
-            mappedBy = "gift",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
+        mappedBy = "gift",
+        cascade = CascadeType.ALL,
+        orphanRemoval = false,
+        fetch = FetchType.LAZY
     )
     private List<GiftImage> images = new ArrayList<>();
 

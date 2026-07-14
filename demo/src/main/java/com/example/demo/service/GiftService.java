@@ -197,39 +197,28 @@ public class GiftService {
 
         if(images != null){
 
-
-            for(MultipartFile image : images){
-
+        for(MultipartFile image : images){
 
                 if(!image.isEmpty()){
 
+                GiftImage img = new GiftImage();
 
-                    GiftImage img =
-                            new GiftImage();
+                img.setImageUrl(
+                        saveFile(
+                                image,
+                                "images"
+                        )
+                );
 
+                img.setGift(gift);
 
-                    img.setImageUrl(
-                            saveFile(
-                                    image,
-                                    "images"
-                            )
-                    );
-
-
-                    img.setGift(gift);
-
-
-
-                    giftImageRepository.save(img);
-
+                gift.getImages().add(img);   // <-- thay dòng này
 
                 }
 
-            }
-
         }
 
-
+        }
 
         return giftRepository.save(gift);
 

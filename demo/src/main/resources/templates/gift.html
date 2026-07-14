@@ -17,9 +17,10 @@ body {
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: #fff;
-    padding-bottom: 64px;
+    padding-bottom: 70px;
     max-width: 480px;
     margin: 0 auto;
+    overflow-x: hidden;
 }
 
 /* ── TOPBAR ── */
@@ -66,31 +67,37 @@ body {
 .ig-date { font-size: 11px; color: #a8a8a8; margin-top: 2px; }
 .ig-more { font-size: 20px; color: #fff; background: none; border: none; cursor: pointer; }
 
-/* ── IMAGE SWIPER ── */
-.ig-swiper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background: #111;
-    touch-action: pan-y;
+/* ───────── IMAGE SWIPER ───────── */
+
+.ig-swiper{
+    position:relative;
+    width:100%;
+    max-width:100%;
+    background:#000;
+    overflow:hidden;
 }
-.ig-slides {
-    display: flex;
-    height: 100%;
-    transition: transform 0.3s cubic-bezier(.25,.46,.45,.94);
+
+.ig-slides{
+    display:flex;
+    transition:transform .35s ease;
+    width:100%;
 }
-.ig-slide {
-    min-width: 100%;
-    height: 100%;
-    flex-shrink: 0;
+
+.ig-slide{
+    min-width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#000;
 }
-.ig-slide img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-    user-select: none;
+
+.ig-slide img{
+    width:100%;
+    height:auto;
+    max-height:75vh;
+    object-fit:cover;
+    height:75vh;
+    display:block;
 }
 
 /* ── DOTS ── */
@@ -139,7 +146,6 @@ body {
     line-height: 1.6;
 }
 .ig-caption .u { font-weight: 700; margin-right: 5px; }
-.ig-caption .more { color: #a8a8a8; cursor: pointer; font-size: 13px; }
 
 /* ── VIEW COMMENTS ── */
 .ig-view-comments {
@@ -287,19 +293,33 @@ audio#hiddenAudio { display: none; }
     color: #fff; font-size: 24px; text-decoration: none;
 }
 .ig-bottomnav a:hover { color: #a8a8a8; }
+
+/* ── RESPONSIVE MÀN HÌNH NHỎ ── */
+@media (max-width: 480px) {
+    body { max-width: 100%; }
+    .ig-topbar { padding: 12px; }
+    .ig-profile { padding: 10px; }
+    .ig-caption,
+    .ig-likes,
+    .ig-comments,
+    .ig-view-comments,
+    .ig-timestamp,
+    .ig-audio-wrap {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
 </style>
 </head>
 
 <body>
 
-<!-- TOPBAR -->
 <div class="ig-topbar">
     <button onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
     <span class="ig-title">Post</span>
     <a th:href="@{'/gift/edit/' + ${gift.id}}"><i class="bi bi-pencil"></i></a>
 </div>
 
-<!-- PROFILE ROW -->
 <div class="ig-profile">
     <div class="ig-profile-left">
         <div class="ig-avatar-ring"><div class="ig-avatar-inner">Y</div></div>
@@ -311,7 +331,6 @@ audio#hiddenAudio { display: none; }
     <button class="ig-more"><i class="bi bi-three-dots"></i></button>
 </div>
 
-<!-- IMAGE SWIPER -->
 <div class="ig-swiper" id="swiper" th:if="${!#lists.isEmpty(gift.images)}">
     <div class="ig-slides" id="slides">
         <div class="ig-slide" th:each="img : ${gift.images}">
@@ -320,13 +339,11 @@ audio#hiddenAudio { display: none; }
     </div>
 </div>
 
-<!-- DOTS -->
 <div class="ig-dots" id="dots" th:if="${#lists.size(gift.images) > 1}">
     <div th:each="img,iter : ${gift.images}"
          th:class="${iter.index == 0} ? 'ig-dot active' : 'ig-dot'"></div>
 </div>
 
-<!-- ACTION BAR -->
 <div class="ig-actions">
     <div class="ig-actions-left">
         <button class="ig-heart" onclick="toggleHeart(this)" aria-label="Like">
@@ -338,18 +355,14 @@ audio#hiddenAudio { display: none; }
     <button aria-label="Save"><i class="bi bi-bookmark"></i></button>
 </div>
 
-<!-- LIKES -->
 <div class="ig-likes" id="likesCount">1 like</div>
 
-<!-- CAPTION -->
 <div class="ig-caption" th:if="${gift.message != null}">
     <span class="u">your_username</span><span th:text="${gift.message}"></span>
 </div>
 
-<!-- VIEW COMMENTS -->
 <div class="ig-view-comments" id="toggleComments" onclick="toggleComments()">View all 2 comments</div>
 
-<!-- COMMENTS -->
 <div class="ig-comments" id="commentsSection" style="display:none">
     <div class="ig-comment">
         <div class="ig-avatar-ring"><div class="ig-avatar-inner" style="font-size:10px">A</div></div>
@@ -375,12 +388,10 @@ audio#hiddenAudio { display: none; }
     </div>
 </div>
 
-<!-- TIMESTAMP -->
 <div class="ig-timestamp">Just now</div>
 
 <div class="ig-divider"></div>
 
-<!-- AUDIO PLAYER -->
 <div class="ig-audio-wrap" th:if="${gift.voiceUrl != null}">
     <div class="ig-audio-label"><i class="bi bi-mic"></i> Voice note</div>
     <div class="ig-audio-player">
@@ -402,7 +413,6 @@ audio#hiddenAudio { display: none; }
     </audio>
 </div>
 
-<!-- ADD COMMENT -->
 <div class="ig-add-comment">
     <div class="ig-avatar-ring" style="width:30px;height:30px;flex-shrink:0">
         <div class="ig-avatar-inner" style="font-size:10px">Y</div>
@@ -411,7 +421,6 @@ audio#hiddenAudio { display: none; }
     <button class="post-btn" id="postBtn" onclick="postComment()">Post</button>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="ig-bottomnav">
     <a href="#"><i class="bi bi-house"></i></a>
     <a href="#"><i class="bi bi-search"></i></a>
@@ -425,57 +434,89 @@ audio#hiddenAudio { display: none; }
 </div>
 
 <script>
-/* ── SWIPER ── */
+/* ── SWIPER LOGIC ── */
 (function(){
     const swiper = document.getElementById('swiper');
     if(!swiper) return;
     const slides = document.getElementById('slides');
     const dots = document.querySelectorAll('.ig-dot');
     let cur = 0, total = slides ? slides.children.length : 0;
-    let startX = 0, dragging = false, dragDelta = 0;
+    if(total === 0) return;
+
+    let startX = 0, currentX = 0, dragging = false;
+    let swiperWidth = swiper.offsetWidth;
+
+    window.addEventListener('resize', () => {
+        swiperWidth = swiper.offsetWidth;
+        goTo(cur);
+    });
 
     function goTo(n){
-        cur = Math.max(0, Math.min(n, total-1));
-        slides.style.transform = `translateX(-${cur*100}%)`;
-        dots.forEach((d,i) => d.classList.toggle('active', i===cur));
+        cur = Math.max(0, Math.min(n, total - 1));
+        slides.style.transition = 'transform 0.3s cubic-bezier(0.215, 0.610, 0.355, 1)';
+        slides.style.transform = `translateX(-${cur * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === cur));
     }
 
+    function updatePosition() {
+        if (!dragging) return;
+        const dragDelta = currentX - startX;
+        let offset = -cur * swiperWidth + dragDelta;
+        if ((cur === 0 && dragDelta > 0) || (cur === total - 1 && dragDelta < 0)) {
+            offset = -cur * swiperWidth + dragDelta * 0.3; 
+        }
+        slides.style.transform = `translateX(${offset}px)`;
+        requestAnimationFrame(updatePosition);
+    }
+
+    // Điện thoại
     swiper.addEventListener('touchstart', e => {
-        startX = e.touches[0].clientX;
         dragging = true;
-    }, {passive:true});
+        startX = e.touches[0].clientX;
+        currentX = startX;
+        slides.style.transition = 'none';
+        requestAnimationFrame(updatePosition);
+    }, {passive: true});
 
     swiper.addEventListener('touchmove', e => {
-        if(!dragging) return;
-        dragDelta = e.touches[0].clientX - startX;
-        slides.style.transition = 'none';
-        slides.style.transform = `translateX(calc(-${cur*100}% + ${dragDelta}px))`;
-    }, {passive:true});
+        if (!dragging) return;
+        currentX = e.touches[0].clientX;
+    }, {passive: true});
 
     swiper.addEventListener('touchend', () => {
-        slides.style.transition = 'transform 0.3s cubic-bezier(.25,.46,.45,.94)';
-        if(dragDelta < -50) goTo(cur+1);
-        else if(dragDelta > 50) goTo(cur-1);
+        if (!dragging) return;
+        dragging = false;
+        const dragDelta = currentX - startX;
+        if (dragDelta < -swiperWidth / 4) goTo(cur + 1);
+        else if (dragDelta > swiperWidth / 4) goTo(cur - 1);
         else goTo(cur);
-        dragging = false; dragDelta = 0;
     });
 
-    /* mouse drag for desktop */
-    swiper.addEventListener('mousedown', e => { startX = e.clientX; dragging = true; });
-    swiper.addEventListener('mousemove', e => {
-        if(!dragging) return;
-        dragDelta = e.clientX - startX;
+    // Máy tính
+    swiper.addEventListener('mousedown', e => {
+        dragging = true;
+        startX = e.clientX;
+        currentX = startX;
         slides.style.transition = 'none';
-        slides.style.transform = `translateX(calc(-${cur*100}% + ${dragDelta}px))`;
+        requestAnimationFrame(updatePosition);
     });
-    swiper.addEventListener('mouseup', () => {
-        slides.style.transition = 'transform 0.3s cubic-bezier(.25,.46,.45,.94)';
-        if(dragDelta < -50) goTo(cur+1);
-        else if(dragDelta > 50) goTo(cur-1);
+
+    swiper.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        currentX = e.clientX;
+    });
+
+    const handleMouseUp = () => {
+        if (!dragging) return;
+        dragging = false;
+        const dragDelta = currentX - startX;
+        if (dragDelta < -swiperWidth / 4) goTo(cur + 1);
+        else if (dragDelta > swiperWidth / 4) goTo(cur - 1);
         else goTo(cur);
-        dragging = false; dragDelta = 0;
-    });
-    swiper.addEventListener('mouseleave', () => { if(dragging){ goTo(cur); dragging=false; dragDelta=0; } });
+    };
+
+    swiper.addEventListener('mouseup', handleMouseUp);
+    swiper.addEventListener('mouseleave', handleMouseUp);
 })();
 
 /* ── HEART ── */
