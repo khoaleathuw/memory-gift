@@ -3,15 +3,17 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Gift;
 import com.example.demo.entity.GiftImage;
-import com.example.demo.repository.GiftImageRepository;
 import com.example.demo.repository.GiftRepository;
+import com.example.demo.repository.GiftImageRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.UUID;
+
 
 
 @Service
@@ -23,9 +25,10 @@ public class GiftService {
     private final GiftImageRepository giftImageRepository;
 
 
+
     private final String UPLOAD_DIR =
             System.getProperty("user.home")
-                    + "/memory-gift/uploads/";
+            + "/memory-gift/uploads/";
 
 
 
@@ -33,21 +36,29 @@ public class GiftService {
             GiftRepository giftRepository,
             GiftImageRepository giftImageRepository
     ){
+
         this.giftRepository = giftRepository;
         this.giftImageRepository = giftImageRepository;
+
     }
 
 
 
 
-    // ==========================
+
+
+    // =========================
     // SAVE
-    // ==========================
+    // =========================
 
     public Gift saveGift(
+
             String message,
+
             MultipartFile[] images,
+
             MultipartFile audio
+
     ) throws IOException {
 
 
@@ -59,16 +70,8 @@ public class GiftService {
 
 
 
-        // lưu gift trước để có id
-
+        // lưu gift trước
         gift = giftRepository.save(gift);
-
-
-
-        System.out.println(
-                "SAVE GIFT ID = "
-                + gift.getId()
-        );
 
 
 
@@ -78,14 +81,14 @@ public class GiftService {
         if(audio != null && !audio.isEmpty()){
 
 
-            String audioPath =
+            String path =
                     saveFile(
                             audio,
                             "audio"
                     );
 
 
-            gift.setVoiceUrl(audioPath);
+            gift.setVoiceUrl(path);
 
         }
 
@@ -101,10 +104,10 @@ public class GiftService {
             for(MultipartFile image : images){
 
 
-                if(image != null && !image.isEmpty()){
+                if(!image.isEmpty()){
 
 
-                    String imagePath =
+                    String path =
                             saveFile(
                                     image,
                                     "images"
@@ -116,15 +119,10 @@ public class GiftService {
                             new GiftImage();
 
 
-
-                    giftImage.setImageUrl(
-                            imagePath
-                    );
+                    giftImage.setImageUrl(path);
 
 
-                    giftImage.setGift(
-                            gift
-                    );
+                    giftImage.setGift(gift);
 
 
 
@@ -133,16 +131,11 @@ public class GiftService {
                     );
 
 
-                    gift.getImages()
-                            .add(giftImage);
-
-
                 }
 
             }
 
         }
-
 
 
 
@@ -156,27 +149,29 @@ public class GiftService {
 
 
 
-    // ==========================
+
+    // =========================
     // UPDATE
-    // ==========================
+    // =========================
+
 
     public Gift updateGift(
+
             Long id,
+
             String message,
+
             MultipartFile[] images,
+
             MultipartFile audio
+
     ) throws IOException {
 
 
 
         Gift gift =
                 giftRepository.findById(id)
-                .orElseThrow(
-                    () -> new RuntimeException(
-                        "Không tìm thấy gift id: "
-                        + id
-                    )
-                );
+                .orElseThrow();
 
 
 
@@ -184,19 +179,19 @@ public class GiftService {
 
 
 
-
         if(audio != null && !audio.isEmpty()){
 
 
-            gift.setVoiceUrl(
+            String path =
                     saveFile(
                             audio,
                             "audio"
-                    )
-            );
+                    );
+
+
+            gift.setVoiceUrl(path);
 
         }
-
 
 
 
@@ -209,12 +204,11 @@ public class GiftService {
                 if(!image.isEmpty()){
 
 
-                    GiftImage giftImage =
+                    GiftImage img =
                             new GiftImage();
 
 
-
-                    giftImage.setImageUrl(
+                    img.setImageUrl(
                             saveFile(
                                     image,
                                     "images"
@@ -222,19 +216,12 @@ public class GiftService {
                     );
 
 
-                    giftImage.setGift(
-                            gift
-                    );
+                    img.setGift(gift);
 
 
 
-                    giftImageRepository.save(
-                            giftImage
-                    );
+                    giftImageRepository.save(img);
 
-
-                    gift.getImages()
-                            .add(giftImage);
 
                 }
 
@@ -253,43 +240,19 @@ public class GiftService {
 
 
 
-    // ==========================
-    // GET ID
-    // ==========================
+
+
+    // =========================
+    // GET
+    // =========================
+
 
     public Gift getById(Long id){
 
 
         return giftRepository
                 .findById(id)
-                .orElseThrow(
-                    () -> new RuntimeException(
-                        "Không tìm thấy gift id: "
-                        + id
-                    )
-                );
-
-    }
-
-
-
-
-
-
-    // ==========================
-    // GET UID (sau dùng NFC)
-    // ==========================
-
-    public Gift getByUid(String uid){
-
-
-        return giftRepository
-                .findByUid(uid)
-                .orElseThrow(
-                    () -> new RuntimeException(
-                        "Không tìm thấy gift"
-                    )
-                );
+                .orElseThrow();
 
     }
 
@@ -299,27 +262,31 @@ public class GiftService {
 
 
 
-    // ==========================
+    // =========================
     // SAVE FILE
-    // ==========================
+    // =========================
+
 
     private String saveFile(
+
             MultipartFile file,
+
             String folder
+
     ) throws IOException {
 
 
 
-        Path directory =
+        Path dir =
                 Paths.get(
                         UPLOAD_DIR + folder
                 );
 
 
 
-        if(!Files.exists(directory)){
+        if(!Files.exists(dir)){
 
-            Files.createDirectories(directory);
+            Files.createDirectories(dir);
 
         }
 
@@ -328,25 +295,29 @@ public class GiftService {
 
         String filename =
                 UUID.randomUUID()
-                + "_"
-                + file.getOriginalFilename();
-
+                +"_"
+                +file.getOriginalFilename();
 
 
 
         Files.copy(
+
                 file.getInputStream(),
-                directory.resolve(filename),
+
+                dir.resolve(filename),
+
                 StandardCopyOption.REPLACE_EXISTING
+
         );
 
 
 
         return "/files/"
-                + folder
-                + "/"
-                + filename;
+                +folder
+                +"/"
+                +filename;
 
     }
+
 
 }

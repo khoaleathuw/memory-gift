@@ -23,9 +23,9 @@ public class GiftController {
 
 
 
-    // ============================
-    // CREATE
-    // ============================
+    // =========================
+    // SAVE
+    // =========================
 
     @PostMapping(
             value = "/save",
@@ -33,48 +33,21 @@ public class GiftController {
     )
     public ResponseEntity<?> saveGift(
 
-
-            @RequestParam(value = "message", required = false)
+            @RequestParam(value="message", required=false)
             String message,
 
 
-            @RequestParam(value = "images", required = false)
+            @RequestParam(value="images", required=false)
             MultipartFile[] images,
 
 
-            @RequestParam(value = "audio", required = false)
+            @RequestParam(value="audio", required=false)
             MultipartFile audio
 
     ){
 
 
-        System.out.println("======================");
-        System.out.println("SAVE GIFT");
-
-        System.out.println("MESSAGE = " + message);
-
-
-
-        if(images != null){
-
-            System.out.println(
-                    "IMAGE COUNT = " + images.length
-            );
-
-        }
-
-
-        if(audio != null){
-
-            System.out.println(
-                    "AUDIO = " + audio.getOriginalFilename()
-            );
-
-        }
-
-
-
-        try{
+        try {
 
 
             Gift gift =
@@ -85,29 +58,20 @@ public class GiftController {
                     );
 
 
-
-            System.out.println(
-                    "SAVE ID = " + gift.getId()
-            );
-
-
+            // CHỈ TRẢ ID
             return ResponseEntity.ok(
-                     String.valueOf(gift.getId())
+                    gift.getId()
             );
-
 
 
         }catch(Exception e){
 
-
             e.printStackTrace();
-
 
             return ResponseEntity
                     .badRequest()
                     .body(
-                            "Save lỗi: "
-                            + e.getMessage()
+                        "Save lỗi: " + e.getMessage()
                     );
 
         }
@@ -118,11 +82,9 @@ public class GiftController {
 
 
 
-
-
-    // ============================
+    // =========================
     // UPDATE
-    // ============================
+    // =========================
 
     @PostMapping(
             value="/update/{id}",
@@ -130,27 +92,19 @@ public class GiftController {
     )
     public ResponseEntity<?> updateGift(
 
-
             @PathVariable Long id,
 
 
-            @RequestParam(value="message")
+            @RequestParam(value="message", required=false)
             String message,
 
 
-            @RequestParam(
-                    value="images",
-                    required=false
-            )
+            @RequestParam(value="images", required=false)
             MultipartFile[] images,
 
 
-            @RequestParam(
-                    value="audio",
-                    required=false
-            )
+            @RequestParam(value="audio", required=false)
             MultipartFile audio
-
 
     ){
 
@@ -168,7 +122,7 @@ public class GiftController {
 
 
             return ResponseEntity.ok(
-                   String.valueOf(gift.getId())
+                    gift.getId()
             );
 
 
@@ -177,12 +131,10 @@ public class GiftController {
 
             e.printStackTrace();
 
-
             return ResponseEntity
                     .badRequest()
                     .body(
-                            "Update lỗi: "
-                            + e.getMessage()
+                        "Update lỗi: " + e.getMessage()
                     );
 
         }
@@ -194,10 +146,9 @@ public class GiftController {
 
 
 
-
-    // ============================
-    // GET BY ID API
-    // ============================
+    // =========================
+    // GET ID
+    // =========================
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(
@@ -208,27 +159,6 @@ public class GiftController {
 
         return ResponseEntity.ok(
                 giftService.getById(id)
-        );
-
-    }
-
-
-
-
-
-    // ============================
-    // NFC (để sau)
-    // ============================
-
-    @GetMapping("/uid/{uid}")
-    public ResponseEntity<?> getByUid(
-
-            @PathVariable String uid
-
-    ){
-
-        return ResponseEntity.ok(
-                giftService.getByUid(uid)
         );
 
     }

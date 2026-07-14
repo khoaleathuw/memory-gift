@@ -506,8 +506,14 @@ document.getElementById("giftForm").addEventListener("submit", async (e) => {
         document.getElementById("shareLbl").textContent = "Posted!";
         document.getElementById("shareIco").className = "bi bi-check-lg";
 
-        const id = await res.text();
-        setTimeout(() => { window.location.href = "/gift/view/" + id; }, 800);
+                const id = await res.text();
+
+        setTimeout(() => {
+
+            window.location.href =
+                "/gift/view/" + id.trim();
+
+        },800);
 
     } catch (err) {
         alert("Network error");
