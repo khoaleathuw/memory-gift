@@ -26,6 +26,7 @@ public class Gift {
     @OneToMany(
             mappedBy = "gift",
             cascade = CascadeType.ALL,
+            orphanRemoval = true,
             fetch = FetchType.EAGER
     )
     private Set<GiftImage> images = new LinkedHashSet<>();
