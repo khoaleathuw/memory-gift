@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.GiftResponse;
 import com.example.demo.entity.Gift;
 import com.example.demo.service.GiftService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +53,10 @@ public class GiftApiController {
     ) {
         try {
             Gift saved = giftService.saveOrUpdate(id, message, images, audio, uid, removeOldAudio, deleteImages);
-            return ResponseEntity.ok(saved.getId());
+            return ResponseEntity.ok(GiftResponse.success(saved.getId()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(e.getMessage());
+            return ResponseEntity.status(500).body(GiftResponse.fail(e.getMessage()));
         }
     }
 }

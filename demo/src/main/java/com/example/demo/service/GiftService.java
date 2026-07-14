@@ -29,6 +29,12 @@ public class GiftService {
 
     private final String BASE_DIR = System.getProperty("user.home") + "/memory-gift/uploads";
 
+    /**
+     * Toàn bộ method chạy trong MỘT transaction / MỘT persistence context.
+     * -> gift luôn ở trạng thái "managed", Hibernate tự dirty-check và flush
+     *    khi transaction commit, không cần gọi merge() theo kiểu detached-entity
+     *    nữa -> tránh việc orphanRemoval xóa nhầm ảnh cũ khi chỉ sửa audio/message.
+     */
     @Transactional
     public Gift saveOrUpdate(
             Long id,
@@ -41,25 +47,24 @@ public class GiftService {
     ) throws IOException {
 
         Gift gift = (id != null)
-                ? giftRepository.findById(id).orElseThrow(() -> new RuntimeException("Gift not found"))
+                ? giftRepository.findByIdWithImages(id).orElseThrow(() -> new RuntimeException("Gift not found"))
                 : new Gift();
 
-        System.out.println("==================================");
-        System.out.println("Loaded images = " + gift.getImages().size());
+        System.out.println(">>> [BEFORE] gift=" + id + " images=" + gift.getImages().size()
+                + " deleteImages=" + deleteImages
+                + " newImages=" + (images == null ? 0 : images.length));
 
         gift.setMessage(message);
 
         handleAudio(gift, audio, removeOldAudio);
-
-        System.out.println("Before handleImages = " + gift.getImages().size());
-
         handleImages(gift, images, deleteImages);
 
-        System.out.println("After handleImages = " + gift.getImages().size());
-
+        // gift đang managed trong transaction này -> save() ở đây thực chất
+        // không bắt buộc (Hibernate sẽ tự flush), nhưng gọi cho rõ ràng và
+        // để lấy lại instance/id khi tạo mới (id != null trường hợp new Gift()).
         Gift saved = giftRepository.save(gift);
 
-        System.out.println("After save = " + saved.getImages().size());
+        System.out.println(">>> [AFTER] gift=" + saved.getId() + " images=" + saved.getImages().size());
 
         if (uid != null && !uid.isBlank()) {
             NfcTag tag = nfcTagRepository.findByUid(uid).orElse(null);
@@ -68,8 +73,6 @@ public class GiftService {
                 nfcTagRepository.save(tag);
             }
         }
-
-        System.out.println("==================================");
 
         return saved;
     }
@@ -85,7 +88,8 @@ public class GiftService {
         }
 
         if (hasNewAudio) {
-            String audioName = UUID.randomUUID() + "_" + audio.getOriginalFilename();
+            String originalName = audio.getOriginalFilename() != null ? audio.getOriginalFilename() : "audio";
+            String audioName = UUID.randomUUID() + "_" + originalName;
             Path audioPath = Paths.get(BASE_DIR, "audio", audioName);
             Files.createDirectories(audioPath.getParent());
             audio.transferTo(audioPath.toFile());
@@ -95,7 +99,6 @@ public class GiftService {
 
     private void deleteOldAudioFile(Gift gift) {
         if (gift.getVoiceUrl() == null) return;
-
         try {
             String oldAudio = gift.getVoiceUrl().replace("/files/audio/", "");
             Path oldAudioPath = Paths.get(BASE_DIR, "audio", oldAudio);
@@ -108,57 +111,37 @@ public class GiftService {
     // ================= IMAGES =================
     private void handleImages(Gift gift, MultipartFile[] images, List<String> deleteImages) throws IOException {
 
-        System.out.println("deleteImages = " + deleteImages);
-        System.out.println("images = " + (images == null ? "null" : images.length));
-        System.out.println("Current images before = " + gift.getImages().size());
-
-        // Xóa ảnh
+        // 1) Xóa các ảnh bị chọn xóa riêng lẻ (nếu có), KHÔNG đụng tới ảnh còn lại
         if (deleteImages != null && !deleteImages.isEmpty()) {
-
             Iterator<GiftImage> it = gift.getImages().iterator();
-
             while (it.hasNext()) {
                 GiftImage img = it.next();
-
                 if (deleteImages.contains(img.getImageUrl())) {
-
-                    System.out.println("Delete image: " + img.getImageUrl());
-
                     deleteImageFile(img.getImageUrl());
-                    it.remove();
+                    it.remove(); // orphanRemoval sẽ xóa row trong DB khi flush
                 }
             }
         }
 
-        // Thêm ảnh
+        // 2) Thêm ảnh mới (nếu có) — KHÔNG xóa ảnh cũ còn lại, chỉ append
         if (images != null) {
-
             for (MultipartFile f : images) {
+                if (f == null || f.isEmpty()) continue;
 
-                if (f == null || f.isEmpty()) {
-                    continue;
-                }
-
-                String imgName = UUID.randomUUID() + "_" + f.getOriginalFilename();
+                String originalName = f.getOriginalFilename() != null ? f.getOriginalFilename() : "image";
+                String imgName = UUID.randomUUID() + "_" + originalName;
                 Path imgPath = Paths.get(BASE_DIR, "images", imgName);
-
                 Files.createDirectories(imgPath.getParent());
                 f.transferTo(imgPath.toFile());
 
                 GiftImage img = new GiftImage();
                 img.setImageUrl("/files/images/" + imgName);
-
-                gift.addImage(img);
-
-                System.out.println("Add image: " + img.getImageUrl());
+                gift.addImage(img); // dùng helper để set 2 chiều cho đúng
             }
         }
-
-        System.out.println("Current images after = " + gift.getImages().size());
     }
 
     private void deleteImageFile(String imageUrl) {
-
         try {
             String imgName = imageUrl.replace("/files/images/", "");
             Path imgPath = Paths.get(BASE_DIR, "images", imgName);
