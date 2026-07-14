@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -22,6 +23,7 @@ body {
     margin: 0 auto;
 }
 
+/* ── TOPBAR ── */
 .ig-topbar {
     display: flex;
     align-items: center;
@@ -43,6 +45,7 @@ body {
 .ig-topbar .ig-done { color: #0095f6; }
 .ig-topbar .ig-done:hover { color: #1aa3ff; }
 
+/* ── PROFILE ROW ── */
 .ig-profile {
     display: flex;
     align-items: center;
@@ -65,6 +68,7 @@ body {
 .ig-username { font-size: 13px; font-weight: 700; }
 .ig-sublabel { font-size: 11px; color: #a8a8a8; margin-top: 2px; }
 
+/* ── PHOTO GRID ── */
 .ig-photo-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -113,8 +117,10 @@ body {
 }
 .ig-photo-item:hover .del-btn { opacity: 1; }
 
+/* ── DIVIDER ── */
 .ig-divider { height: 0.5px; background: #262626; }
 
+/* ── CAPTION / TEXTAREA ── */
 .ig-caption-wrap {
     display: flex;
     gap: 10px;
@@ -138,6 +144,7 @@ body {
     text-align: right; padding: 0 16px 10px;
 }
 
+/* ── SECTION LABEL ── */
 .ig-label {
     font-size: 11px; font-weight: 700;
     color: #a8a8a8; text-transform: uppercase;
@@ -145,6 +152,7 @@ body {
     padding: 12px 16px 6px;
 }
 
+/* ── EXISTING AUDIO ── */
 .ig-existing-audio {
     margin: 0 16px 10px;
     background: #111;
@@ -189,6 +197,7 @@ body {
 .ig-remove-audio:hover { color: #ed4956; }
 audio#hiddenOldAudio, audio#audioPreview { display: none; }
 
+/* ── VOICE ROW ── */
 .ig-voice-row {
     display: flex;
     align-items: center;
@@ -221,6 +230,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 #recStatus { font-size: 12px; color: #555; }
 #recStatus.active { color: #e02020; }
 
+/* ── NEW AUDIO PREVIEW ── */
 .ig-new-audio {
     margin: 0 16px 14px;
     background: #111; border-radius: 12px;
@@ -237,6 +247,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
     flex-shrink: 0;
 }
 
+/* ── IG ROWS ── */
 .ig-row {
     display: flex; align-items: center;
     justify-content: space-between;
@@ -249,6 +260,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 .ig-row-left .bi { font-size: 20px; }
 .ig-row-right { color: #a8a8a8; font-size: 20px; }
 
+/* ── BOTTOM SAVE ── */
 .ig-bottom-bar {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px;
@@ -273,15 +285,17 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="ig-topbar">
     <button class="ig-cancel" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
     <span class="ig-title">Edit post</span>
-    <button class="ig-done" type="button" onclick="submitForm()">Done</button>
+    <button class="ig-done" form="giftForm" type="submit">Done</button>
 </div>
 
 <form id="giftForm">
 <input type="hidden" id="giftId" th:value="${gift.id}">
 
+<!-- PROFILE ROW -->
 <div class="ig-profile">
     <div class="ig-avatar-ring"><div class="ig-avatar-inner">Y</div></div>
     <div>
@@ -290,6 +304,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
     </div>
 </div>
 
+<!-- PHOTO GRID -->
 <input type="file" id="imageInput" accept="image/*" multiple hidden>
 <div class="ig-photo-grid" id="previewContainer">
     <div class="ig-photo-item" th:each="img : ${gift.images}">
@@ -306,6 +321,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 
 <div class="ig-divider"></div>
 
+<!-- CAPTION -->
 <div class="ig-caption-wrap">
     <div class="ig-avatar-ring" style="width:32px;height:32px;flex-shrink:0">
         <div class="ig-avatar-inner" style="font-size:11px">Y</div>
@@ -317,6 +333,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 
 <div class="ig-divider"></div>
 
+<!-- EXISTING AUDIO -->
 <div id="oldAudioBox" th:if="${gift.voiceUrl != null && gift.voiceUrl != ''}">
     <div class="ig-label">Current voice note</div>
     <div class="ig-existing-audio">
@@ -339,6 +356,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
     <audio id="hiddenOldAudio"><source th:src="@{${gift.voiceUrl}}"></audio>
 </div>
 
+<!-- NEW VOICE -->
 <div class="ig-label">Voice note</div>
 <div class="ig-voice-row">
     <button type="button" class="ig-rec-btn" id="recordBtn" onclick="toggleRecord()">
@@ -352,6 +370,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
     <input type="file" id="audioInput" accept="audio/*" hidden>
 </div>
 
+<!-- NEW AUDIO PREVIEW -->
 <div class="ig-new-audio" id="newAudioWrap">
     <button type="button" class="ig-play-btn" id="newPlayBtn" onclick="toggleNewAudio()">
         <i class="bi bi-play-fill" id="newPlayIco"></i>
@@ -383,8 +402,9 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 
 </form>
 
+<!-- BOTTOM BAR -->
 <div class="ig-bottom-bar">
-    <button type="button" class="ig-save-btn" id="saveBtn" onclick="submitForm()">
+    <button class="ig-save-btn" id="saveBtn" onclick="submitForm()">
         <i class="bi bi-check-lg" id="saveIco"></i>
         <span id="saveLbl">Save changes</span>
     </button>
@@ -400,12 +420,14 @@ let deletedImages = [];
 let newAudio = null;
 let removeOldAudio = false;
 
+/* ── CHAR COUNT ── */
 function updateCount(el){
     document.getElementById("cCount").textContent = el.value.length;
 }
 const msgEl = document.getElementById("message");
 if(msgEl) document.getElementById("cCount").textContent = msgEl.value.length;
 
+/* ── DELETE OLD IMAGES ── */
 document.querySelectorAll(".old-image").forEach(btn => {
     btn.onclick = () => {
         deletedImages.push(btn.dataset.url);
@@ -414,6 +436,7 @@ document.querySelectorAll(".old-image").forEach(btn => {
     };
 });
 
+/* ── ADD NEW IMAGES ── */
 document.getElementById("imageInput").addEventListener("change", function(){
     Array.from(this.files).forEach(file => {
         newImages.push(file);
@@ -441,6 +464,7 @@ function updateAddSlot(){
     addSlot.style.display = count >= 9 ? "none" : "flex";
 }
 
+/* ── OLD AUDIO PLAYER ── */
 const oldAudio = document.getElementById("hiddenOldAudio");
 function fmt(s){ const m=Math.floor(s/60); return m+":"+(Math.floor(s%60)+"").padStart(2,"0"); }
 if(oldAudio){
@@ -471,6 +495,7 @@ function doRemoveOldAudio(){
     document.getElementById("oldAudioBox").style.display = "none";
 }
 
+/* ── NEW AUDIO PLAYER ── */
 const newAudioEl = document.getElementById("audioPreview");
 function showNewAudio(url){
     newAudioEl.src = url;
@@ -497,6 +522,7 @@ function seekNew(e){
     newAudioEl.currentTime = ((e.clientX-r.left)/r.width)*newAudioEl.duration;
 }
 
+/* ── UPLOAD AUDIO ── */
 document.getElementById("audioInput").addEventListener("change", function(){
     if(this.files.length){
         newAudio = this.files[0];
@@ -507,6 +533,7 @@ document.getElementById("audioInput").addEventListener("change", function(){
     }
 });
 
+/* ── RECORD AUDIO ── */
 let recorder, chunks=[], stream=null;
 async function toggleRecord(){
     const btn = document.getElementById("recordBtn");
@@ -543,6 +570,7 @@ async function toggleRecord(){
     }
 }
 
+/* ── SUBMIT ── */
 async function submitForm(){
     const btn = document.getElementById("saveBtn");
     btn.classList.add("saving");
@@ -559,15 +587,15 @@ async function submitForm(){
 
     try {
         const res = await fetch("/api/gift/update/" + giftId, {method:"POST", body:fd});
-        const json = await res.json();
-        if(res.ok && json.success){
+        const text = await res.text();
+        if(res.ok){
             btn.classList.remove("saving");
             btn.classList.add("done");
             document.getElementById("saveLbl").textContent = "Saved!";
             document.getElementById("saveIco").className = "bi bi-check-lg";
             setTimeout(() => { location.href = "/gift/view/" + giftId; }, 700);
         } else {
-            alert("Lỗi: " + (json.message || "Unknown error"));
+            alert("Lỗi: " + text);
             btn.classList.remove("saving");
             btn.disabled = false;
             document.getElementById("saveLbl").textContent = "Save changes";
