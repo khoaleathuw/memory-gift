@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 @Controller
 @RequestMapping("/gift")
@@ -29,7 +29,7 @@ public class GiftViewController {
         }
 
         if (gift.getImages() == null) {
-            gift.setImages(new ArrayList<>());
+            gift.setImages(new LinkedHashSet<>());
         }
 
         model.addAttribute("gift", gift);
@@ -45,7 +45,7 @@ public class GiftViewController {
                 .orElseThrow(() -> new RuntimeException("Gift not found"));
 
         if (gift.getImages() == null) {
-            gift.setImages(new ArrayList<>());
+            gift.setImages(new LinkedHashSet<>());
         }
 
         model.addAttribute("gift", gift);
