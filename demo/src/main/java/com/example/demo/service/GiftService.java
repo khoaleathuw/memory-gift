@@ -173,7 +173,7 @@ public class GiftService {
                 giftRepository.findById(id)
                 .orElseThrow();
 
-
+        System.out.println("Before: " + gift.getImages().size());
 
         gift.setMessage(message);
 
@@ -219,7 +219,7 @@ public class GiftService {
         }
 
         }
-
+        System.out.println("After: " + gift.getImages().size());
         return giftRepository.save(gift);
 
     }
