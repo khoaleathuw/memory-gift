@@ -62,7 +62,8 @@ public class GiftService {
         // gift đang managed trong transaction này -> save() ở đây thực chất
         // không bắt buộc (Hibernate sẽ tự flush), nhưng gọi cho rõ ràng và
         // để lấy lại instance/id khi tạo mới (id != null trường hợp new Gift()).
-        Gift saved = giftRepository.save(gift);
+        giftRepository.flush();
+        Gift saved = gift;
 
         System.out.println(">>> [AFTER] gift=" + saved.getId() + " images=" + saved.getImages().size());
 

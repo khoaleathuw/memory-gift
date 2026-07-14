@@ -25,9 +25,7 @@ public class Gift {
     // collection theo thứ tự -> dễ gây xóa nhầm khi entity đi qua vài lần load/attach.
     @OneToMany(
             mappedBy = "gift",
-            cascade = CascadeType.ALL,
-            orphanRemoval = false,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private Set<GiftImage> images = new LinkedHashSet<>();
 
