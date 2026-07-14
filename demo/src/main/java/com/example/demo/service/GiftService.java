@@ -7,6 +7,7 @@ import com.example.demo.repository.GiftRepository;
 import com.example.demo.repository.GiftImageRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -51,6 +52,7 @@ public class GiftService {
     // SAVE
     // =========================
 
+    @Transactional
     public Gift saveGift(
 
             String message,
@@ -70,7 +72,7 @@ public class GiftService {
 
 
 
-        // lưu gift trước
+        // lưu gift trước để có id (cần cho việc tạo đường dẫn file nếu sau này cần)
         gift = giftRepository.save(gift);
 
 
@@ -122,13 +124,10 @@ public class GiftService {
                     giftImage.setImageUrl(path);
 
 
-                    giftImage.setGift(gift);
-
-
-
-                    giftImageRepository.save(
-                            giftImage
-                    );
+                    // dùng helper 2 chiều, cascade = ALL trên Gift.images
+                    // sẽ tự INSERT khi transaction commit -> KHÔNG cần
+                    // gọi giftImageRepository.save(giftImage) thủ công nữa
+                    gift.addImage(giftImage);
 
 
                 }
@@ -139,7 +138,10 @@ public class GiftService {
 
 
 
-        return giftRepository.save(gift);
+        // Gift đang managed trong transaction này (nhờ @Transactional),
+        // Hibernate sẽ tự flush thay đổi (voiceUrl, images mới) khi commit.
+        // KHÔNG cần gọi giftRepository.save(gift) lần nữa ở đây.
+        return gift;
 
     }
 
@@ -155,6 +157,7 @@ public class GiftService {
     // =========================
 
 
+    @Transactional
     public Gift updateGift(
 
             Long id,
@@ -210,9 +213,8 @@ public class GiftService {
                         )
                 );
 
-                img.setGift(gift);
-
-                gift.getImages().add(img);   // <-- thay dòng này
+                // dùng helper 2 chiều thay vì set thủ công 2 dòng như trước
+                gift.addImage(img);
 
                 }
 
@@ -220,7 +222,12 @@ public class GiftService {
 
         }
         System.out.println("After: " + gift.getImages().size());
-        return giftRepository.save(gift);
+
+        // gift đang managed trong transaction này (@Transactional),
+        // Hibernate tự dirty-check + flush khi commit.
+        // KHÔNG cần gọi giftRepository.save(gift) nữa -> tránh merge() và
+        // các SELECT phụ mà merge() gây ra.
+        return gift;
 
     }
 
@@ -236,6 +243,7 @@ public class GiftService {
     // =========================
 
 
+    @Transactional(readOnly = true)
     public Gift getById(Long id){
 
 
