@@ -276,7 +276,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 <div class="ig-topbar">
     <button class="ig-cancel" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
     <span class="ig-title">Edit post</span>
-    <button class="ig-done" form="giftForm" type="submit">Done</button>
+    <button class="ig-done" type="button" onclick="submitForm()">Done</button>
 </div>
 
 <form id="giftForm">
@@ -384,7 +384,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </form>
 
 <div class="ig-bottom-bar">
-    <button class="ig-save-btn" id="saveBtn" onclick="submitForm()">
+    <button type="button" class="ig-save-btn" id="saveBtn" onclick="submitForm()">
         <i class="bi bi-check-lg" id="saveIco"></i>
         <span id="saveLbl">Save changes</span>
     </button>
