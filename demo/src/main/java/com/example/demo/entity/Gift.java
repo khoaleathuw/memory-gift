@@ -32,7 +32,7 @@ public class Gift {
     @OneToMany(
         mappedBy = "gift",
         cascade = CascadeType.ALL,
-        orphanRemoval = false,
+        orphanRemoval = true,   // <-- đổi từ false -> true
         fetch = FetchType.LAZY
     )
     private List<GiftImage> images = new ArrayList<>();

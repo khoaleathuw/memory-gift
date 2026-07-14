@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/gift")
@@ -104,7 +106,15 @@ public class GiftController {
 
 
             @RequestParam(value="audio", required=false)
-            MultipartFile audio
+            MultipartFile audio,
+
+
+            @RequestParam(value="removeOldAudio", required=false, defaultValue="false")
+            boolean removeOldAudio,
+
+
+            @RequestParam(value="deleteImages", required=false)
+            List<String> deleteImages
 
     ){
 
@@ -117,7 +127,9 @@ public class GiftController {
                             id,
                             message,
                             images,
-                            audio
+                            audio,
+                            removeOldAudio,
+                            deleteImages
                     );
 
 

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -72,7 +73,6 @@ public class GiftService {
 
 
 
-        // lưu gift trước để có id (cần cho việc tạo đường dẫn file nếu sau này cần)
         gift = giftRepository.save(gift);
 
 
@@ -124,9 +124,6 @@ public class GiftService {
                     giftImage.setImageUrl(path);
 
 
-                    // dùng helper 2 chiều, cascade = ALL trên Gift.images
-                    // sẽ tự INSERT khi transaction commit -> KHÔNG cần
-                    // gọi giftImageRepository.save(giftImage) thủ công nữa
                     gift.addImage(giftImage);
 
 
@@ -138,9 +135,7 @@ public class GiftService {
 
 
 
-        // Gift đang managed trong transaction này (nhờ @Transactional),
-        // Hibernate sẽ tự flush thay đổi (voiceUrl, images mới) khi commit.
-        // KHÔNG cần gọi giftRepository.save(gift) lần nữa ở đây.
+        // gift dang managed trong transaction -> Hibernate tu flush khi commit
         return gift;
 
     }
@@ -166,24 +161,47 @@ public class GiftService {
 
             MultipartFile[] images,
 
-            MultipartFile audio
+            MultipartFile audio,
+
+            boolean removeOldAudio,
+
+            List<String> deleteImages
 
     ) throws IOException {
 
 
 
+        // CHI load Gift dung 1 LAN cho toan bo thao tac update
         Gift gift =
                 giftRepository.findById(id)
                 .orElseThrow();
 
-        System.out.println("Before: " + gift.getImages().size());
 
-        gift.setMessage(message);
+        if(message != null){
+
+            gift.setMessage(message);
+
+        }
 
 
+
+        // =========================
+        // XOA AUDIO CU (neu client yeu cau)
+        // =========================
+
+        if(removeOldAudio){
+
+            gift.setVoiceUrl(null);
+
+        }
+
+
+
+        // =========================
+        // AUDIO MOI (ghi de, khong can select them)
+        // =========================
 
         if(audio != null && !audio.isEmpty()){
-
 
             String path =
                     saveFile(
@@ -191,42 +209,62 @@ public class GiftService {
                             "audio"
                     );
 
-
             gift.setVoiceUrl(path);
 
         }
 
 
 
+        // =========================
+        // XOA ANH CU
+        // Thao tac thang tren collection da load san (gift.getImages()),
+        // KHONG loop goi lai giftRepository.findById() cho tung anh.
+        // Nho orphanRemoval = true tren Gift.images, Hibernate se tu
+        // DELETE cac dong bi remove khoi collection khi flush.
+        // =========================
+
+        if(deleteImages != null && !deleteImages.isEmpty()){
+
+            gift.getImages().removeIf(
+                    img -> deleteImages.contains(img.getImageUrl())
+            );
+
+        }
+
+
+
+        // =========================
+        // THEM ANH MOI
+        // =========================
+
         if(images != null){
 
-        for(MultipartFile image : images){
+            for(MultipartFile image : images){
 
                 if(!image.isEmpty()){
 
-                GiftImage img = new GiftImage();
+                    GiftImage img = new GiftImage();
 
-                img.setImageUrl(
-                        saveFile(
-                                image,
-                                "images"
-                        )
-                );
+                    img.setImageUrl(
+                            saveFile(
+                                    image,
+                                    "images"
+                            )
+                    );
 
-                // dùng helper 2 chiều thay vì set thủ công 2 dòng như trước
-                gift.addImage(img);
+                    gift.addImage(img);
 
                 }
 
-        }
+            }
 
         }
-        System.out.println("After: " + gift.getImages().size());
 
-        // gift đang managed trong transaction này (@Transactional),
-        // Hibernate tự dirty-check + flush khi commit.
-        // KHÔNG cần gọi giftRepository.save(gift) nữa -> tránh merge() và
-        // các SELECT phụ mà merge() gây ra.
+
+
+        // gift dang managed trong transaction -> Hibernate tu dirty-check
+        // va flush (UPDATE gift, DELETE anh bi xoa, INSERT anh moi) khi commit.
+        // KHONG can goi giftRepository.save(gift) nua.
         return gift;
 
     }
