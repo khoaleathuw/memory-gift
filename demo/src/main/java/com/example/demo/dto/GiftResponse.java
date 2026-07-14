@@ -1,50 +1,108 @@
 package com.example.demo.dto;
 
+
+import java.util.List;
+
+
+
 public class GiftResponse {
 
-    private boolean success;
+
+    private Long id;
+
+
+    private String title;
+
+
     private String message;
-    private Object data;
 
-    public GiftResponse() {}
 
-    public GiftResponse(boolean success, String message, Object data) {
-        this.success = success;
-        this.message = message;
-        this.data = data;
+    private String voiceUrl;
+
+
+    private String uid;
+
+
+    private List<String> images;
+
+
+
+
+
+    public GiftResponse() {
+
     }
 
-    // ================= FACTORY =================
-    public static GiftResponse success(Object data) {
-        return new GiftResponse(true, "OK", data);
+
+
+
+    public Long getId() {
+        return id;
     }
 
-    public static GiftResponse fail(String message) {
-        return new GiftResponse(false, message, null);
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    // ================= GETTER SETTER =================
-    public boolean isSuccess() {
-        return success;
+
+
+
+    public String getTitle() {
+        return title;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+
+    public void setTitle(String title) {
+        this.title = title;
     }
+
+
+
 
     public String getMessage() {
         return message;
     }
 
+
     public void setMessage(String message) {
         this.message = message;
     }
 
-    public Object getData() {
-        return data;
+
+
+
+    public String getVoiceUrl() {
+        return voiceUrl;
     }
 
-    public void setData(Object data) {
-        this.data = data;
+
+    public void setVoiceUrl(String voiceUrl) {
+        this.voiceUrl = voiceUrl;
     }
+
+
+
+
+    public String getUid() {
+        return uid;
+    }
+
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+
+
+
+    public List<String> getImages() {
+        return images;
+    }
+
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
 }
