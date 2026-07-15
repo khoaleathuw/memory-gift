@@ -1,121 +1,121 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "gift")
+
 public class Gift {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
+
+
+    private String uid;
+
 
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+
     private String message;
 
-    @Column(name = "voice_url")
+
     private String voiceUrl;
 
-    @Column(name = "gif_url")
-    private String gifUrl;
 
-    @Column(unique = true)
-    private String uid;
-
-    @OneToMany(
-            mappedBy = "gift",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
     private List<GiftImage> images = new ArrayList<>();
+
 
     public Gift() {
     }
 
-    //==========================
-    // Getter & Setter
-    //==========================
+
+
+    public Gift(Long id,
+                String uid,
+                String title,
+                String message,
+                String voiceUrl) {
+
+        this.id = id;
+        this.uid = uid;
+        this.title = title;
+        this.message = message;
+        this.voiceUrl = voiceUrl;
+
+    }
+
+
 
     public Long getId() {
         return id;
     }
 
+
     public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
-    }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getVoiceUrl() {
-        return voiceUrl;
-    }
-
-    public void setVoiceUrl(String voiceUrl) {
-        this.voiceUrl = voiceUrl;
-    }
-
-    public String getGifUrl() {
-        return gifUrl;
-    }
-
-    public void setGifUrl(String gifUrl) {
-        this.gifUrl = gifUrl;
-    }
 
     public String getUid() {
         return uid;
     }
 
+
     public void setUid(String uid) {
         this.uid = uid;
     }
+
+
+
+    public String getTitle() {
+        return title;
+    }
+
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+
+
+    public String getMessage() {
+        return message;
+    }
+
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+
+
+    public String getVoiceUrl() {
+        return voiceUrl;
+    }
+
+
+    public void setVoiceUrl(String voiceUrl) {
+        this.voiceUrl = voiceUrl;
+    }
+
+
 
     public List<GiftImage> getImages() {
         return images;
     }
 
-    /**
-     * Không thay thế List bằng List mới trực tiếp để tránh Hibernate mất tracking.
-     */
+
     public void setImages(List<GiftImage> images) {
-        this.images.clear();
-        if (images != null) {
-            for (GiftImage image : images) {
-                addImage(image);
-            }
-        }
+        this.images = images;
     }
 
-    //==========================
-    // Helper Methods
-    //==========================
+
 
     public void addImage(GiftImage image) {
-        images.add(image);
-        image.setGift(this);
+
+        this.images.add(image);
+
     }
 
-    public void removeImage(GiftImage image) {
-        images.remove(image);
-        image.setGift(null);
-    }
 }

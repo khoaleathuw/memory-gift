@@ -507,7 +507,7 @@ document.getElementById("giftForm").addEventListener("submit", async (e) => {
         document.getElementById("shareIco").className = "bi bi-check-lg";
 
         const id = await res.text();
-        setTimeout(() => { window.location.href = "/gift/view/" + id; }, 800);
+        setTimeout(() => { window.location.href = "/gift/view/" + uid; }, 800);
 
     } catch (err) {
         alert("Network error");

@@ -2,126 +2,174 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Gift;
 import com.example.demo.service.GiftService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/gift")
+@CrossOrigin("*")
 public class GiftController {
+
 
     private final GiftService giftService;
 
-    public GiftController(GiftService giftService) {
+
+    public GiftController(GiftService giftService){
+
         this.giftService = giftService;
+
     }
 
-    // ==========================================
+
+
+    // =========================
     // SAVE
-    // ==========================================
-    @PostMapping(
-            value = "/save",
-            consumes = "multipart/form-data"
-    )
+    // =========================
+
+    @PostMapping("/save/{uid}")
     public ResponseEntity<?> saveGift(
 
-            @RequestParam(value = "message", required = false) String message,
+            @PathVariable String uid,
 
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(required=false)
+            String message,
 
-            @RequestParam(value = "audio", required = false) MultipartFile audio,
+            @RequestParam(required=false)
+            MultipartFile[] images,
 
-            @RequestParam(value = "gif", required = false) MultipartFile gif
+            @RequestParam(required=false)
+            MultipartFile audio
 
-    ) {
+    ){
 
         try {
 
-            Gift gift = giftService.saveGift(
-                    message,
-                    images,
-                    audio,
-                    gif
-            );
 
-            return ResponseEntity.ok(gift.getId());
+            Gift gift =
+                    giftService.saveGift(
+                            uid,
+                            null,
+                            message,
+                            images,
+                            audio
+                    );
 
-        } catch (Exception e) {
+
+            return ResponseEntity.ok(gift);
+
+
+        }catch(Exception e){
 
             e.printStackTrace();
 
-            return ResponseEntity.badRequest().body("Save lỗi: " + e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
 
         }
+
     }
 
-    // ==========================================
-    // UPDATE
-    // ==========================================
-    @PostMapping(
-            value = "/update/{id}",
-            consumes = "multipart/form-data"
-    )
+
+
+    // =========================
+    // UPDATE UID
+    // =========================
+
+    @PutMapping("/update/{uid}")
     public ResponseEntity<?> updateGift(
 
-            @PathVariable Long id,
+            @PathVariable String uid,
 
-            @RequestParam(value = "message", required = false) String message,
+            @RequestParam(required=false)
+            String message,
 
-            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(required=false)
+            MultipartFile[] images,
 
-            @RequestParam(value = "audio", required = false) MultipartFile audio,
+            @RequestParam(required=false)
+            MultipartFile audio,
 
-            @RequestParam(value = "gif", required = false) MultipartFile gif,
-
-            @RequestParam(value = "removeOldAudio", defaultValue = "false")
+            @RequestParam(defaultValue="false")
             boolean removeOldAudio,
 
-            @RequestParam(value = "deleteImages", required = false)
+            @RequestParam(required=false)
             List<String> deleteImages
 
-    ) {
+    ){
 
-        try {
+        try{
 
-            Gift gift = giftService.updateGift(
 
-                    id,
+            Gift gift =
+                    giftService.updateGiftByUid(
 
-                    message,
+                            uid,
 
-                    images,
+                            null,
 
-                    audio,
+                            message,
 
-                    gif,
+                            images,
 
-                    removeOldAudio,
+                            audio,
 
-                    deleteImages
+                            removeOldAudio,
 
-            );
+                            deleteImages
 
-            return ResponseEntity.ok(gift.getId());
+                    );
 
-        } catch (Exception e) {
+
+            return ResponseEntity.ok(gift);
+
+
+
+        }catch(Exception e){
 
             e.printStackTrace();
 
-            return ResponseEntity.badRequest().body("Update lỗi: " + e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
 
         }
 
     }
 
-    // ==========================================
-    // GET
-    // ==========================================
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(giftService.getById(id));
+
+
+    // =========================
+    // GET UID
+    // =========================
+
+    @GetMapping("/uid/{uid}")
+    public ResponseEntity<?> getByUid(
+
+            @PathVariable String uid
+
+    ){
+
+
+        Gift gift =
+                giftService.getByUid(uid);
+
+
+
+        if(gift == null){
+
+            return ResponseEntity.notFound().build();
+
+        }
+
+
+        return ResponseEntity.ok(gift);
+
     }
 
 }

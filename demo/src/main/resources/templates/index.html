@@ -363,6 +363,15 @@ let mediaRecorder;
 let chunks = [];
 let stream;
 
+
+// LẤY UID TỪ URL
+const urlParams = new URLSearchParams(window.location.search);
+
+const uid = urlParams.get("uid");
+
+if (!uid) {
+    alert("Không tìm thấy UID NFC");
+}
 // ================= IMAGE =================
 const imageInput = document.getElementById("imageInput");
 const previewContainer = document.getElementById("previewContainer");
@@ -489,7 +498,12 @@ document.getElementById("giftForm").addEventListener("submit", async (e) => {
     selectedImages.forEach(i => formData.append("images", i));
     if (audioFile) formData.append("audio", audioFile);
 
-    const url = window.location.origin + "/api/gift/save";
+    // LẤY UID TỪ PATHNAME VÀ ĐỔI ĐƯỜNG DẪN API THEO YÊU CẦU
+   const path = window.location.pathname;
+
+    const url = window.location.origin 
+        + "/api/gift/save/" 
+        + uid;  
 
     try {
         const res = await fetch(url, { method: "POST", body: formData });
@@ -506,14 +520,10 @@ document.getElementById("giftForm").addEventListener("submit", async (e) => {
         document.getElementById("shareLbl").textContent = "Posted!";
         document.getElementById("shareIco").className = "bi bi-check-lg";
 
-                const id = await res.text();
-
+        // Chuyển hướng về trang view với uid vừa dùng
         setTimeout(() => {
-
-            window.location.href =
-                "/gift/view/" + id.trim();
-
-        },800);
+            window.location.href = "/gift/view/" + uid;
+        }, 800);
 
     } catch (err) {
         alert("Network error");

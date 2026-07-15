@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.file.*;
 
 @RestController
+@RequestMapping("/files")
 public class FileController {
 
-    private final String UPLOAD_DIR =
-            System.getProperty("user.home")
-                    + "/memory-gift/uploads/";
+    private static final Path BASE_DIR =
+            Paths.get(System.getProperty("user.home"), "memory-gift", "uploads");
 
-    @GetMapping("/files/{folder}/{filename:.+}")
+    @GetMapping("/{folder}/{filename:.+}")
     public ResponseEntity<Resource> getFile(
 
             @PathVariable String folder,
@@ -25,50 +25,21 @@ public class FileController {
 
         try {
 
-            Path filePath = Paths.get(
-                    UPLOAD_DIR,
-                    folder,
-                    filename
-            ).normalize();
+            Path file = BASE_DIR.resolve(folder).resolve(filename);
 
-            Resource resource = new UrlResource(filePath.toUri());
+            Resource resource = new UrlResource(file.toUri());
 
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
 
-            String contentType = Files.probeContentType(filePath);
-
-            if (contentType == null) {
-
-                switch (folder) {
-
-                    case "audio":
-                        contentType = "audio/webm";
-                        break;
-
-                    case "gif":
-                        contentType = "image/gif";
-                        break;
-
-                    default:
-                        contentType = "image/jpeg";
-                        break;
-                }
-
-            }
-
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(resource);
 
         } catch (Exception e) {
 
-            e.printStackTrace();
-
-            return ResponseEntity
-                    .internalServerError()
-                    .build();
+            return ResponseEntity.notFound().build();
 
         }
 

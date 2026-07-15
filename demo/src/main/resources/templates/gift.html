@@ -317,7 +317,7 @@ audio#hiddenAudio { display: none; }
 <div class="ig-topbar">
     <button onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
     <span class="ig-title">Post</span>
-    <a th:href="@{'/gift/edit/' + ${gift.id}}"><i class="bi bi-pencil"></i></a>
+    <a th:href="@{'/gift/edit/' + ${uid}}"><i class="bi bi-pencil"></i></a>
 </div>
 
 <div class="ig-profile">
@@ -331,38 +331,17 @@ audio#hiddenAudio { display: none; }
     <button class="ig-more"><i class="bi bi-three-dots"></i></button>
 </div>
 
-<!-- GIF DISPLAY SECTION -->
-<div th:if="${gift.gifUrl != null}">
-    <img
-        th:src="${gift.gifUrl}"
-        style="width:100%;display:block;">
-</div>
-
-<!-- PHOTO GRID SWIPER -->
-<div class="ig-swiper" id="swiper"
-     th:if="${gift.gifUrl == null and !#lists.isEmpty(gift.images)}">
+<div class="ig-swiper" id="swiper">
     <div class="ig-slides" id="slides">
-        <div class="ig-slide" th:each="img : ${gift.images}">
-            <img th:src="${img.imageUrl}" alt="">
+        <div class="ig-slide"
+             th:each="img : ${gift.images}">
+            <img th:src="@{'/files/images/' + ${img.imageUrl}}">
         </div>
     </div>
 </div>
 
-<!-- DOTS FOR PHOTO SWIPER -->
-<div class="ig-dots" id="dots" th:if="${gift.gifUrl == null and #lists.size(gift.images) > 1}">
-    <div th:each="img,iter : ${gift.images}"
-         th:class="${iter.index == 0} ? 'ig-dot active' : 'ig-dot'"></div>
-</div>
-
-<div class="ig-actions">
-    <div class="ig-actions-left">
-        <button class="ig-heart" onclick="toggleHeart(this)" aria-label="Like">
-            <i class="bi bi-heart"></i>
-        </button>
-        <button onclick="focusComment()" aria-label="Comment"><i class="bi bi-chat"></i></button>
-        <button aria-label="Share"><i class="bi bi-send"></i></button>
-    </div>
-    <button aria-label="Save"><i class="bi bi-bookmark"></i></button>
+<div class="ig-dots" id="dots" th:if="${gift.images != null and gift.images.size() > 1}">
+    <span class="ig-dot" th:each="img, iter : ${gift.images}" th:classappend="${iter.index == 0} ? ' active'"></span>
 </div>
 
 <div class="ig-likes" id="likesCount">1 like</div>
@@ -419,7 +398,7 @@ audio#hiddenAudio { display: none; }
         </div>
     </div>
     <audio id="hiddenAudio">
-        <source th:src="${gift.voiceUrl}">
+        <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
     </audio>
 </div>
 

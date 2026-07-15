@@ -1,25 +1,24 @@
-    package com.example.demo.entity;
+package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "gift_image")
 public class GiftImage {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Long giftId;
 
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gift_id")
-    // Giải pháp: Chặn Jackson serialize ngược lại trường "images" của Gift gây vòng lặp vô hạn
-    @JsonIgnoreProperties("images") 
-    private Gift gift;
-
     public GiftImage() {
+    }
+
+    public GiftImage(Long id,
+                     Long giftId,
+                     String imageUrl) {
+
+        this.id = id;
+        this.giftId = giftId;
+        this.imageUrl = imageUrl;
+
     }
 
     public Long getId() {
@@ -30,6 +29,14 @@ public class GiftImage {
         this.id = id;
     }
 
+    public Long getGiftId() {
+        return giftId;
+    }
+
+    public void setGiftId(Long giftId) {
+        this.giftId = giftId;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
@@ -38,11 +45,4 @@ public class GiftImage {
         this.imageUrl = imageUrl;
     }
 
-    public Gift getGift() {
-        return gift;
-    }
-
-    public void setGift(Gift gift) {
-        this.gift = gift;
-    }
 }

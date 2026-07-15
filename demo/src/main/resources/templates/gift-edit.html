@@ -306,7 +306,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </div>
 
 <form id="giftForm">
-<input type="hidden" id="giftId" th:value="${gift.id}">
+<input type="hidden" id="uid" th:value="${nfcUid}">
 
 <!-- PROFILE ROW -->
 <div class="ig-profile">
@@ -318,10 +318,10 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </div>
 
 <!-- PHOTO GRID -->
-<input type="file" id="imageInput" accept="image/*" multiple hidden>
+<input type="file" id="imageInput" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.avif" multiple hidden>
 <div class="ig-photo-grid" id="previewContainer">
     <div class="ig-photo-item" th:each="img : ${gift.images}">
-        <img th:src="@{${img.imageUrl}}" alt="">
+        <img th:src="@{'/files/images/' + ${img.imageUrl}}" alt="">
         <button type="button" class="del-btn old-image" th:data-url="${img.imageUrl}">
             <i class="bi bi-x"></i>
         </button>
@@ -378,7 +378,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
             <i class="bi bi-trash"></i>
         </button>
     </div>
-    <audio id="hiddenOldAudio"><source th:src="@{${gift.voiceUrl}}"></audio>
+    <audio id="hiddenOldAudio"><source th:src="@{'/files/audio/' + ${gift.voiceUrl}}"></audio>
 </div>
 
 <!-- NEW VOICE -->
@@ -436,7 +436,7 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </div>
 
 <script>
-const giftId = document.getElementById("giftId").value;
+const uid = document.getElementById("uid").value;
 const previewContainer = document.getElementById("previewContainer");
 const addSlot = document.getElementById("addSlot");
 
@@ -594,7 +594,6 @@ async function toggleRecord(){
         alert("Không mở được microphone.");
     }
 }
-
 /* ── SUBMIT ── */
 async function submitForm(){
     const btn = document.getElementById("saveBtn");
@@ -616,15 +615,22 @@ async function submitForm(){
         fd.append("gif", gif);
     }
 
+    // UPDATE GIFT
+    const uid = document.getElementById("uid").value;
+    const apiUrl = window.location.origin + "/api/gift/update/" + uid;
+
     try {
-        const res = await fetch("/api/gift/update/" + giftId, {method:"POST", body:fd});
+        const res = await fetch(apiUrl, {
+            method: "PUT",
+            body: fd
+        });
         const text = await res.text();
         if(res.ok){
             btn.classList.remove("saving");
             btn.classList.add("done");
             document.getElementById("saveLbl").textContent = "Saved!";
             document.getElementById("saveIco").className = "bi bi-check-lg";
-            setTimeout(() => { location.href = "/gift/view/" + giftId; }, 700);
+            setTimeout(() => { location.href = "/gift/view/" + uid; }, 700);
         } else {
             alert("Lỗi: " + text);
             btn.classList.remove("saving");
@@ -640,8 +646,6 @@ async function submitForm(){
         document.getElementById("saveIco").className = "bi bi-check-lg";
     }
 }
-
-document.getElementById("giftForm").addEventListener("submit", e => { e.preventDefault(); submitForm(); });
 </script>
 
 </body>

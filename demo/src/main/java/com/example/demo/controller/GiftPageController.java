@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 
+
 @Controller
 public class GiftPageController {
 
@@ -16,59 +17,71 @@ public class GiftPageController {
     private final GiftService giftService;
 
 
-    public GiftPageController(GiftService giftService){
+    public GiftPageController(
+            GiftService giftService
+    ){
+
         this.giftService = giftService;
+
     }
 
 
 
-    // VIEW GIFT
-    @GetMapping("/gift/view/{id}")
+    // VIEW
+
+    @GetMapping("/gift/view/{uid}")
     public String viewGift(
 
-            @PathVariable Long id,
+            @PathVariable String uid,
+
             Model model
 
     ){
 
-        Gift gift = giftService.getById(id);
+
+        Gift gift =
+                giftService.getByUid(uid);
 
 
-        model.addAttribute(
-                "gift",
-                gift
-        );
+
+        if(gift == null){
+
+            return "not-found";
+
+        }
+
+
+        model.addAttribute("gift",gift);
 
 
         return "gift";
+
     }
 
 
 
-    // EDIT GIFT
-    @GetMapping("/gift/edit/{id}")
+    // EDIT
+
+        @GetMapping("/gift/edit/{uid}")
     public String editGift(
-
-            @PathVariable Long id,
+            @PathVariable String uid,
             Model model
-
     ){
 
-        Gift gift = giftService.getById(id);
+        Gift gift = giftService.getByUid(uid);
+
+        if(gift == null){
+            return "not-found";
+        }
 
 
-        model.addAttribute(
-                "gift",
-                gift
-        );
+        model.addAttribute("gift", gift);
+
+        // truyền NFC uid xuống html
+        model.addAttribute("nfcUid", uid);
 
 
         return "gift-edit";
     }
-@GetMapping("/test")
-@ResponseBody
-public String test(){
-    return "GiftPageController OK";
-}
 
 }
