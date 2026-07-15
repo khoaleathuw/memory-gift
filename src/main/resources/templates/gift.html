@@ -7,7 +7,6 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" th:href="@{/css/gift.css}">
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,7 +67,6 @@ body {
 .ig-more { font-size: 20px; color: #fff; background: none; border: none; cursor: pointer; }
 
 /* ───────── IMAGE SWIPER ───────── */
-
 .ig-swiper{
     position:relative;
     width:100%;
@@ -93,10 +91,8 @@ body {
 
 .ig-slide img{
     width:100%;
-    height:auto;
-    max-height:75vh;
-    object-fit:cover;
     height:75vh;
+    object-fit:cover;
     display:block;
 }
 
@@ -130,7 +126,6 @@ body {
     line-height: 1;
 }
 .ig-actions button:active { transform: scale(0.85); }
-.ig-heart.liked i { color: #ed4956; }
 
 /* ── LIKES ── */
 .ig-likes {
@@ -175,6 +170,8 @@ body {
     font-size: 11px; cursor: pointer; padding: 0; font-family: inherit; font-weight: 700;
 }
 .ig-comment-meta .cheart { font-size: 13px; color: #a8a8a8; background: none; border: none; cursor: pointer; padding: 0; }
+.ig-comment-meta .cheart.liked i { color: #ed4956; }
+.ig-comment-meta .cheart.liked i::before { content: "\f415"; } /* Đổi sang icon tim đầy */
 
 /* ── TIMESTAMP ── */
 .ig-timestamp {
@@ -294,7 +291,7 @@ audio#hiddenAudio { display: none; }
 }
 .ig-bottomnav a:hover { color: #a8a8a8; }
 
-/* ── RESPONSIVE MÀN HÌNH NHỎ ── */
+/* ── RESPONSIVE ── */
 @media (max-width: 480px) {
     body { max-width: 100%; }
     .ig-topbar { padding: 12px; }
@@ -371,7 +368,7 @@ audio#hiddenAudio { display: none; }
             <div class="ig-comment-meta">
                 <span>2h</span>
                 <button>Reply</button>
-                <button class="cheart"><i class="bi bi-heart"></i></button>
+                <button class="cheart" onclick="toggleCommentHeart(this)"><i class="bi bi-heart"></i></button>
             </div>
         </div>
     </div>
@@ -382,7 +379,7 @@ audio#hiddenAudio { display: none; }
             <div class="ig-comment-meta">
                 <span>1h</span>
                 <button>Reply</button>
-                <button class="cheart"><i class="bi bi-heart"></i></button>
+                <button class="cheart" onclick="toggleCommentHeart(this)"><i class="bi bi-heart"></i></button>
             </div>
         </div>
     </div>
@@ -441,7 +438,7 @@ audio#hiddenAudio { display: none; }
     const slides = document.getElementById('slides');
     const dots = document.querySelectorAll('.ig-dot');
     let cur = 0, total = slides ? slides.children.length : 0;
-    if(total === 0) return;
+    if(total <= 1) return; // Nếu chỉ có 1 ảnh thì tắt hoàn toàn bộ xử lý vuốt ảnh tránh bị lỗi giao diện
 
     let startX = 0, currentX = 0, dragging = false;
     let swiperWidth = swiper.offsetWidth;
@@ -469,7 +466,6 @@ audio#hiddenAudio { display: none; }
         requestAnimationFrame(updatePosition);
     }
 
-    // Điện thoại
     swiper.addEventListener('touchstart', e => {
         dragging = true;
         startX = e.touches[0].clientX;
@@ -492,7 +488,6 @@ audio#hiddenAudio { display: none; }
         else goTo(cur);
     });
 
-    // Máy tính
     swiper.addEventListener('mousedown', e => {
         dragging = true;
         startX = e.clientX;
@@ -519,7 +514,7 @@ audio#hiddenAudio { display: none; }
     swiper.addEventListener('mouseleave', handleMouseUp);
 })();
 
-/* ── HEART ── */
+/* ── HEART (LIKE POST) ── */
 let likes = 1;
 function toggleHeart(btn){
     const ico = btn.querySelector('i');
@@ -531,57 +526,102 @@ function toggleHeart(btn){
     if(!on){ btn.style.transform='scale(1.35)'; setTimeout(()=>btn.style.transform='',200); }
 }
 
+/* ── HEART (LIKE COMMENT) ── */
+function toggleCommentHeart(btn) {
+    btn.classList.toggle('liked');
+    const ico = btn.querySelector('i');
+    if (btn.classList.contains('liked')) {
+        ico.className = 'bi bi-heart-fill';
+    } else {
+        ico.className = 'bi bi-heart';
+    }
+}
+
 /* ── COMMENTS ── */
 let commentsOpen = false;
+let commentsCount = 2; // Số bình luận mặc định ban đầu
+
+function updateCommentsCountLabel() {
+    const lbl = document.getElementById('toggleComments');
+    lbl.textContent = commentsOpen ? 'Hide comments' : `View all ${commentsCount} comments`;
+}
+
 function toggleComments(){
     commentsOpen = !commentsOpen;
     document.getElementById('commentsSection').style.display = commentsOpen ? 'block' : 'none';
-    document.getElementById('toggleComments').textContent = commentsOpen ? 'Hide comments' : 'View all 2 comments';
+    updateCommentsCountLabel();
 }
+
 function focusComment(){ document.getElementById('commentInput').focus(); }
+
 function onCommentInput(el){
     document.getElementById('postBtn').classList.toggle('active', el.value.trim().length > 0);
 }
+
 function postComment(){
     const inp = document.getElementById('commentInput');
     const txt = inp.value.trim();
     if(!txt) return;
     const sec = document.getElementById('commentsSection');
     if(!commentsOpen){ commentsOpen=true; sec.style.display='block'; }
+    
     const div = document.createElement('div');
     div.className = 'ig-comment';
     div.innerHTML = `
         <div class="ig-avatar-ring"><div class="ig-avatar-inner" style="font-size:10px">Y</div></div>
         <div class="ig-comment-body">
             <span class="u">your_username</span><span class="txt">${txt}</span>
-            <div class="ig-comment-meta"><span>Just now</span><button>Reply</button><button class="cheart"><i class="bi bi-heart"></i></button></div>
+            <div class="ig-comment-meta">
+                <span>Just now</span>
+                <button>Reply</button>
+                <button class="cheart" onclick="toggleCommentHeart(this)"><i class="bi bi-heart"></i></button>
+            </div>
         </div>`;
     sec.appendChild(div);
     inp.value = '';
     document.getElementById('postBtn').classList.remove('active');
+    
+    // Tự động tăng biến đếm số lượng comment và cập nhật hiển thị
+    commentsCount++;
+    updateCommentsCountLabel();
 }
 
 /* ── AUDIO ── */
 const audio = document.getElementById('hiddenAudio');
 if(audio){
-    function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
+    function fmt(s){ 
+        if (isNaN(s)) return "0:00";
+        const m=Math.floor(s/60); 
+        return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); 
+    }
+    
     audio.addEventListener('timeupdate',()=>{
         const pct = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
         document.getElementById('audioBar').style.width = pct+'%';
         document.getElementById('curTime').textContent = fmt(audio.currentTime);
     });
-    audio.addEventListener('loadedmetadata',()=>{
+    
+    // Sửa lỗi hiển thị thời lượng audio trên Safari/Chrome Mobile
+    const setDuration = () => {
         document.getElementById('durTime').textContent = fmt(audio.duration);
-    });
+    };
+    audio.addEventListener('loadedmetadata', setDuration);
+    audio.addEventListener('durationchange', setDuration);
+    if(audio.readyState >= 1) {
+        setDuration();
+    }
+    
     audio.addEventListener('ended',()=>{
         document.getElementById('playIco').className='bi bi-play-fill';
     });
 }
+
 function toggleAudio(){
     if(!audio) return;
     if(audio.paused){ audio.play(); document.getElementById('playIco').className='bi bi-pause-fill'; }
     else { audio.pause(); document.getElementById('playIco').className='bi bi-play-fill'; }
 }
+
 function seekAudio(e){
     if(!audio || !audio.duration) return;
     const rect = document.getElementById('progressBar').getBoundingClientRect();
