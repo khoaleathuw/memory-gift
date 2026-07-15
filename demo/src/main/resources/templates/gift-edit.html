@@ -280,6 +280,20 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 .ig-save-btn:hover { background: #1aa3ff; }
 .ig-save-btn.saving { background: #333; }
 .ig-save-btn.done { background: #1d9c5f; }
+
+/* ── GIF INPUT STYLING ── */
+.gif-container {
+    padding: 12px 16px 16px;
+}
+.gif-input-style {
+    background-color: #111 !important;
+    border: 1px solid #262626 !important;
+    color: #fff !important;
+}
+.gif-input-style:focus {
+    box-shadow: none !important;
+    border-color: #555 !important;
+}
 </style>
 </head>
 <body>
@@ -316,6 +330,18 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
         <i class="bi bi-plus-lg"></i>
         <span>Add photo</span>
     </div>
+</div>
+
+<div class="ig-divider"></div>
+
+<!-- GIF UPLOAD SECTION -->
+<div class="gif-container">
+    <label class="form-label" style="font-size: 11px; font-weight: 700; color: #a8a8a8; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px;">GIF File</label>
+    <input
+        type="file"
+        id="gifInput"
+        accept=".gif,image/gif"
+        class="form-control gif-input-style">
 </div>
 
 <div class="ig-divider"></div>
@@ -583,6 +609,12 @@ async function submitForm(){
     if(newAudio) fd.append("audio", newAudio);
     fd.append("removeOldAudio", removeOldAudio);
     deletedImages.forEach(i => fd.append("deleteImages", i));
+
+    // Thêm file GIF được chọn từ input vào FormData
+    const gif = document.getElementById("gifInput").files[0];
+    if(gif){
+        fd.append("gif", gif);
+    }
 
     try {
         const res = await fetch("/api/gift/update/" + giftId, {method:"POST", body:fd});

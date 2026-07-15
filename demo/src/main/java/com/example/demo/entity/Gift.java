@@ -20,6 +20,9 @@ public class Gift {
     @Column(name = "voice_url")
     private String voiceUrl;
 
+    @Column(name = "gif_url")
+    private String gifUrl;
+
     @Column(unique = true)
     private String uid;
 
@@ -70,6 +73,14 @@ public class Gift {
         this.voiceUrl = voiceUrl;
     }
 
+    public String getGifUrl() {
+        return gifUrl;
+    }
+
+    public void setGifUrl(String gifUrl) {
+        this.gifUrl = gifUrl;
+    }
+
     public String getUid() {
         return uid;
     }
@@ -84,7 +95,6 @@ public class Gift {
 
     /**
      * Không thay thế List bằng List mới trực tiếp để tránh Hibernate mất tracking.
-     * Xóa các phần tử cũ và thêm phần tử mới thông qua helper methods.
      */
     public void setImages(List<GiftImage> images) {
         this.images.clear();
@@ -96,7 +106,7 @@ public class Gift {
     }
 
     //==========================
-    // Helper Methods (Đồng bộ quan hệ 2 chiều)
+    // Helper Methods
     //==========================
 
     public void addImage(GiftImage image) {

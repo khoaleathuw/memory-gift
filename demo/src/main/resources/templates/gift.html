@@ -331,7 +331,16 @@ audio#hiddenAudio { display: none; }
     <button class="ig-more"><i class="bi bi-three-dots"></i></button>
 </div>
 
-<div class="ig-swiper" id="swiper" th:if="${!#lists.isEmpty(gift.images)}">
+<!-- GIF DISPLAY SECTION -->
+<div th:if="${gift.gifUrl != null}">
+    <img
+        th:src="${gift.gifUrl}"
+        style="width:100%;display:block;">
+</div>
+
+<!-- PHOTO GRID SWIPER -->
+<div class="ig-swiper" id="swiper"
+     th:if="${gift.gifUrl == null and !#lists.isEmpty(gift.images)}">
     <div class="ig-slides" id="slides">
         <div class="ig-slide" th:each="img : ${gift.images}">
             <img th:src="${img.imageUrl}" alt="">
@@ -339,7 +348,8 @@ audio#hiddenAudio { display: none; }
     </div>
 </div>
 
-<div class="ig-dots" id="dots" th:if="${#lists.size(gift.images) > 1}">
+<!-- DOTS FOR PHOTO SWIPER -->
+<div class="ig-dots" id="dots" th:if="${gift.gifUrl == null and #lists.size(gift.images) > 1}">
     <div th:each="img,iter : ${gift.images}"
          th:class="${iter.index == 0} ? 'ig-dot active' : 'ig-dot'"></div>
 </div>
