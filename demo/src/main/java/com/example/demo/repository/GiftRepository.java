@@ -30,7 +30,7 @@ public class GiftRepository {
 
         String sql = """
                 INSERT INTO gift(title, message, voice_url)
-                VALUES(?, ?, ?, ?)
+                VALUES(?, ?, ?)
                 """;
 
 
