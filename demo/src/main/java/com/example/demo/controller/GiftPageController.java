@@ -26,7 +26,21 @@ public class GiftPageController {
     }
 
 
+    @GetMapping("/{uid}")
+    public String openGift(
+            @PathVariable String uid,
+            Model model) {
 
+        Gift gift = giftService.getByUid(uid);
+
+        if (gift == null) {
+            return "not-found";
+        }
+
+        model.addAttribute("gift", gift);
+
+        return "gift";
+    }
     // VIEW
 
     @GetMapping("/gift/view/{uid}")
