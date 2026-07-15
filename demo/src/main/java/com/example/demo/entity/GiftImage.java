@@ -1,5 +1,6 @@
-package com.example.demo.entity;
+    package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,7 +14,9 @@ public class GiftImage {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gift_id") // Bỏ columnDefinition dư thừa
+    @JoinColumn(name = "gift_id")
+    // Giải pháp: Chặn Jackson serialize ngược lại trường "images" của Gift gây vòng lặp vô hạn
+    @JsonIgnoreProperties("images") 
     private Gift gift;
 
     public GiftImage() {
