@@ -47,7 +47,27 @@ public class GiftService {
         }
 
         }
+         @Transactional
+        public Gift createEmptyGift(String uid){
 
+
+        // tạo gift rỗng
+        Gift gift = new Gift();
+
+        gift.setTitle("");
+        gift.setMessage("");
+
+
+        Long giftId =
+                giftRepository.insertGift(gift);
+
+
+        // tạo nfc_tag
+        nfcRepository.bindGift(uid, giftId);
+
+
+        return gift;
+        }
     // ==================================
     // SAVE
     // ==================================

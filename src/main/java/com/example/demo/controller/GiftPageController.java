@@ -31,16 +31,24 @@ public class GiftPageController {
             @PathVariable String uid,
             Model model) {
 
+
         Gift gift = giftService.getByUid(uid);
 
-        if (gift == null) {
-            return "not-found";
+
+        if(gift == null){
+
+            // tạo NFC mới
+            giftService.createEmptyGift(uid);
+
+            gift = giftService.getByUid(uid);
         }
+
 
         model.addAttribute("gift", gift);
 
         return "gift";
     }
+    
     // VIEW
 
     @GetMapping("/gift/view/{uid}")
