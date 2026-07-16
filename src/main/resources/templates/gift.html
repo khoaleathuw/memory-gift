@@ -1,559 +1,431 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Memory Gift</title>
+<title>Memory Booth</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" th:href="@{/css/gift.css}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    background: #000;
-    min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #fff;
-    padding-bottom: 70px;
-    max-width: 480px;
-    margin: 0 auto;
-    overflow-x: hidden;
+:root{
+  --booth-black:#120a0b;
+  --curtain-red:#6e1423;
+  --curtain-red-dark:#43101a;
+  --film-cream:#f2e7d2;
+  --film-cream-dim:#e6d8bb;
+  --bulb-amber:#f0a944;
+  --bulb-amber-soft:#ffcf8a;
+  --ink:#2a1f1a;
+  --ink-soft:#5b4c40;
+  --flash-white:#fffdf7;
 }
 
-/* ── TOPBAR ── */
-.ig-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 13px 16px;
-    border-bottom: 0.5px solid #262626;
-    position: sticky;
-    top: 0;
-    background: #000;
-    z-index: 10;
-}
-.ig-topbar button, .ig-topbar a {
-    font-size: 22px; color: #fff;
-    background: none; border: none; cursor: pointer;
-    line-height: 1; text-decoration: none; padding: 0;
-}
-.ig-topbar .ig-title { font-size: 16px; font-weight: 700; }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-/* ── PROFILE ROW ── */
-.ig-profile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-}
-.ig-profile-left { display: flex; align-items: center; gap: 10px; }
-.ig-avatar-ring {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
-    padding: 2px; flex-shrink: 0;
-}
-.ig-avatar-inner {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    background: #000;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
-}
-.ig-username { font-size: 13px; font-weight: 700; }
-.ig-date { font-size: 11px; color: #a8a8a8; margin-top: 2px; }
-.ig-more { font-size: 20px; color: #fff; background: none; border: none; cursor: pointer; }
+html,body{height:100%;}
 
-/* ───────── IMAGE SWIPER ───────── */
+body{
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(240,169,68,0.16), transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(110,20,35,0.25), transparent 60%),
+    var(--booth-black);
+  min-height:100vh;
+  font-family:'Inter',sans-serif;
+  color:var(--film-cream);
+  overflow-x:hidden;
+  padding-bottom:40px;
+}
+
+body.locked{overflow:hidden;height:100vh;}
+
+/* ============ CURTAIN INTRO ============ */
+.curtain-stage{position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none;}
+.curtain-panel{
+  flex:1;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--curtain-red) 0px, var(--curtain-red) 16px,
+      var(--curtain-red-dark) 16px, var(--curtain-red-dark) 32px);
+  box-shadow:inset 0 0 120px rgba(0,0,0,0.65);
+  transition:transform 1.15s cubic-bezier(.76,0,.15,1);
+  position:relative;
+}
+.curtain-panel::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,.35), transparent 12%, transparent 88%, rgba(0,0,0,.45));
+}
+.curtain-left{transform-origin:left center;}
+.curtain-right{transform-origin:right center;}
+body.opened .curtain-left{transform:translateX(-101%);}
+body.opened .curtain-right{transform:translateX(101%);}
+
+.curtain-mark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:15vw;
+  letter-spacing:6px;
+  color:rgba(242,231,210,0.9);
+  text-shadow:0 0 40px rgba(240,169,68,0.5);
+  white-space:nowrap;
+  z-index:2;
+  opacity:1;
+  transition:opacity .5s ease .05s;
+}
+body.opened .curtain-mark{opacity:0;}
+
+.flash-overlay{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--flash-white);
+  opacity:0;pointer-events:none;
+}
+body.opened .flash-overlay{animation:flashPulse .7s ease-out .95s forwards;}
+@keyframes flashPulse{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+
+@media (prefers-reduced-motion: reduce){
+  .curtain-panel,.curtain-mark{transition:none !important;}
+  body.opened .flash-overlay{animation:none !important;}
+}
+
+/* ============ SHELL ============ */
+.booth-shell{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  border-left:1px solid rgba(240,169,68,0.12);
+  border-right:1px solid rgba(240,169,68,0.12);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .7s ease .95s, transform .7s ease .95s;
+}
+body.opened .booth-shell{opacity:1;transform:translateY(0);}
+
+/* ============ MARQUEE TOPBAR ============ */
+.booth-marquee{
+  position:sticky;top:0;z-index:10;
+  background:linear-gradient(180deg, #1c1011, #150c0d 90%);
+  border-bottom:1px solid rgba(240,169,68,0.25);
+  padding:14px 16px 10px;
+  text-align:center;
+}
+.booth-marquee .bulbs{
+  display:flex;justify-content:center;gap:7px;margin-bottom:6px;
+}
+.booth-marquee .bulb{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--bulb-amber-soft);
+  box-shadow:0 0 6px 1px var(--bulb-amber);
+  animation:bulbFlicker 2.4s ease-in-out infinite;
+}
+.booth-marquee .bulb:nth-child(odd){animation-delay:.3s;}
+.booth-marquee .bulb:nth-child(3n){animation-delay:.6s;}
+@keyframes bulbFlicker{0%,100%{opacity:1}50%{opacity:.35}}
+
+.booth-marquee-row{display:flex;align-items:center;justify-content:space-between;}
+.booth-back, .booth-edit{
+  background:none;border:none;color:var(--film-cream);font-size:20px;
+  cursor:pointer;opacity:.85;text-decoration:none;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.booth-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:3px;
+  color:var(--film-cream);
+}
+.booth-title span{color:var(--bulb-amber);}
+
+.booth-tagline{
+  font-family:'Special Elite',monospace;
+  font-size:11.5px;color:rgba(242,231,210,0.55);
+  margin-top:4px;letter-spacing:.4px;
+}
+
+/* ============ SECTION LABEL ============ */
+.booth-label{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;letter-spacing:2.5px;
+  color:var(--bulb-amber);
+  padding:20px 18px 8px;
+}
+
+/* ============ FILMSTRIP VIEWER (SWIPER) ============ */
+.filmstrip{
+  margin:0 12px;
+  padding:14px 14px 22px;
+  background:#0d0708;
+  border-radius:4px;
+  position:relative;
+}
+.filmstrip::before,.filmstrip::after{
+  content:'';
+  position:absolute;top:0;bottom:0;width:16px;
+  background-image:radial-gradient(circle, #000 3px, transparent 3.4px);
+  background-size:16px 22px;
+  background-position:center;
+  background-repeat:repeat-y;
+  opacity:.9;
+}
+.filmstrip::before{left:0;background-color:#1a1010;}
+.filmstrip::after{right:0;background-color:#1a1010;}
 
 .ig-swiper{
-    position:relative;
-    width:100%;
-    max-width:100%;
-    background:#000;
-    overflow:hidden;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
-
-.ig-slides{
-    display:flex;
-    transition:transform .35s ease;
-    width:100%;
-}
-
 .ig-slide{
-    min-width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#000;
+  aspect-ratio:1;
+  position:relative;
+  background:var(--film-cream);
+  padding:6px 6px 12px;
+  border-radius:2px;
+  box-shadow:0 3px 8px rgba(0,0,0,.5);
 }
-
 .ig-slide img{
-    width:100%;
-    height:auto;
-    max-height:75vh;
-    object-fit:cover;
-    height:75vh;
-    display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  filter:sepia(.12) contrast(1.04);
+}
+.ig-slide.rot1{transform:rotate(-3deg);}
+.ig-slide.rot2{transform:rotate(2deg);}
+.ig-slide.rot3{transform:rotate(-1.5deg);}
+.ig-slide.rot4{transform:rotate(3deg);}
+.ig-slide.rot5{transform:rotate(0deg);}
+.ig-slide.rot6{transform:rotate(1.5deg);}
+
+.filmstrip-hint{
+  font-family:'Special Elite',monospace;
+  font-size:11px;color:rgba(242,231,210,0.4);
+  text-align:center;padding:10px 4px 0;
 }
 
-/* ── DOTS ── */
-.ig-dots {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    padding: 8px 0 2px;
+/* ============ CAPTION CARD ============ */
+.caption-card{
+  margin:18px 16px 0;
+  background:var(--film-cream);
+  border-radius:3px;
+  padding:16px 16px 14px 22px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.05);
+  position:relative;
+  background-image:repeating-linear-gradient(
+    180deg, transparent 0, transparent 27px, rgba(90,70,50,0.14) 28px);
+  transform:rotate(-0.6deg);
 }
-.ig-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #555;
-    transition: background 0.2s, transform 0.2s;
+.caption-card::before{
+  content:'';position:absolute;left:14px;top:0;bottom:0;width:1px;
+  background:rgba(190,40,50,0.35);
 }
-.ig-dot.active { background: #0095f6; transform: scale(1.25); }
-
-/* ── ACTION BAR ── */
-.ig-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px 4px;
+.caption-card .cap-from{
+  font-family:'Inter',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:1px;color:var(--curtain-red);text-transform:uppercase;
+  margin-bottom:4px;
 }
-.ig-actions-left { display: flex; gap: 16px; }
-.ig-actions button {
-    background: none; border: none; color: #fff;
-    font-size: 26px; cursor: pointer; padding: 2px;
-    transition: transform 0.15s;
-    line-height: 1;
-}
-.ig-actions button:active { transform: scale(0.85); }
-.ig-heart.liked i { color: #ed4956; }
-
-/* ── LIKES ── */
-.ig-likes {
-    padding: 2px 16px 6px;
-    font-size: 13px;
-    font-weight: 700;
+.caption-card .cap-text{
+  color:var(--ink);font-family:'Special Elite',monospace;
+  font-size:14px;line-height:28px;white-space:pre-wrap;
 }
 
-/* ── CAPTION ── */
-.ig-caption {
-    padding: 2px 16px 4px;
-    font-size: 14px;
-    line-height: 1.6;
-}
-.ig-caption .u { font-weight: 700; margin-right: 5px; }
-
-/* ── VIEW COMMENTS ── */
-.ig-view-comments {
-    padding: 2px 16px 8px;
-    font-size: 13px;
-    color: #a8a8a8;
-    cursor: pointer;
+.booth-timestamp{
+  font-family:'Special Elite',monospace;font-size:10.5px;
+  color:rgba(242,231,210,0.4);
+  text-align:right;padding:6px 20px 4px;
+  text-transform:uppercase;letter-spacing:.5px;
 }
 
-/* ── COMMENTS ── */
-.ig-comments { padding: 0 16px; }
-.ig-comment {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 12px;
+/* ============ VOICE / TAPE PLAYER ============ */
+.tape-unit{
+  margin:12px 16px 0;
+  background:linear-gradient(160deg,#231515,#160d0d);
+  border:1px solid rgba(240,169,68,0.2);
+  border-radius:10px;
+  padding:16px;
+  display:flex;align-items:center;gap:16px;
 }
-.ig-comment .ig-avatar-ring { width: 30px; height: 30px; flex-shrink: 0; }
-.ig-comment .ig-avatar-inner { font-size: 10px; }
-.ig-comment-body { flex: 1; }
-.ig-comment-body .u { font-size: 13px; font-weight: 700; margin-right: 5px; }
-.ig-comment-body .txt { font-size: 13px; line-height: 1.5; }
-.ig-comment-meta { display: flex; gap: 14px; margin-top: 4px; align-items: center; }
-.ig-comment-meta span { font-size: 11px; color: #a8a8a8; }
-.ig-comment-meta button {
-    background: none; border: none; color: #a8a8a8;
-    font-size: 11px; cursor: pointer; padding: 0; font-family: inherit; font-weight: 700;
+.tape-reels{display:flex;gap:10px;flex-shrink:0;}
+.reel{
+  width:34px;height:34px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, #3a2323 0 6px, #191010 7px 14px, #3a2323 15px 17px);
+  border:2px solid rgba(240,169,68,0.3);
 }
-.ig-comment-meta .cheart { font-size: 13px; color: #a8a8a8; background: none; border: none; cursor: pointer; padding: 0; }
+.reel.spin{animation:reelSpin 1.1s linear infinite;}
+@keyframes reelSpin{to{transform:rotate(360deg);}}
 
-/* ── TIMESTAMP ── */
-.ig-timestamp {
-    padding: 4px 16px 10px;
-    font-size: 10px;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.tape-controls{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tape-play-row{display:flex;align-items:center;gap:12px;}
+
+.tape-play-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--curtain-red);border:none;color:#fff;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s, transform .1s;
+}
+.tape-play-btn:hover{background:#84192a;}
+.tape-play-btn:active{transform:scale(.92);}
+
+.tape-progress-wrap{flex:1;min-width:0;}
+.tape-progress{
+  width:100%;height:4px;border-radius:2px;
+  background:rgba(242,231,210,0.15);
+  cursor:pointer;position:relative;
+}
+.tape-progress-bar{
+  height:100%;border-radius:2px;
+  background:var(--bulb-amber);
+  width:0%;
+  transition:width .1s linear;
+  pointer-events:none;
+}
+.tape-times{
+  display:flex;justify-content:space-between;
+  font-family:'Special Elite',monospace;
+  font-size:10px;color:rgba(242,231,210,0.45);
+  margin-top:4px;
+}
+audio#hiddenAudio{display:none;}
+
+/* ============ EMPTY STATES ============ */
+.booth-empty{
+  margin:18px 16px 0;
+  font-family:'Special Elite',monospace;
+  font-size:12px;color:rgba(242,231,210,0.35);
+  text-align:center;padding:24px 10px;
+  border:1px dashed rgba(240,169,68,0.2);
+  border-radius:6px;
 }
 
-/* ── DIVIDER ── */
-.ig-divider { height: 0.5px; background: #262626; margin: 4px 0; }
-
-/* ── AUDIO PLAYER ── */
-.ig-audio-wrap {
-    padding: 14px 16px 16px;
-}
-.ig-audio-label {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; font-weight: 700;
-    color: #a8a8a8; text-transform: uppercase; letter-spacing: 0.6px;
-    margin-bottom: 12px;
-}
-.ig-audio-player {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #111;
-    border-radius: 12px;
-    padding: 12px 14px;
-}
-.ig-audio-play {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: #fff;
-    border: none;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    flex-shrink: 0;
-    color: #000;
-    transition: transform 0.1s;
-}
-.ig-audio-play:active { transform: scale(0.92); }
-.ig-audio-right { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.ig-audio-progress {
-    width: 100%;
-    height: 3px;
-    background: #333;
-    border-radius: 2px;
-    cursor: pointer;
-    position: relative;
-}
-.ig-audio-bar {
-    height: 100%;
-    background: #fff;
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.1s linear;
-    pointer-events: none;
-}
-.ig-audio-times {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    color: #a8a8a8;
-}
-audio#hiddenAudio { display: none; }
-
-/* ── ADD COMMENT BAR ── */
-.ig-add-comment {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-top: 0.5px solid #262626;
-    position: fixed;
-    bottom: 56px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: #000;
-    z-index: 9;
-}
-.ig-add-comment input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #fff;
-    font-size: 14px;
-    font-family: inherit;
-}
-.ig-add-comment input::placeholder { color: #555; }
-.ig-add-comment .post-btn {
-    background: none; border: none;
-    color: #0095f6; font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: inherit; opacity: 0.4;
-    transition: opacity 0.15s;
-}
-.ig-add-comment .post-btn.active { opacity: 1; }
-
-/* ── BOTTOM NAV ── */
-.ig-bottomnav {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    background: #000;
-    border-top: 0.5px solid #262626;
-    display: flex;
-    padding: 10px 0 12px;
-    z-index: 10;
-}
-.ig-bottomnav a {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 24px; text-decoration: none;
-}
-.ig-bottomnav a:hover { color: #a8a8a8; }
-
-/* ── RESPONSIVE MÀN HÌNH NHỎ ── */
-@media (max-width: 480px) {
-    body { max-width: 100%; }
-    .ig-topbar { padding: 12px; }
-    .ig-profile { padding: 10px; }
-    .ig-caption,
-    .ig-likes,
-    .ig-comments,
-    .ig-view-comments,
-    .ig-timestamp,
-    .ig-audio-wrap {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
+/* ============ FOOTER STAMP ============ */
+.booth-footer{
+  text-align:center;padding:34px 16px 10px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;letter-spacing:2px;
+  color:rgba(242,231,210,0.3);
 }
 </style>
 </head>
 
-<body>
+<body class="locked">
 
-<div class="ig-topbar">
-    <button onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
-    <span class="ig-title">Post</span>
-    <a th:href="@{'/gift/edit/' + ${uid}}"><i class="bi bi-pencil"></i></a>
+<!-- CURTAIN INTRO -->
+<div class="curtain-stage" aria-hidden="true">
+  <div class="curtain-panel curtain-left"></div>
+  <div class="curtain-mark">MEMORY BOOTH</div>
+  <div class="curtain-panel curtain-right"></div>
 </div>
+<div class="flash-overlay" aria-hidden="true"></div>
 
-<div class="ig-profile">
-    <div class="ig-profile-left">
-        <div class="ig-avatar-ring"><div class="ig-avatar-inner">Y</div></div>
-        <div>
-            <div class="ig-username">your_username</div>
-            <div class="ig-date">Memory capsule</div>
-        </div>
+<div class="booth-shell">
+
+  <!-- MARQUEE TOPBAR -->
+  <div class="booth-marquee">
+    <div class="bulbs">
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span>
     </div>
-    <button class="ig-more"><i class="bi bi-three-dots"></i></button>
-</div>
-
-<div class="ig-swiper" id="swiper">
-    <div class="ig-slides" id="slides">
-        <div class="ig-slide"
-             th:each="img : ${gift.images}">
-            <img th:src="@{'/files/images/' + ${img.imageUrl}}">
-        </div>
+    <div class="booth-marquee-row">
+      <button class="booth-back" type="button" onclick="history.back()"><i class="bi bi-arrow-left"></i></button>
+      <span class="booth-title">MEMORY <span>BOOTH</span></span>
+      <a class="booth-edit" th:href="@{'/gift/edit/' + ${uid}}"><i class="bi bi-pencil"></i></a>
     </div>
-</div>
+    <div class="booth-tagline">— cuộn phim kỷ niệm của bạn —</div>
+  </div>
 
-<div class="ig-dots" id="dots" th:if="${gift.images != null and gift.images.size() > 1}">
-    <span class="ig-dot" th:each="img, iter : ${gift.images}" th:classappend="${iter.index == 0} ? ' active'"></span>
-</div>
-
-<div class="ig-likes" id="likesCount">1 like</div>
-
-<div class="ig-caption" th:if="${gift.message != null}">
-    <span class="u">your_username</span><span th:text="${gift.message}"></span>
-</div>
-
-<div class="ig-view-comments" id="toggleComments" onclick="toggleComments()">View all 2 comments</div>
-
-<div class="ig-comments" id="commentsSection" style="display:none">
-    <div class="ig-comment">
-        <div class="ig-avatar-ring"><div class="ig-avatar-inner" style="font-size:10px">A</div></div>
-        <div class="ig-comment-body">
-            <span class="u">friend_one</span><span class="txt">This is so beautiful 🥹</span>
-            <div class="ig-comment-meta">
-                <span>2h</span>
-                <button>Reply</button>
-                <button class="cheart"><i class="bi bi-heart"></i></button>
-            </div>
-        </div>
+  <!-- FILMSTRIP VIEWER -->
+  <div class="booth-label">Cuộn phim của bạn</div>
+  <div class="filmstrip" th:if="${gift.images != null and !gift.images.isEmpty()}">
+    <div class="ig-swiper" id="swiper">
+      <div class="ig-slide" th:each="img, iter : ${gift.images}"
+           th:classappend="${'rot' + (iter.index % 6 + 1)}">
+        <img th:src="@{'/files/images/' + ${img.imageUrl}}">
+      </div>
     </div>
-    <div class="ig-comment">
-        <div class="ig-avatar-ring"><div class="ig-avatar-inner" style="font-size:10px">B</div></div>
-        <div class="ig-comment-body">
-            <span class="u">friend_two</span><span class="txt">Love this memory 💛</span>
-            <div class="ig-comment-meta">
-                <span>1h</span>
-                <button>Reply</button>
-                <button class="cheart"><i class="bi bi-heart"></i></button>
-            </div>
-        </div>
+    <div class="filmstrip-hint">tất cả khoảnh khắc trong cuộn phim này</div>
+  </div>
+  <div class="booth-empty" th:if="${gift.images == null or gift.images.isEmpty()}">
+    chưa có tấm ảnh nào trong cuộn phim này
+  </div>
+
+  <!-- CAPTION -->
+  <div class="booth-label">Viết sau tấm ảnh</div>
+  <div class="caption-card" th:if="${gift.message != null and gift.message != ''}">
+    <div class="cap-from">your_username</div>
+    <div class="cap-text" th:text="${gift.message}"></div>
+  </div>
+  <div class="booth-empty" th:if="${gift.message == null or gift.message == ''}">
+    chưa có lời nhắn nào được viết
+  </div>
+  <div class="booth-timestamp">Just now</div>
+
+  <!-- VOICE / TAPE -->
+  <div class="booth-label">Lời nhắn bằng giọng nói</div>
+  <div class="tape-unit" th:if="${gift.voiceUrl != null and gift.voiceUrl != ''}">
+    <div class="tape-reels">
+      <div class="reel" id="reelL"></div>
+      <div class="reel" id="reelR"></div>
     </div>
-</div>
-
-<div class="ig-timestamp">Just now</div>
-
-<div class="ig-divider"></div>
-
-<div class="ig-audio-wrap" th:if="${gift.voiceUrl != null}">
-    <div class="ig-audio-label"><i class="bi bi-mic"></i> Voice note</div>
-    <div class="ig-audio-player">
-        <button class="ig-audio-play" id="playBtn" onclick="toggleAudio()">
-            <i class="bi bi-play-fill" id="playIco"></i>
+    <div class="tape-controls">
+      <div class="tape-play-row">
+        <button class="tape-play-btn" id="playBtn" onclick="toggleAudio()">
+          <i class="bi bi-play-fill" id="playIco"></i>
         </button>
-        <div class="ig-audio-right">
-            <div class="ig-audio-progress" id="progressBar" onclick="seekAudio(event)">
-                <div class="ig-audio-bar" id="audioBar"></div>
-            </div>
-            <div class="ig-audio-times">
-                <span id="curTime">0:00</span>
-                <span id="durTime">0:00</span>
-            </div>
+        <div class="tape-progress-wrap">
+          <div class="tape-progress" id="progressBar" onclick="seekAudio(event)">
+            <div class="tape-progress-bar" id="audioBar"></div>
+          </div>
+          <div class="tape-times">
+            <span id="curTime">0:00</span>
+            <span id="durTime">0:00</span>
+          </div>
         </div>
+      </div>
     </div>
     <audio id="hiddenAudio">
-        <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
+      <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
     </audio>
-</div>
+  </div>
+  <div class="booth-empty" th:if="${gift.voiceUrl == null or gift.voiceUrl == ''}">
+    chưa có ghi âm nào được lưu lại
+  </div>
 
-<div class="ig-add-comment">
-    <div class="ig-avatar-ring" style="width:30px;height:30px;flex-shrink:0">
-        <div class="ig-avatar-inner" style="font-size:10px">Y</div>
-    </div>
-    <input type="text" id="commentInput" placeholder="Add a comment…" oninput="onCommentInput(this)">
-    <button class="post-btn" id="postBtn" onclick="postComment()">Post</button>
-</div>
+  <div class="booth-footer">— MEMORY BOOTH —</div>
 
-<div class="ig-bottomnav">
-    <a href="#"><i class="bi bi-house"></i></a>
-    <a href="#"><i class="bi bi-search"></i></a>
-    <a href="#"><i class="bi bi-plus-square"></i></a>
-    <a href="#"><i class="bi bi-heart"></i></a>
-    <a href="#">
-        <div class="ig-avatar-ring" style="width:26px;height:26px">
-            <div class="ig-avatar-inner" style="font-size:9px">Y</div>
-        </div>
-    </a>
 </div>
 
 <script>
-/* ── SWIPER LOGIC ── */
-(function(){
-    const swiper = document.getElementById('swiper');
-    if(!swiper) return;
-    const slides = document.getElementById('slides');
-    const dots = document.querySelectorAll('.ig-dot');
-    let cur = 0, total = slides ? slides.children.length : 0;
-    if(total === 0) return;
-
-    let startX = 0, currentX = 0, dragging = false;
-    let swiperWidth = swiper.offsetWidth;
-
-    window.addEventListener('resize', () => {
-        swiperWidth = swiper.offsetWidth;
-        goTo(cur);
-    });
-
-    function goTo(n){
-        cur = Math.max(0, Math.min(n, total - 1));
-        slides.style.transition = 'transform 0.3s cubic-bezier(0.215, 0.610, 0.355, 1)';
-        slides.style.transform = `translateX(-${cur * 100}%)`;
-        dots.forEach((d, i) => d.classList.toggle('active', i === cur));
-    }
-
-    function updatePosition() {
-        if (!dragging) return;
-        const dragDelta = currentX - startX;
-        let offset = -cur * swiperWidth + dragDelta;
-        if ((cur === 0 && dragDelta > 0) || (cur === total - 1 && dragDelta < 0)) {
-            offset = -cur * swiperWidth + dragDelta * 0.3; 
-        }
-        slides.style.transform = `translateX(${offset}px)`;
-        requestAnimationFrame(updatePosition);
-    }
-
-    // Điện thoại
-    swiper.addEventListener('touchstart', e => {
-        dragging = true;
-        startX = e.touches[0].clientX;
-        currentX = startX;
-        slides.style.transition = 'none';
-        requestAnimationFrame(updatePosition);
-    }, {passive: true});
-
-    swiper.addEventListener('touchmove', e => {
-        if (!dragging) return;
-        currentX = e.touches[0].clientX;
-    }, {passive: true});
-
-    swiper.addEventListener('touchend', () => {
-        if (!dragging) return;
-        dragging = false;
-        const dragDelta = currentX - startX;
-        if (dragDelta < -swiperWidth / 4) goTo(cur + 1);
-        else if (dragDelta > swiperWidth / 4) goTo(cur - 1);
-        else goTo(cur);
-    });
-
-    // Máy tính
-    swiper.addEventListener('mousedown', e => {
-        dragging = true;
-        startX = e.clientX;
-        currentX = startX;
-        slides.style.transition = 'none';
-        requestAnimationFrame(updatePosition);
-    });
-
-    swiper.addEventListener('mousemove', e => {
-        if (!dragging) return;
-        currentX = e.clientX;
-    });
-
-    const handleMouseUp = () => {
-        if (!dragging) return;
-        dragging = false;
-        const dragDelta = currentX - startX;
-        if (dragDelta < -swiperWidth / 4) goTo(cur + 1);
-        else if (dragDelta > swiperWidth / 4) goTo(cur - 1);
-        else goTo(cur);
-    };
-
-    swiper.addEventListener('mouseup', handleMouseUp);
-    swiper.addEventListener('mouseleave', handleMouseUp);
+// ================= INTRO CURTAIN =================
+(function initCurtain(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const openNow = () => {
+    document.body.classList.add('opened');
+    document.body.classList.remove('locked');
+  };
+  if (reduce){
+    document.querySelectorAll('.curtain-panel,.curtain-mark').forEach(el=>el.style.transition='none');
+    openNow();
+    return;
+  }
+  window.addEventListener('load', () => {
+    setTimeout(openNow, 350);
+    setTimeout(() => {
+      document.body.classList.remove('locked');
+    }, 1700);
+  });
 })();
 
-/* ── HEART ── */
-let likes = 1;
-function toggleHeart(btn){
-    const ico = btn.querySelector('i');
-    const on = ico.classList.contains('bi-heart-fill');
-    ico.className = on ? 'bi bi-heart' : 'bi bi-heart-fill';
-    ico.style.color = on ? '' : '#ed4956';
-    likes += on ? -1 : 1;
-    document.getElementById('likesCount').textContent = likes + (likes===1?' like':' likes');
-    if(!on){ btn.style.transform='scale(1.35)'; setTimeout(()=>btn.style.transform='',200); }
-}
-
-/* ── COMMENTS ── */
-let commentsOpen = false;
-function toggleComments(){
-    commentsOpen = !commentsOpen;
-    document.getElementById('commentsSection').style.display = commentsOpen ? 'block' : 'none';
-    document.getElementById('toggleComments').textContent = commentsOpen ? 'Hide comments' : 'View all 2 comments';
-}
-function focusComment(){ document.getElementById('commentInput').focus(); }
-function onCommentInput(el){
-    document.getElementById('postBtn').classList.toggle('active', el.value.trim().length > 0);
-}
-function postComment(){
-    const inp = document.getElementById('commentInput');
-    const txt = inp.value.trim();
-    if(!txt) return;
-    const sec = document.getElementById('commentsSection');
-    if(!commentsOpen){ commentsOpen=true; sec.style.display='block'; }
-    const div = document.createElement('div');
-    div.className = 'ig-comment';
-    div.innerHTML = `
-        <div class="ig-avatar-ring"><div class="ig-avatar-inner" style="font-size:10px">Y</div></div>
-        <div class="ig-comment-body">
-            <span class="u">your_username</span><span class="txt">${txt}</span>
-            <div class="ig-comment-meta"><span>Just now</span><button>Reply</button><button class="cheart"><i class="bi bi-heart"></i></button></div>
-        </div>`;
-    sec.appendChild(div);
-    inp.value = '';
-    document.getElementById('postBtn').classList.remove('active');
-}
-
-/* ── AUDIO ── */
+/* ── AUDIO / TAPE PLAYER ── */
 const audio = document.getElementById('hiddenAudio');
+const reelL = document.getElementById('reelL');
+const reelR = document.getElementById('reelR');
+
+function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
+
 if(audio){
-    function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
     audio.addEventListener('timeupdate',()=>{
         const pct = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
         document.getElementById('audioBar').style.width = pct+'%';
@@ -564,12 +436,23 @@ if(audio){
     });
     audio.addEventListener('ended',()=>{
         document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
     });
 }
 function toggleAudio(){
     if(!audio) return;
-    if(audio.paused){ audio.play(); document.getElementById('playIco').className='bi bi-pause-fill'; }
-    else { audio.pause(); document.getElementById('playIco').className='bi bi-play-fill'; }
+    if(audio.paused){
+        audio.play();
+        document.getElementById('playIco').className='bi bi-pause-fill';
+        reelL.classList.add('spin');
+        reelR.classList.add('spin');
+    } else {
+        audio.pause();
+        document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
+    }
 }
 function seekAudio(e){
     if(!audio || !audio.duration) return;

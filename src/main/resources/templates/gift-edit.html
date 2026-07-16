@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
 <meta charset="UTF-8">
 <title>Edit Gift</title>
@@ -8,335 +8,421 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" th:href="@{/css/gift-edit.css}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    background: #000;
-    min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #fff;
-    padding-bottom: 80px;
-    max-width: 480px;
-    margin: 0 auto;
+:root{
+  --booth-black:#120a0b;
+  --curtain-red:#6e1423;
+  --curtain-red-dark:#43101a;
+  --film-cream:#f2e7d2;
+  --film-cream-dim:#e6d8bb;
+  --bulb-amber:#f0a944;
+  --bulb-amber-soft:#ffcf8a;
+  --ink:#2a1f1a;
+  --ink-soft:#5b4c40;
 }
 
-/* ── TOPBAR ── */
-.ig-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 13px 16px;
-    border-bottom: 0.5px solid #262626;
-    position: sticky;
-    top: 0;
-    background: #000;
-    z-index: 10;
-}
-.ig-topbar button, .ig-topbar a {
-    font-size: 14px; font-weight: 700;
-    background: none; border: none; cursor: pointer;
-    font-family: inherit; padding: 0; text-decoration: none;
-}
-.ig-topbar .ig-cancel { color: #fff; font-size: 22px; }
-.ig-topbar .ig-title { font-size: 16px; font-weight: 700; color: #fff; }
-.ig-topbar .ig-done { color: #0095f6; }
-.ig-topbar .ig-done:hover { color: #1aa3ff; }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-/* ── PROFILE ROW ── */
-.ig-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px 10px;
+body{
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(240,169,68,0.16), transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(110,20,35,0.25), transparent 60%),
+    var(--booth-black);
+  min-height:100vh;
+  font-family:'Inter',sans-serif;
+  color:var(--film-cream);
+  padding-bottom:100px;
+  max-width:480px;
+  margin:0 auto;
 }
-.ig-avatar-ring {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
-    padding: 2px; flex-shrink: 0;
-}
-.ig-avatar-inner {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    background: #000;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
-}
-.ig-username { font-size: 13px; font-weight: 700; }
-.ig-sublabel { font-size: 11px; color: #a8a8a8; margin-top: 2px; }
 
-/* ── PHOTO GRID ── */
-.ig-photo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
+.booth-shell{
+  min-height:100vh;
+  border-left:1px solid rgba(240,169,68,0.12);
+  border-right:1px solid rgba(240,169,68,0.12);
 }
-.ig-add-slot {
-    aspect-ratio: 1;
-    background: #111;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-    color: #555;
-    font-size: 11px;
-    transition: background 0.15s, color 0.15s;
-}
-.ig-add-slot:hover { background: #1a1a1a; color: #888; }
-.ig-add-slot .bi { font-size: 26px; }
-.ig-photo-item {
-    aspect-ratio: 1;
-    position: relative;
-    overflow: hidden;
-    background: #111;
-}
-.ig-photo-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.2s;
-}
-.ig-photo-item:hover img { transform: scale(1.04); }
-.ig-photo-item .del-btn {
-    position: absolute;
-    top: 6px; right: 6px;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.6);
-    border: none; color: #fff;
-    font-size: 12px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s;
-    backdrop-filter: blur(4px);
-}
-.ig-photo-item:hover .del-btn { opacity: 1; }
 
-/* ── DIVIDER ── */
-.ig-divider { height: 0.5px; background: #262626; }
+/* ── MARQUEE TOPBAR ── */
+.booth-marquee{
+  position:sticky;top:0;z-index:10;
+  background:linear-gradient(180deg, #1c1011, #150c0d 90%);
+  border-bottom:1px solid rgba(240,169,68,0.25);
+  padding:14px 16px 10px;
+  text-align:center;
+}
+.booth-marquee .bulbs{
+  display:flex;justify-content:center;gap:7px;margin-bottom:6px;
+}
+.booth-marquee .bulb{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--bulb-amber-soft);
+  box-shadow:0 0 6px 1px var(--bulb-amber);
+  animation:bulbFlicker 2.4s ease-in-out infinite;
+}
+.booth-marquee .bulb:nth-child(odd){animation-delay:.3s;}
+.booth-marquee .bulb:nth-child(3n){animation-delay:.6s;}
+@keyframes bulbFlicker{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* ── CAPTION / TEXTAREA ── */
-.ig-caption-wrap {
-    display: flex;
-    gap: 10px;
-    padding: 14px 16px;
-    align-items: flex-start;
+.booth-marquee-row{display:flex;align-items:center;justify-content:space-between;}
+.booth-back, .booth-done{
+  background:none;border:none;color:var(--film-cream);font-size:20px;
+  cursor:pointer;opacity:.85;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;
 }
-.ig-caption-wrap textarea {
-    flex: 1;
-    background: transparent;
-    border: none; outline: none;
-    color: #fff;
-    font-size: 14px;
-    font-family: inherit;
-    resize: none;
-    min-height: 80px;
-    line-height: 1.6;
+.booth-done{
+  font-family:'Inter',sans-serif;font-weight:800;font-size:14px;
+  color:var(--bulb-amber);opacity:1;
 }
-.ig-caption-wrap textarea::placeholder { color: #555; }
-.ig-charcount {
-    font-size: 11px; color: #555;
-    text-align: right; padding: 0 16px 10px;
+.booth-done:hover{color:var(--bulb-amber-soft);}
+.booth-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;letter-spacing:3px;
+  color:var(--film-cream);
+}
+.booth-title span{color:var(--bulb-amber);}
+.booth-tagline{
+  font-family:'Special Elite',monospace;
+  font-size:11px;color:rgba(242,231,210,0.55);
+  margin-top:4px;letter-spacing:.4px;
 }
 
 /* ── SECTION LABEL ── */
-.ig-label {
-    font-size: 11px; font-weight: 700;
-    color: #a8a8a8; text-transform: uppercase;
-    letter-spacing: 0.7px;
-    padding: 12px 16px 6px;
+.booth-label{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:13px;letter-spacing:2.5px;
+  color:var(--bulb-amber);
+  padding:20px 18px 8px;
 }
 
-/* ── EXISTING AUDIO ── */
-.ig-existing-audio {
-    margin: 0 16px 10px;
-    background: #111;
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* ── FILMSTRIP (PHOTO GRID) ── */
+.filmstrip{
+  margin:0 12px;
+  padding:14px 14px 18px;
+  background:#0d0708;
+  border-radius:4px;
+  position:relative;
 }
-.ig-existing-audio .ig-play-btn {
-    width: 38px; height: 38px;
-    border-radius: 50%; background: #fff;
-    border: none; color: #000;
-    font-size: 16px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: transform 0.1s;
+.filmstrip::before,.filmstrip::after{
+  content:'';
+  position:absolute;top:0;bottom:0;width:16px;
+  background-image:radial-gradient(circle, #000 3px, transparent 3.4px);
+  background-size:16px 22px;
+  background-position:center;
+  background-repeat:repeat-y;
+  opacity:.9;
 }
-.ig-existing-audio .ig-play-btn:active { transform: scale(0.9); }
-.ig-existing-audio .ig-audio-right { flex: 1; }
-.ig-audio-progress {
-    width: 100%; height: 3px;
-    background: #333; border-radius: 2px;
-    cursor: pointer; margin-bottom: 5px;
-}
-.ig-audio-bar {
-    height: 100%; background: #fff;
-    border-radius: 2px; width: 0%;
-    transition: width 0.1s linear;
-    pointer-events: none;
-}
-.ig-audio-times {
-    display: flex; justify-content: space-between;
-    font-size: 10px; color: #a8a8a8;
-}
-.ig-remove-audio {
-    background: none; border: none;
-    color: #a8a8a8; font-size: 18px;
-    cursor: pointer; padding: 4px;
-    transition: color 0.15s;
-}
-.ig-remove-audio:hover { color: #ed4956; }
-audio#hiddenOldAudio, audio#audioPreview { display: none; }
+.filmstrip::before{left:0;background-color:#1a1010;}
+.filmstrip::after{right:0;background-color:#1a1010;}
 
-/* ── VOICE ROW ── */
-.ig-voice-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px 14px;
-    flex-wrap: wrap;
+.ig-photo-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
-.ig-rec-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: transparent;
-    border: 1px solid #333; border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 13px; font-weight: 700;
-    color: #fff; cursor: pointer;
-    font-family: inherit;
-    transition: border-color 0.15s;
+.ig-photo-item{
+  aspect-ratio:1;
+  position:relative;
+  background:var(--film-cream);
+  padding:6px 6px 10px;
+  border-radius:2px;
+  box-shadow:0 3px 8px rgba(0,0,0,.5);
+  overflow:hidden;
 }
-.ig-rec-btn:hover { border-color: #555; }
-.ig-rec-btn.recording { border-color: #e02020; color: #e02020; animation: rpulse 1.5s ease infinite; }
-@keyframes rpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-.ig-upload-label {
-    display: flex; align-items: center; gap: 6px;
-    background: transparent;
-    border: 1px solid #333; border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 13px; color: #a8a8a8;
-    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+.ig-photo-item:nth-child(6n+1){transform:rotate(-3deg);}
+.ig-photo-item:nth-child(6n+2){transform:rotate(2deg);}
+.ig-photo-item:nth-child(6n+3){transform:rotate(-1.5deg);}
+.ig-photo-item:nth-child(6n+4){transform:rotate(3deg);}
+.ig-photo-item:nth-child(6n+5){transform:rotate(0deg);}
+.ig-photo-item:nth-child(6n+6){transform:rotate(1.5deg);}
+.ig-photo-item img{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+  filter:sepia(.12) contrast(1.04);
 }
-.ig-upload-label:hover { border-color: #555; color: #fff; }
-#recStatus { font-size: 12px; color: #555; }
-#recStatus.active { color: #e02020; }
+.ig-photo-item .del-btn{
+  position:absolute;top:5px;right:5px;
+  width:24px;height:24px;border-radius:50%;
+  background:rgba(20,10,10,0.7);
+  border:none;color:#fff;font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+  transition:background .15s;
+}
+.ig-photo-item .del-btn:hover{background:var(--curtain-red);}
 
-/* ── NEW AUDIO PREVIEW ── */
-.ig-new-audio {
-    margin: 0 16px 14px;
-    background: #111; border-radius: 12px;
-    padding: 12px 14px;
-    display: none;
-    align-items: center; gap: 12px;
+.ig-add-slot{
+  aspect-ratio:1;
+  background:rgba(242,231,210,0.05);
+  border:1px dashed rgba(240,169,68,0.35);
+  border-radius:2px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;
+  color:rgba(242,231,210,0.4);
+  font-size:10.5px;
+  font-family:'Special Elite',monospace;
+  transition:background .15s, color .15s, border-color .15s;
 }
-.ig-new-audio .ig-play-btn {
-    width: 38px; height: 38px;
-    border-radius: 50%; background: #fff;
-    border: none; color: #000;
-    font-size: 16px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+.ig-add-slot:hover{ background:rgba(240,169,68,0.08); color:var(--bulb-amber-soft); border-color:var(--bulb-amber); }
+.ig-add-slot .bi{font-size:22px;}
+
+.filmstrip-hint{
+  font-family:'Special Elite',monospace;
+  font-size:11px;color:rgba(242,231,210,0.4);
+  text-align:center;padding:10px 4px 0;
 }
 
-/* ── IG ROWS ── */
-.ig-row {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px; cursor: pointer;
-    font-size: 14px;
-    transition: background 0.1s;
+/* ── GIF UPLOAD CARD ── */
+.gif-card{
+  margin:16px 16px 0;
+  background:linear-gradient(160deg,#1c1011,#150c0d);
+  border:1px solid rgba(240,169,68,0.2);
+  border-radius:10px;
+  padding:14px 16px;
 }
-.ig-row:hover { background: #0a0a0a; }
-.ig-row-left { display: flex; align-items: center; gap: 12px; }
-.ig-row-left .bi { font-size: 20px; }
-.ig-row-right { color: #a8a8a8; font-size: 20px; }
+.gif-card label{
+  display:block;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:12px;letter-spacing:2px;
+  color:var(--bulb-amber);
+  margin-bottom:8px;
+}
+.gif-input-style{
+  background-color:rgba(242,231,210,0.06) !important;
+  border:1px solid rgba(240,169,68,0.25) !important;
+  color:var(--film-cream) !important;
+  font-family:'Inter',sans-serif !important;
+  font-size:13px !important;
+}
+.gif-input-style::file-selector-button{
+  background:var(--curtain-red);
+  color:#fff;border:none;border-radius:6px;
+  padding:6px 12px;margin-right:10px;
+  font-family:'Inter',sans-serif;font-weight:600;
+  cursor:pointer;
+}
+.gif-input-style:focus{
+  box-shadow:none !important;
+  border-color:var(--bulb-amber) !important;
+}
 
-/* ── BOTTOM SAVE ── */
-.ig-bottom-bar {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    background: #000;
-    border-top: 0.5px solid #262626;
-    padding: 10px 16px 16px;
-    z-index: 10;
+/* ── CAPTION CARD ── */
+.caption-card{
+  margin:18px 16px 0;
+  background:var(--film-cream);
+  border-radius:3px;
+  padding:14px 16px 12px 22px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.05);
+  position:relative;
+  background-image:repeating-linear-gradient(
+    180deg, transparent 0, transparent 27px, rgba(90,70,50,0.14) 28px);
+  transform:rotate(-0.4deg);
 }
-.ig-save-btn {
-    width: 100%;
-    background: #0095f6; color: #fff;
-    border: none; border-radius: 8px;
-    padding: 13px; font-size: 15px; font-weight: 700;
-    cursor: pointer; font-family: inherit;
-    transition: background 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+.caption-card::before{
+  content:'';position:absolute;left:14px;top:0;bottom:0;width:1px;
+  background:rgba(190,40,50,0.35);
 }
-.ig-save-btn:hover { background: #1aa3ff; }
-.ig-save-btn.saving { background: #333; }
-.ig-save-btn.done { background: #1d9c5f; }
+.caption-card .cap-from{
+  font-family:'Inter',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:1px;color:var(--curtain-red);text-transform:uppercase;
+  margin-bottom:4px;
+}
+.caption-card textarea{
+  width:100%;
+  background:transparent;border:none;outline:none;resize:none;
+  color:var(--ink);font-family:'Special Elite',monospace;
+  font-size:14px;line-height:28px;
+  min-height:110px;
+}
+.caption-card textarea::placeholder{ color:rgba(42,31,26,0.4); }
+.ig-charcount{
+  font-family:'Special Elite',monospace;
+  font-size:10.5px;color:rgba(242,231,210,0.35);
+  text-align:right;padding:4px 20px 0;
+}
 
-/* ── GIF INPUT STYLING ── */
-.gif-container {
-    padding: 12px 16px 16px;
+/* ── TAPE / AUDIO UNIT ── */
+.tape-unit{
+  margin:12px 16px 0;
+  background:linear-gradient(160deg,#231515,#160d0d);
+  border:1px solid rgba(240,169,68,0.2);
+  border-radius:10px;
+  padding:16px;
+  display:flex;align-items:center;gap:16px;
 }
-.gif-input-style {
-    background-color: #111 !important;
-    border: 1px solid #262626 !important;
-    color: #fff !important;
+.tape-reels{display:flex;gap:10px;flex-shrink:0;}
+.reel{
+  width:30px;height:30px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, #3a2323 0 5px, #191010 6px 12px, #3a2323 13px 15px);
+  border:2px solid rgba(240,169,68,0.3);
 }
-.gif-input-style:focus {
-    box-shadow: none !important;
-    border-color: #555 !important;
+.tape-controls{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tape-play-row{display:flex;align-items:center;gap:12px;}
+.tape-play-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--curtain-red);border:none;color:#fff;
+  font-size:15px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s, transform .1s;
+}
+.tape-play-btn:hover{background:#84192a;}
+.tape-play-btn:active{transform:scale(.92);}
+.tape-progress-wrap{flex:1;min-width:0;}
+.tape-progress{
+  width:100%;height:4px;border-radius:2px;
+  background:rgba(242,231,210,0.15);
+  cursor:pointer;position:relative;
+}
+.tape-progress-bar{
+  height:100%;border-radius:2px;
+  background:var(--bulb-amber);
+  width:0%;transition:width .1s linear;
+  pointer-events:none;
+}
+.tape-times{
+  display:flex;justify-content:space-between;
+  font-family:'Special Elite',monospace;
+  font-size:10px;color:rgba(242,231,210,0.45);
+  margin-top:4px;
+}
+.tape-remove{
+  background:none;border:none;
+  color:rgba(242,231,210,0.5);font-size:16px;
+  cursor:pointer;flex-shrink:0;
+  transition:color .15s;
+}
+.tape-remove:hover{color:#ff6b6b;}
+audio#hiddenOldAudio, audio#audioPreview{display:none;}
+
+/* ── VOICE ROW (record / upload) ── */
+.voice-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px 4px;flex-wrap:wrap;
+}
+.pill-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(242,231,210,0.05);
+  border:1px solid rgba(240,169,68,0.3);
+  border-radius:20px;padding:8px 16px;
+  font-size:12.5px;font-weight:700;
+  color:var(--film-cream);cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:border-color .15s, background .15s;
+}
+.pill-btn:hover{ border-color:var(--bulb-amber); background:rgba(240,169,68,0.08); }
+.pill-btn.recording{
+  border-color:#e0503f;color:#ff8a75;
+  animation:rpulse 1.5s ease infinite;
+}
+@keyframes rpulse{0%,100%{opacity:1}50%{opacity:.55}}
+.pill-upload{
+  display:flex;align-items:center;gap:6px;
+  background:transparent;
+  border:1px solid rgba(240,169,68,0.2);
+  border-radius:20px;padding:8px 16px;
+  font-size:12.5px;color:rgba(242,231,210,0.55);
+  cursor:pointer;transition:border-color .15s, color .15s;
+}
+.pill-upload:hover{ border-color:var(--bulb-amber); color:var(--film-cream); }
+#recStatus{
+  font-family:'Special Elite',monospace;
+  font-size:11px;color:rgba(242,231,210,0.4);
+}
+#recStatus.active{color:#ff8a75;}
+
+/* ── ROWS (tag / location) ── */
+.booth-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;cursor:pointer;font-size:13.5px;
+  border-top:1px solid rgba(240,169,68,0.1);
+  transition:background .1s;
+}
+.booth-row:hover{background:rgba(242,231,210,0.03);}
+.booth-row-left{display:flex;align-items:center;gap:12px;color:var(--film-cream);}
+.booth-row-left .bi{font-size:18px;color:var(--bulb-amber);}
+.booth-row-right{color:rgba(242,231,210,0.35);font-size:18px;}
+
+/* ── BOTTOM SAVE BAR ── */
+.booth-bottom-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:linear-gradient(180deg, transparent, #150c0d 30%);
+  padding:14px 16px 18px;
+  z-index:10;
+}
+.booth-save-btn{
+  width:100%;
+  background:var(--curtain-red);
+  border:1px solid rgba(240,169,68,0.4);
+  color:var(--film-cream);
+  border-radius:8px;padding:14px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:17px;letter-spacing:2px;
+  cursor:pointer;
+  transition:background .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.booth-save-btn:hover{background:#84192a;}
+.booth-save-btn.saving{background:#2a1a1a;border-color:rgba(240,169,68,0.15);}
+.booth-save-btn.done{background:#3d7a52;border-color:rgba(240,169,68,0.15);}
+
+.booth-empty{
+  margin:4px 16px 0;
+  font-family:'Special Elite',monospace;
+  font-size:11.5px;color:rgba(242,231,210,0.35);
+  text-align:center;padding:18px 10px;
+  border:1px dashed rgba(240,169,68,0.2);
+  border-radius:6px;
 }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="ig-topbar">
-    <button class="ig-cancel" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
-    <span class="ig-title">Edit post</span>
-    <button class="ig-done" form="giftForm" type="submit">Done</button>
-</div>
+<div class="booth-shell">
+
+  <!-- MARQUEE TOPBAR -->
+  <div class="booth-marquee">
+    <div class="bulbs">
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span>
+    </div>
+    <div class="booth-marquee-row">
+      <button class="booth-back" type="button" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
+      <span class="booth-title">EDIT <span>REEL</span></span>
+      <button class="booth-done" form="giftForm" type="submit">Done</button>
+    </div>
+    <div class="booth-tagline">— chỉnh sửa cuộn phim kỷ niệm —</div>
+  </div>
 
 <form id="giftForm">
 <input type="hidden" id="uid" th:value="${nfcUid}">
 
-<!-- PROFILE ROW -->
-<div class="ig-profile">
-    <div class="ig-avatar-ring"><div class="ig-avatar-inner">Y</div></div>
-    <div>
-        <div class="ig-username">your_username</div>
-        <div class="ig-sublabel">Memory capsule</div>
-    </div>
+<!-- FILMSTRIP / PHOTO GRID -->
+<div class="booth-label">Cuộn phim của bạn</div>
+<div class="filmstrip">
+  <div class="ig-photo-grid" id="previewContainer">
+      <div class="ig-photo-item" th:each="img : ${gift.images}">
+          <img th:src="@{'/files/images/' + ${img.imageUrl}}" alt="">
+          <button type="button" class="del-btn old-image" th:data-url="${img.imageUrl}">
+              <i class="bi bi-x"></i>
+          </button>
+      </div>
+      <div class="ig-add-slot" id="addSlot" onclick="imageInput.click()">
+          <i class="bi bi-plus-lg"></i>
+          <span>Thêm ảnh</span>
+      </div>
+  </div>
+  <div class="filmstrip-hint">chạm để thêm hoặc xoá khoảnh khắc</div>
 </div>
-
-<!-- PHOTO GRID -->
 <input type="file" id="imageInput" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.avif" multiple hidden>
-<div class="ig-photo-grid" id="previewContainer">
-    <div class="ig-photo-item" th:each="img : ${gift.images}">
-        <img th:src="@{'/files/images/' + ${img.imageUrl}}" alt="">
-        <button type="button" class="del-btn old-image" th:data-url="${img.imageUrl}">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-    <div class="ig-add-slot" id="addSlot" onclick="imageInput.click()">
-        <i class="bi bi-plus-lg"></i>
-        <span>Add photo</span>
-    </div>
-</div>
 
-<div class="ig-divider"></div>
-
-<!-- GIF UPLOAD SECTION -->
-<div class="gif-container">
-    <label class="form-label" style="font-size: 11px; font-weight: 700; color: #a8a8a8; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px;">GIF File</label>
+<!-- GIF UPLOAD -->
+<div class="gif-card">
+    <label for="gifInput">Tệp GIF</label>
     <input
         type="file"
         id="gifInput"
@@ -344,37 +430,40 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
         class="form-control gif-input-style">
 </div>
 
-<div class="ig-divider"></div>
-
 <!-- CAPTION -->
-<div class="ig-caption-wrap">
-    <div class="ig-avatar-ring" style="width:32px;height:32px;flex-shrink:0">
-        <div class="ig-avatar-inner" style="font-size:11px">Y</div>
-    </div>
-    <textarea id="message" placeholder="Write a caption…" maxlength="2200"
+<div class="booth-label">Viết sau tấm ảnh</div>
+<div class="caption-card">
+    <div class="cap-from">your_username</div>
+    <textarea id="message" placeholder="Viết một dòng chú thích…" maxlength="2200"
               th:text="${gift.message}" oninput="updateCount(this)"></textarea>
 </div>
 <div class="ig-charcount"><span id="cCount">0</span> / 2,200</div>
 
-<div class="ig-divider"></div>
-
 <!-- EXISTING AUDIO -->
 <div id="oldAudioBox" th:if="${gift.voiceUrl != null && gift.voiceUrl != ''}">
-    <div class="ig-label">Current voice note</div>
-    <div class="ig-existing-audio">
-        <button type="button" class="ig-play-btn" id="oldPlayBtn" onclick="toggleOldAudio()">
-            <i class="bi bi-play-fill" id="oldPlayIco"></i>
-        </button>
-        <div class="ig-audio-right">
-            <div class="ig-audio-progress" id="oldProgressBar" onclick="seekOld(event)">
-                <div class="ig-audio-bar" id="oldBar"></div>
-            </div>
-            <div class="ig-audio-times">
-                <span id="oldCur">0:00</span>
-                <span id="oldDur">0:00</span>
+    <div class="booth-label">Ghi âm hiện tại</div>
+    <div class="tape-unit">
+        <div class="tape-reels">
+            <div class="reel"></div>
+            <div class="reel"></div>
+        </div>
+        <div class="tape-controls">
+            <div class="tape-play-row">
+                <button type="button" class="tape-play-btn" id="oldPlayBtn" onclick="toggleOldAudio()">
+                    <i class="bi bi-play-fill" id="oldPlayIco"></i>
+                </button>
+                <div class="tape-progress-wrap">
+                    <div class="tape-progress" id="oldProgressBar" onclick="seekOld(event)">
+                        <div class="tape-progress-bar" id="oldBar"></div>
+                    </div>
+                    <div class="tape-times">
+                        <span id="oldCur">0:00</span>
+                        <span id="oldDur">0:00</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <button type="button" class="ig-remove-audio" onclick="doRemoveOldAudio()" aria-label="Remove">
+        <button type="button" class="tape-remove" onclick="doRemoveOldAudio()" aria-label="Remove">
             <i class="bi bi-trash"></i>
         </button>
     </div>
@@ -382,56 +471,62 @@ audio#hiddenOldAudio, audio#audioPreview { display: none; }
 </div>
 
 <!-- NEW VOICE -->
-<div class="ig-label">Voice note</div>
-<div class="ig-voice-row">
-    <button type="button" class="ig-rec-btn" id="recordBtn" onclick="toggleRecord()">
+<div class="booth-label">Lời nhắn bằng giọng nói</div>
+<div class="voice-row">
+    <button type="button" class="pill-btn" id="recordBtn" onclick="toggleRecord()">
         <i class="bi bi-mic" id="recIco"></i>
-        <span id="recLabel">Record</span>
+        <span id="recLabel">Ghi âm</span>
     </button>
     <span id="recStatus"></span>
-    <label class="ig-upload-label" for="audioInput">
-        <i class="bi bi-upload"></i> Upload
+    <label class="pill-upload" for="audioInput">
+        <i class="bi bi-upload"></i> Tải lên
     </label>
     <input type="file" id="audioInput" accept="audio/*" hidden>
 </div>
 
 <!-- NEW AUDIO PREVIEW -->
-<div class="ig-new-audio" id="newAudioWrap">
-    <button type="button" class="ig-play-btn" id="newPlayBtn" onclick="toggleNewAudio()">
-        <i class="bi bi-play-fill" id="newPlayIco"></i>
-    </button>
-    <div class="ig-audio-right">
-        <div class="ig-audio-progress" id="newProgressBar" onclick="seekNew(event)">
-            <div class="ig-audio-bar" id="newBar"></div>
-        </div>
-        <div class="ig-audio-times">
-            <span id="newCur">0:00</span>
-            <span id="newDur">0:00</span>
+<div class="tape-unit" id="newAudioWrap" style="display:none;">
+    <div class="tape-reels">
+        <div class="reel"></div>
+        <div class="reel"></div>
+    </div>
+    <div class="tape-controls">
+        <div class="tape-play-row">
+            <button type="button" class="tape-play-btn" id="newPlayBtn" onclick="toggleNewAudio()">
+                <i class="bi bi-play-fill" id="newPlayIco"></i>
+            </button>
+            <div class="tape-progress-wrap">
+                <div class="tape-progress" id="newProgressBar" onclick="seekNew(event)">
+                    <div class="tape-progress-bar" id="newBar"></div>
+                </div>
+                <div class="tape-times">
+                    <span id="newCur">0:00</span>
+                    <span id="newDur">0:00</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <audio id="audioPreview"></audio>
 
-<div class="ig-divider"></div>
-
-<div class="ig-row">
-    <span class="ig-row-left"><i class="bi bi-person-plus"></i> Tag people</span>
-    <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+<div class="booth-row">
+    <span class="booth-row-left"><i class="bi bi-person-plus"></i> Gắn thẻ mọi người</span>
+    <span class="booth-row-right"><i class="bi bi-chevron-right"></i></span>
 </div>
-<div class="ig-divider"></div>
-<div class="ig-row">
-    <span class="ig-row-left"><i class="bi bi-geo-alt"></i> Add location</span>
-    <span class="ig-row-right"><i class="bi bi-chevron-right"></i></span>
+<div class="booth-row">
+    <span class="booth-row-left"><i class="bi bi-geo-alt"></i> Thêm vị trí</span>
+    <span class="booth-row-right"><i class="bi bi-chevron-right"></i></span>
 </div>
-<div class="ig-divider"></div>
 
 </form>
 
-<!-- BOTTOM BAR -->
-<div class="ig-bottom-bar">
-    <button class="ig-save-btn" id="saveBtn" onclick="submitForm()">
+</div>
+
+<!-- BOTTOM SAVE -->
+<div class="booth-bottom-bar">
+    <button class="booth-save-btn" id="saveBtn" onclick="submitForm()">
         <i class="bi bi-check-lg" id="saveIco"></i>
-        <span id="saveLbl">Save changes</span>
+        <span id="saveLbl">Lưu thay đổi</span>
     </button>
 </div>
 
@@ -577,8 +672,8 @@ async function toggleRecord(){
             stream.getTracks().forEach(t=>t.stop());
             btn.classList.remove("recording");
             document.getElementById("recIco").className = "bi bi-mic";
-            document.getElementById("recLabel").textContent = "Record";
-            document.getElementById("recStatus").textContent = "Done";
+            document.getElementById("recLabel").textContent = "Ghi âm";
+            document.getElementById("recStatus").textContent = "Xong";
             document.getElementById("recStatus").className = "";
             removeOldAudio = true;
             const ob = document.getElementById("oldAudioBox");
@@ -587,8 +682,8 @@ async function toggleRecord(){
         recorder.start();
         btn.classList.add("recording");
         document.getElementById("recIco").className = "bi bi-stop-fill";
-        document.getElementById("recLabel").textContent = "Stop";
-        document.getElementById("recStatus").textContent = "Recording…";
+        document.getElementById("recLabel").textContent = "Dừng";
+        document.getElementById("recStatus").textContent = "Đang ghi…";
         document.getElementById("recStatus").className = "active";
     } catch(e){
         alert("Không mở được microphone.");
@@ -598,7 +693,7 @@ async function toggleRecord(){
 async function submitForm(){
     const btn = document.getElementById("saveBtn");
     btn.classList.add("saving");
-    document.getElementById("saveLbl").textContent = "Saving…";
+    document.getElementById("saveLbl").textContent = "Đang lưu…";
     document.getElementById("saveIco").className = "bi bi-hourglass-split";
     btn.disabled = true;
 
@@ -628,21 +723,21 @@ async function submitForm(){
         if(res.ok){
             btn.classList.remove("saving");
             btn.classList.add("done");
-            document.getElementById("saveLbl").textContent = "Saved!";
+            document.getElementById("saveLbl").textContent = "Đã lưu!";
             document.getElementById("saveIco").className = "bi bi-check-lg";
             setTimeout(() => { location.href = "/gift/view/" + uid; }, 700);
         } else {
             alert("Lỗi: " + text);
             btn.classList.remove("saving");
             btn.disabled = false;
-            document.getElementById("saveLbl").textContent = "Save changes";
+            document.getElementById("saveLbl").textContent = "Lưu thay đổi";
             document.getElementById("saveIco").className = "bi bi-check-lg";
         }
     } catch(err){
         alert("Network error");
         btn.classList.remove("saving");
         btn.disabled = false;
-        document.getElementById("saveLbl").textContent = "Save changes";
+        document.getElementById("saveLbl").textContent = "Lưu thay đổi";
         document.getElementById("saveIco").className = "bi bi-check-lg";
     }
 }
