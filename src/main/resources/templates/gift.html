@@ -354,7 +354,6 @@ audio#hiddenAudio{display:none;}
   <!-- CAPTION -->
   <div class="booth-label">Viết sau tấm ảnh</div>
   <div class="caption-card" th:if="${gift.message != null and gift.message != ''}">
-    <div class="cap-from">your_username</div>
     <div class="cap-text" th:text="${gift.message}"></div>
   </div>
   <div class="booth-empty" th:if="${gift.message == null or gift.message == ''}">
