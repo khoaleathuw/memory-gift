@@ -421,6 +421,17 @@ audio#hiddenAudio{display:none;}
 /* ── AUDIO / TAPE PLAYER ── */
 const audio = document.getElementById('hiddenAudio');
 
+console.log(audio);
+console.log(audio.currentSrc);
+
+audio.addEventListener("loadedmetadata", () => {
+    console.log("duration", audio.duration);
+});
+
+audio.addEventListener("error", () => {
+    console.log(audio.error);
+});
+
 const reelL = document.getElementById('reelL');
 const reelR = document.getElementById('reelR');
 
