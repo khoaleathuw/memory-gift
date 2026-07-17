@@ -667,7 +667,13 @@ async function toggleRecord(){
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
             const blob = new Blob(chunks, {type: recorder.mimeType});
-            newAudio = new File([blob], "record.webm", {type: recorder.mimeType});
+            newAudio = new File(
+                [blob],
+                recorder.mimeType.includes("mp4") ? "record.m4a" : "record.webm",
+                {
+                    type: recorder.mimeType
+                }
+            );
             showNewAudio(URL.createObjectURL(newAudio));
             stream.getTracks().forEach(t=>t.stop());
             btn.classList.remove("recording");

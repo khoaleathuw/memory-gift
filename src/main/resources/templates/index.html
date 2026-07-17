@@ -520,6 +520,7 @@ const recordLabel = document.getElementById("recordLabel");
 const recordStatus = document.getElementById("recordStatus");
 
 recordBtn.addEventListener("click", async () => {
+
     if (!navigator.mediaDevices?.getUserMedia) {
         alert("Thiết bị không hỗ trợ micro");
         return;
@@ -527,41 +528,83 @@ recordBtn.addEventListener("click", async () => {
 
     if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
+
         recordBtn.classList.remove("recording");
         recordLabel.textContent = "Ghi âm";
         recordBtn.querySelector(".bi").className = "bi bi-mic";
         recordStatus.textContent = "Đã xong";
         recordStatus.className = "";
+
         return;
     }
 
     try {
+
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+
+        // Ưu tiên định dạng tương thích nhất
+        let mimeType = "";
+
+        if (MediaRecorder.isTypeSupported("audio/mp4")) {
+            mimeType = "audio/mp4";
+        } else if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+            mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+            mimeType = "audio/webm";
+        }
+
+        mediaRecorder = mimeType
+            ? new MediaRecorder(stream, { mimeType })
+            : new MediaRecorder(stream);
+
         chunks = [];
 
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+                chunks.push(e.data);
+            }
+        };
 
         mediaRecorder.onstop = () => {
-            const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
-            const blob = new Blob(chunks, { type: mimeType });
-            audioFile = new File([blob], "voice.webm", { type: mimeType });
+
+            const realType = mediaRecorder.mimeType || mimeType;
+
+            const blob = new Blob(chunks, {
+                type: realType
+            });
+
+            const extension = realType.includes("mp4")
+                ? "m4a"
+                : "webm";
+
+            audioFile = new File(
+                [blob],
+                `voice.${extension}`,
+                {
+                    type: realType
+                }
+            );
+
             audioPreview.src = URL.createObjectURL(audioFile);
             audioPreview.style.display = "block";
+
             stopMic();
         };
 
         mediaRecorder.start();
+
         recordBtn.classList.add("recording");
         recordLabel.textContent = "Dừng";
         recordBtn.querySelector(".bi").className = "bi bi-stop-fill";
         recordStatus.textContent = "Đang ghi…";
         recordStatus.className = "active";
+
         document.getElementById("reelL").classList.add("spin");
         document.getElementById("reelR").classList.add("spin");
 
     } catch (err) {
         alert(err.message);
+        console.error(err);
     }
 });
 
