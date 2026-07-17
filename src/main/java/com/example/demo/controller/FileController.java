@@ -33,8 +33,14 @@ public class FileController {
                 return ResponseEntity.notFound().build();
             }
 
+            String contentType = Files.probeContentType(file);
+
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentType(MediaType.parseMediaType(contentType))
                     .body(resource);
 
         } catch (Exception e) {
