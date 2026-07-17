@@ -384,9 +384,10 @@ audio#hiddenAudio{display:none;}
         </div>
       </div>
     </div>
-    <audio id="hiddenAudio">
-      <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
-    </audio>
+   <audio id="hiddenAudio"
+       th:src="@{'/files/audio/' + ${gift.voiceUrl}}"
+       preload="metadata">
+  </audio>
   </div>
   <div class="booth-empty" th:if="${gift.voiceUrl == null or gift.voiceUrl == ''}">
     chưa có ghi âm nào được lưu lại
@@ -419,6 +420,7 @@ audio#hiddenAudio{display:none;}
 
 /* ── AUDIO / TAPE PLAYER ── */
 const audio = document.getElementById('hiddenAudio');
+
 const reelL = document.getElementById('reelL');
 const reelR = document.getElementById('reelR');
 
@@ -458,6 +460,8 @@ function seekAudio(e){
     const rect = document.getElementById('progressBar').getBoundingClientRect();
     audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
 }
+
+
 </script>
 
 </body>
