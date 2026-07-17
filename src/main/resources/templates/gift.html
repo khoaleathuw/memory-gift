@@ -385,8 +385,7 @@ audio#hiddenAudio{display:none;}
       </div>
     </div>
    <audio id="hiddenAudio"
-       th:src="@{'/files/audio/' + ${gift.voiceUrl}}"
-       preload="metadata">
+       <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
   </audio>
   </div>
   <div class="booth-empty" th:if="${gift.voiceUrl == null or gift.voiceUrl == ''}">
@@ -420,10 +419,6 @@ audio#hiddenAudio{display:none;}
 
 /* ── AUDIO / TAPE PLAYER ── */
 const audio = document.getElementById('hiddenAudio');
-
-console.log(audio);
-console.log(audio.currentSrc);
-
 audio.addEventListener("loadedmetadata", () => {
     console.log("duration", audio.duration);
 });
@@ -455,7 +450,7 @@ if(audio){
 function toggleAudio(){
     if(!audio) return;
     if(audio.paused){
-        audio.play();
+        audio.play().catch(err => alert('Lỗi phát audio: ' + err.name + ' - ' + err.message));
         document.getElementById('playIco').className='bi bi-pause-fill';
         reelL.classList.add('spin');
         reelR.classList.add('spin');
