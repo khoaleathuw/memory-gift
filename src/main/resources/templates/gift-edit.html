@@ -26,23 +26,33 @@
 
 *{box-sizing:border-box;margin:0;padding:0;}
 
+html, body{ height:100%; }
+
 body{
   background:
     radial-gradient(ellipse 120% 60% at 50% -10%, rgba(240,169,68,0.16), transparent 60%),
     radial-gradient(ellipse 90% 50% at 50% 110%, rgba(110,20,35,0.25), transparent 60%),
     var(--booth-black);
   min-height:100vh;
+  min-height:100dvh; /* tránh viewport nhảy khi bàn phím/thanh địa chỉ mobile ẩn hiện */
   font-family:'Inter',sans-serif;
   color:var(--film-cream);
-  padding-bottom:100px;
   max-width:480px;
   margin:0 auto;
+  display:flex;
+  flex-direction:column;
 }
 
 .booth-shell{
-  min-height:100vh;
+  flex:1;
+  display:flex;
+  flex-direction:column;
   border-left:1px solid rgba(240,169,68,0.12);
   border-right:1px solid rgba(240,169,68,0.12);
+}
+
+.booth-shell form{
+  flex:1;
 }
 
 /* ── MARQUEE TOPBAR ── */
@@ -347,11 +357,12 @@ audio#hiddenOldAudio, audio#audioPreview{display:none;}
 
 /* ── BOTTOM SAVE BAR ── */
 .booth-bottom-bar{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;
+  position:sticky;bottom:0;
+  width:100%;
   background:linear-gradient(180deg, transparent, #150c0d 30%);
   padding:14px 16px 18px;
   z-index:10;
+  margin-top:auto;
 }
 .booth-save-btn{
   width:100%;
@@ -509,9 +520,9 @@ audio#hiddenOldAudio, audio#audioPreview{display:none;}
 </div>
 <audio id="audioPreview"></audio>
 
-</form>
 
-</div>
+
+</form>
 
 <!-- BOTTOM SAVE -->
 <div class="booth-bottom-bar">
@@ -519,6 +530,8 @@ audio#hiddenOldAudio, audio#audioPreview{display:none;}
         <i class="bi bi-check-lg" id="saveIco"></i>
         <span id="saveLbl">Lưu thay đổi</span>
     </button>
+</div>
+
 </div>
 
 <script>
