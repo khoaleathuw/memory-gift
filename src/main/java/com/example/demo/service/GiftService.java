@@ -4,32 +4,50 @@ import com.example.demo.entity.Gift;
 import com.example.demo.entity.GiftImage;
 import com.example.demo.repository.GiftRepository;
 import com.example.demo.repository.NfcRepository;
+
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 public class GiftService {
+
 
     private final GiftRepository giftRepository;
     private final NfcRepository nfcRepository;
 
-    private static final Path BASE =
-            Paths.get(System.getProperty("user.home"),
-                    "memory-gift",
-                    "uploads");
 
-    private static final Path IMAGE_DIR = BASE.resolve("images");
-    private static final Path AUDIO_DIR = BASE.resolve("audio");
-        public GiftService(
-                GiftRepository giftRepository,
-                NfcRepository nfcRepository
-        ){
+    private static final Path BASE =
+            Paths.get(
+                    System.getProperty("user.home"),
+                    "memory-gift",
+                    "uploads"
+            );
+
+
+    private static final Path IMAGE_DIR =
+            BASE.resolve("images");
+
+
+    private static final Path AUDIO_DIR =
+            BASE.resolve("audio");
+
+
+    public GiftService(
+            GiftRepository giftRepository,
+            NfcRepository nfcRepository
+    ) {
 
         this.giftRepository = giftRepository;
         this.nfcRepository = nfcRepository;
@@ -37,46 +55,91 @@ public class GiftService {
 
         try {
 
-                Files.createDirectories(IMAGE_DIR);
-                Files.createDirectories(AUDIO_DIR);
+            Files.createDirectories(IMAGE_DIR);
+            Files.createDirectories(AUDIO_DIR);
 
-        } catch(IOException e){
+        } catch (IOException e) {
 
-                throw new RuntimeException(e);
+            throw new RuntimeException(
+                    "Không thể tạo thư mục upload",
+                    e
+            );
 
         }
 
+    }
+
+
+    // ==================================================
+    // CREATE EMPTY GIFT
+    // Chỉ tạo khi UID chưa có Gift
+    // ==================================================
+
+    @Transactional
+    public Gift createEmptyGift(String uid) {
+
+
+        if (uid == null || uid.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "UID không được để trống"
+            );
+
         }
-         @Transactional
-        public Gift createEmptyGift(String uid){
 
 
-        // tạo gift rỗng
+        // Kiểm tra UID đã có Gift chưa
+        Gift existingGift = getByUid(uid);
+
+
+        if (existingGift != null) {
+
+            return existingGift;
+
+        }
+
+
         Gift gift = new Gift();
+        gift.setUid(uid);
 
         gift.setTitle("");
         gift.setMessage("");
+        gift.setTheme("default");
+        gift.setVoiceUrl(null);
+        gift.setImages(new ArrayList<>());
 
 
         Long giftId =
                 giftRepository.insertGift(gift);
 
 
-        // tạo nfc_tag
-        nfcRepository.bindGift(uid, giftId);
+        gift.setId(giftId);
+
+
+        // Gắn UID NFC với Gift vừa tạo
+        nfcRepository.bindGift(
+                uid,
+                giftId
+        );
 
 
         return gift;
-        }
-    // ==================================
-    // SAVE
-    // ==================================
 
+    }
+
+
+    // ==================================================
+    // SAVE GIFT
+    // Dùng khi khách lưu lần đầu
+    // Không tạo Gift mới nếu UID đã có Gift
+    // ==================================================
+
+    @Transactional
     public Gift saveGift(
 
             String uid,
 
-            String title,
+            String theme,
 
             String message,
 
@@ -86,319 +149,520 @@ public class GiftService {
 
     ) throws IOException {
 
-        Gift gift = new Gift();
 
-        gift.setTitle(title);
-        gift.setMessage(message);
+        if (uid == null || uid.isBlank()) {
 
-        // ---------- audio ----------
-
-        if (audio != null && !audio.isEmpty()) {
-
-            String audioName =
-                    UUID.randomUUID() + "_" + audio.getOriginalFilename();
-
-            Path target =
-                    AUDIO_DIR.resolve(audioName);
-
-            Files.copy(
-                    audio.getInputStream(),
-                    target,
-                    StandardCopyOption.REPLACE_EXISTING
+            throw new IllegalArgumentException(
+                    "UID không được để trống"
             );
-
-            gift.setVoiceUrl(audioName);
 
         }
 
+
+        // Lấy Gift đã được tạo lúc quét NFC
+        Gift gift =
+                getByUid(uid);
+
+
+        // Trường hợp UID chưa có Gift thì mới tạo
+        if (gift == null) {
+
+            gift =
+                    createEmptyGift(uid);
+
+        }
+
+
         Long giftId =
-                giftRepository.insertGift(gift);
+                gift.getId();
 
-        gift.setId(giftId);
 
-        List<GiftImage> imageList =
-                new ArrayList<>();
+        gift.setTitle("");
 
-        // ---------- images ----------
+
+        gift.setTheme(
+                theme == null || theme.isBlank()
+                        ? "default"
+                        : theme
+        );
+
+
+        gift.setMessage(
+                message == null
+                        ? ""
+                        : message
+        );
+
+
+        // ==================================================
+        // AUDIO
+        // ==================================================
+
+        if (audio != null && !audio.isEmpty()) {
+
+
+            String oldAudio =
+                    gift.getVoiceUrl();
+
+
+            String audioName =
+                    createSafeFileName(audio);
+
+
+            Path audioTarget =
+                    AUDIO_DIR.resolve(audioName);
+
+
+            Files.copy(
+                    audio.getInputStream(),
+                    audioTarget,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+
+            gift.setVoiceUrl(audioName);
+
+
+            // Update DB trước
+            giftRepository.updateGift(gift);
+
+
+            // Sau khi update thành công mới xóa audio cũ
+            if (oldAudio != null && !oldAudio.isBlank()) {
+
+                Files.deleteIfExists(
+                        AUDIO_DIR.resolve(oldAudio)
+                );
+
+            }
+
+        } else {
+
+            // Không có audio mới thì vẫn update text/theme
+            giftRepository.updateGift(gift);
+
+        }
+
+
+        // ==================================================
+        // THÊM ẢNH
+        // ==================================================
 
         if (images != null) {
 
+
             for (MultipartFile file : images) {
 
-                if (file.isEmpty())
+
+                if (file == null || file.isEmpty()) {
+
                     continue;
 
-                String imageName =
-                        UUID.randomUUID() + "_"
-                                + file.getOriginalFilename();
+                }
 
-                Path target =
+
+                String imageName =
+                        createSafeFileName(file);
+
+
+                Path imageTarget =
                         IMAGE_DIR.resolve(imageName);
+
 
                 Files.copy(
                         file.getInputStream(),
-                        target,
+                        imageTarget,
                         StandardCopyOption.REPLACE_EXISTING
                 );
+
 
                 giftRepository.insertImage(
                         giftId,
                         imageName
                 );
-                GiftImage img =
-                        new GiftImage();
-
-                img.setGiftId(giftId);
-                img.setImageUrl(imageName);
-
-                imageList.add(img);
 
             }
 
         }
 
-        gift.setImages(imageList);
 
-        nfcRepository.bindGift(uid, giftId);
-
-        return gift;
+        return giftRepository.findById(giftId);
 
     }
 
-    // ==================================
+
+    // ==================================================
     // GET BY ID
-    // ==================================
+    // ==================================================
 
     public Gift getById(Long id) {
 
+
+        if (id == null) {
+
+            return null;
+
+        }
+
+
         return giftRepository.findById(id);
 
     }
 
-    // ==================================
+
+    // ==================================================
     // GET BY UID
-    // ==================================
+    // ==================================================
 
-        public Gift getByUid(String uid) {
+    public Gift getByUid(String uid) {
 
 
-        Long id =
+        if (uid == null || uid.isBlank()) {
+
+            return null;
+
+        }
+
+
+        Long giftId =
                 nfcRepository.findGiftIdByUid(uid);
 
 
-        if(id == null)
-                return null;
+        if (giftId == null) {
+
+            return null;
+
+        }
+
+
+        return giftRepository.findById(giftId);
+
+    }
+
+
+    // ==================================================
+    // UPDATE GIFT BY ID
+    // ==================================================
+
+    @Transactional
+    public Gift updateGift(
+
+            Long id,
+
+            String title,
+
+            String message,
+
+            String theme,
+
+            MultipartFile[] images,
+
+            MultipartFile audio,
+
+            boolean removeOldAudio,
+
+            List<String> deleteImages
+
+    ) throws IOException {
+
+
+        Gift gift =
+                giftRepository.findById(id);
+
+
+        if (gift == null) {
+
+            throw new RuntimeException(
+                    "Không tìm thấy Gift ID: " + id
+            );
+
+        }
+
+
+        if (gift.getImages() == null) {
+
+            gift.setImages(
+                    new ArrayList<>()
+            );
+
+        }
+
+
+        gift.setTitle(
+                title == null
+                        ? ""
+                        : title
+        );
+
+
+        gift.setMessage(
+                message == null
+                        ? ""
+                        : message
+        );
+
+
+        gift.setTheme(
+                theme == null || theme.isBlank()
+                        ? "default"
+                        : theme
+        );
+
+
+        String oldAudio =
+                gift.getVoiceUrl();
+
+
+        String newAudioName =
+                null;
+
+
+        // ==================================================
+        // UPLOAD AUDIO MỚI
+        // ==================================================
+
+        if (audio != null && !audio.isEmpty()) {
+
+
+            newAudioName =
+                    createSafeFileName(audio);
+
+
+            Path audioTarget =
+                    AUDIO_DIR.resolve(newAudioName);
+
+
+            Files.copy(
+                    audio.getInputStream(),
+                    audioTarget,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+
+            gift.setVoiceUrl(
+                    newAudioName
+            );
+
+        } else if (removeOldAudio) {
+
+
+            gift.setVoiceUrl(null);
+
+        }
+
+
+        // Update thông tin Gift
+        giftRepository.updateGift(gift);
+
+
+        // ==================================================
+        // XÓA AUDIO CŨ
+        // ==================================================
+
+        boolean hasNewAudio =
+                newAudioName != null;
+
+
+        if (
+                oldAudio != null
+                        && !oldAudio.isBlank()
+                        && (removeOldAudio || hasNewAudio)
+        ) {
+
+
+            Files.deleteIfExists(
+                    AUDIO_DIR.resolve(oldAudio)
+            );
+
+        }
+
+
+        // ==================================================
+        // XÓA ẢNH CŨ
+        // ==================================================
+
+        if (
+                deleteImages != null
+                        && !deleteImages.isEmpty()
+        ) {
+
+
+            for (String imageName : deleteImages) {
+
+
+                if (
+                        imageName == null
+                                || imageName.isBlank()
+                ) {
+
+                    continue;
+
+                }
+
+
+                // Xóa dòng trong DB
+                giftRepository.deleteImageByUrl(
+                        id,
+                        imageName
+                );
+
+
+                // Xóa file vật lý
+                Files.deleteIfExists(
+                        IMAGE_DIR.resolve(imageName)
+                );
+
+            }
+
+        }
+
+
+        // ==================================================
+        // THÊM ẢNH MỚI
+        // ==================================================
+
+        if (images != null) {
+
+
+            for (MultipartFile file : images) {
+
+
+                if (
+                        file == null
+                                || file.isEmpty()
+                ) {
+
+                    continue;
+
+                }
+
+
+                String imageName =
+                        createSafeFileName(file);
+
+
+                Path imageTarget =
+                        IMAGE_DIR.resolve(imageName);
+
+
+                Files.copy(
+                        file.getInputStream(),
+                        imageTarget,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+
+
+                giftRepository.insertImage(
+                        id,
+                        imageName
+                );
+
+            }
+
+        }
 
 
         return giftRepository.findById(id);
 
-        }
-// ==================================
-// UPDATE
-// ==================================
-
-public Gift updateGift(
-
-        Long id,
-
-        String title,
-
-        String message,
-
-        MultipartFile[] images,
-
-        MultipartFile audio,
-
-        boolean removeOldAudio,
-
-        List<String> deleteImages
-
-) throws IOException {
-
-    Gift gift = giftRepository.findById(id);
-
-    if (gift == null) {
-        throw new RuntimeException("Gift not found");
     }
 
-    gift.setTitle(title);
-    gift.setMessage(message);
 
-    // -----------------------------
-    // Xóa audio cũ
-    // -----------------------------
-    if (removeOldAudio && gift.getVoiceUrl() != null) {
+    // ==================================================
+    // UPDATE GIFT BY UID
+    // ==================================================
 
-        Files.deleteIfExists(
-                AUDIO_DIR.resolve(gift.getVoiceUrl())
-        );
+    @Transactional
+    public Gift updateGiftByUid(
 
-        gift.setVoiceUrl(null);
-    }
+            String uid,
 
-    // -----------------------------
-    // Upload audio mới
-    // -----------------------------
-    if (audio != null && !audio.isEmpty()) {
+            String title,
 
-        if (gift.getVoiceUrl() != null) {
+            String message,
 
-            Files.deleteIfExists(
-                    AUDIO_DIR.resolve(gift.getVoiceUrl())
+            String theme,
+
+            MultipartFile[] images,
+
+            MultipartFile audio,
+
+            boolean removeOldAudio,
+
+            List<String> deleteImages
+
+    ) throws IOException {
+
+
+        Gift gift =
+                getByUid(uid);
+
+
+        if (gift == null) {
+
+            throw new RuntimeException(
+                    "Không tìm thấy Gift với UID: " + uid
             );
 
         }
 
-        String audioName =
-                UUID.randomUUID() + "_" + audio.getOriginalFilename();
 
-        Files.copy(
-                audio.getInputStream(),
-                AUDIO_DIR.resolve(audioName),
-                StandardCopyOption.REPLACE_EXISTING
-        );
+        return updateGift(
 
-        gift.setVoiceUrl(audioName);
+                gift.getId(),
 
-    }
+                title,
 
-    // -----------------------------
-    // Xóa ảnh cũ
-    // -----------------------------
-    if (deleteImages != null) {
+                message,
 
-        for (String img : deleteImages) {
+                theme,
 
-            Files.deleteIfExists(
-                    IMAGE_DIR.resolve(img)
-            );
+                images,
 
-            giftRepository.deleteImageByUrl(id, img);
+                audio,
 
-        }
+                removeOldAudio,
 
-    }
+                deleteImages
 
-    // -----------------------------
-    // Thêm ảnh mới
-    // -----------------------------
-    if (images != null) {
-
-        for (MultipartFile file : images) {
-
-            if (file.isEmpty())
-                continue;
-
-            String imageName =
-                    UUID.randomUUID() + "_"
-                            + file.getOriginalFilename();
-
-            Files.copy(
-                    file.getInputStream(),
-                    IMAGE_DIR.resolve(imageName),
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-
-            giftRepository.insertImage(
-                    id,
-                    imageName
-            );
-
-        }
-
-    }
-
-    giftRepository.updateGift(gift);
-
-    return giftRepository.findById(id);
-
-}
-
-// ==================================
-// DELETE
-// ==================================
-
-public void deleteGift(Long id) throws IOException {
-
-    Gift gift = giftRepository.findById(id);
-
-    if (gift == null) {
-        return;
-    }
-
-    // Xóa audio
-    if (gift.getVoiceUrl() != null) {
-
-        Files.deleteIfExists(
-                AUDIO_DIR.resolve(gift.getVoiceUrl())
         );
 
     }
 
-    // Xóa ảnh
-    if (gift.getImages() != null) {
 
-        for (GiftImage img : gift.getImages()) {
+    // ==================================================
+    // TẠO TÊN FILE AN TOÀN
+    // ==================================================
 
-            Files.deleteIfExists(
-                    IMAGE_DIR.resolve(img.getImageUrl())
-            );
+    private String createSafeFileName(
+            MultipartFile file
+    ) {
+
+
+        String originalName =
+                file.getOriginalFilename();
+
+
+        if (
+                originalName == null
+                        || originalName.isBlank()
+        ) {
+
+            originalName = "file";
 
         }
 
-    }
 
-    giftRepository.deleteGift(id);
-
-
-}
-@Transactional
-public Gift updateGiftByUid(
-
-        String uid,
-
-        String title,
-
-        String message,
-
-        MultipartFile[] images,
-
-        MultipartFile audio,
-
-        boolean removeOldAudio,
-
-        List<String> deleteImages
-
-) throws IOException {
+        // Loại bỏ đường dẫn như C:\fakepath\...
+        originalName =
+                Paths.get(originalName)
+                        .getFileName()
+                        .toString();
 
 
-    Gift gift = getByUid(uid);
-
-
-    if(gift == null){
-
-        throw new RuntimeException("Không tìm thấy gift với uid: " + uid);
+        return UUID.randomUUID()
+                + "_"
+                + originalName;
 
     }
 
-
-    return updateGift(
-
-            gift.getId(),
-
-            title,
-
-            message,
-
-            images,
-
-            audio,
-
-            removeOldAudio,
-
-            deleteImages
-
-    );
-
-}
 }

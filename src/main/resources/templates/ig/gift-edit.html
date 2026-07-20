@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chỉnh sửa Instagram Memory</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ig-bg:#fafafa;--ig-card:#fff;--ig-line:#dbdbdb;--ig-text:#262626;
+  --ig-soft:#737373;--ig-blue:#0095f6;--ig-red:#ed4956;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,button,input,textarea,label{font-family:Arial,Helvetica,sans-serif!important}
+body{background:var(--ig-bg);color:var(--ig-text);min-height:100vh}
+button{border:0;background:none;color:inherit;cursor:pointer}
+.ig-app{width:min(100%,470px);margin:0 auto;min-height:100vh;background:#fff;border-left:1px solid var(--ig-line);border-right:1px solid var(--ig-line)}
+.ig-topbar{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--ig-line);position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);z-index:30}
+.ig-logo{font-size:24px;font-weight:800;letter-spacing:-1px}
+.ig-logo span{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.icon-btn{font-size:24px;width:38px;height:38px;display:grid;place-items:center;border-radius:50%}
+.icon-btn:active{background:#f2f2f2}
+.story-strip{display:flex;gap:14px;overflow:auto;padding:14px 12px;border-bottom:1px solid var(--ig-line);scrollbar-width:none}
+.story-strip::-webkit-scrollbar{display:none}
+.story{min-width:72px;text-align:center;font-size:11px}
+.story-ring{width:66px;height:66px;padding:3px;border-radius:50%;margin:auto;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf)}
+.story-ring>div{width:100%;height:100%;border-radius:50%;background:#fff;padding:3px}
+.story-ring img,.story-placeholder{width:100%;height:100%;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#fff3df,#ffc4d8);display:grid;place-items:center;font-size:24px}
+.story-name{margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post{background:#fff;border-bottom:1px solid var(--ig-line)}
+.post-head{display:flex;align-items:center;padding:11px 12px;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;padding:2px;background:linear-gradient(45deg,#feda75,#d62976,#4f5bd5)}
+.avatar-inner{width:100%;height:100%;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:16px}
+.post-user{font-size:13px;font-weight:700;flex:1}
+.post-meta{font-size:11px;color:var(--ig-soft);margin-top:2px}
+.media{position:relative;background:#efefef;overflow:hidden}
+.media-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.media-track::-webkit-scrollbar{display:none}
+.slide{min-width:100%;aspect-ratio:1/1;scroll-snap-align:start;background:#eee;display:grid;place-items:center}
+.slide img{width:100%;height:100%;object-fit:cover;display:block}
+.media-empty{aspect-ratio:1/1;display:grid;place-items:center;color:var(--ig-soft);font-size:14px;background:linear-gradient(135deg,#f7f7f7,#ececec)}
+.dots{display:flex;justify-content:center;gap:4px;padding-top:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:#c7c7c7}.dot.active{background:var(--ig-blue)}
+.actions{display:flex;align-items:center;padding:8px 10px 2px;gap:4px}
+.actions .icon-btn{font-size:25px}
+.actions .save{margin-left:auto}
+.liked{color:var(--ig-red)}
+.post-body{padding:0 14px 14px}
+.like-count{font-size:13px;font-weight:700;margin:6px 0}
+.caption{font-size:14px;line-height:1.4;white-space:pre-wrap}
+.caption strong{margin-right:5px}
+.comments-link{color:var(--ig-soft);font-size:13px;margin-top:7px;display:block}
+.comment-list{margin-top:8px;display:grid;gap:6px}
+.comment-item{font-size:13px;line-height:1.35}.comment-item strong{margin-right:5px}
+.comment-box{display:flex;align-items:center;gap:8px;margin-top:10px}
+.comment-box input{flex:1;border:0;outline:0;font-size:13px;padding:8px 0}
+.comment-box button{color:var(--ig-blue);font-size:13px;font-weight:700}
+.time{font-size:10px;text-transform:uppercase;color:var(--ig-soft);margin-top:10px}
+.section{padding:16px;border-bottom:1px solid var(--ig-line)}
+.section-title{font-size:14px;font-weight:700;margin-bottom:12px}
+.upload-zone{border:1px dashed #b8b8b8;border-radius:10px;padding:16px;text-align:center;color:var(--ig-soft)}
+.upload-zone i{font-size:30px;display:block;margin-bottom:7px}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:12px}
+.preview-item{aspect-ratio:1;position:relative;background:#eee}
+.preview-item img{width:100%;height:100%;object-fit:cover}
+.remove{position:absolute;right:5px;top:5px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center}
+textarea{width:100%;min-height:110px;border:1px solid var(--ig-line);border-radius:10px;padding:12px;outline:none;resize:vertical;font-size:14px}
+.charcount{text-align:right;font-size:11px;color:var(--ig-soft);margin-top:5px}
+.audio-card{border:1px solid var(--ig-line);border-radius:10px;padding:12px;display:grid;gap:10px}
+.audio-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:1px solid var(--ig-line);border-radius:999px;padding:9px 13px;font-size:13px;font-weight:700;display:flex;gap:7px;align-items:center}
+.primary{color:var(--ig-blue)}
+.savebar{position:sticky;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--ig-line);padding:12px 16px;z-index:20}
+.save-btn{width:100%;border-radius:9px;background:var(--ig-blue);color:#fff;padding:13px;font-size:15px;font-weight:700}
+.save-btn:disabled{opacity:.55}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:#262626;color:#fff;padding:10px 15px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:500px){.ig-app{border:0}}
+
+body.locked{overflow:hidden;height:100vh}
+.ig-curtain{
+  position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none;
+}
+.ig-curtain-panel{
+  flex:1;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 25% 22%,rgba(255,255,255,.35),transparent 24%),
+    linear-gradient(160deg,#feda75 0%,#fa7e1e 24%,#d62976 52%,#962fbf 76%,#4f5bd5 100%);
+  transition:transform 1.15s cubic-bezier(.76,0,.15,1);
+}
+.ig-curtain-panel::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.28) 1px,transparent 1.5px);
+  background-size:34px 34px;
+  animation:igCurtainSparkle 8s linear infinite;
+}
+.ig-curtain-left{transform-origin:left center}
+.ig-curtain-right{transform-origin:right center}
+body.opened .ig-curtain-left{transform:translateX(-101%)}
+body.opened .ig-curtain-right{transform:translateX(101%)}
+.ig-curtain-logo{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  z-index:10000;color:#fff;font-size:clamp(34px,9vw,68px);font-weight:800;
+  letter-spacing:-2px;text-shadow:0 8px 30px rgba(0,0,0,.25);
+  transition:opacity .45s ease .05s;white-space:nowrap;
+}
+body.opened .ig-curtain-logo{opacity:0}
+.ig-flash{
+  position:fixed;inset:0;z-index:10001;background:#fff;opacity:0;pointer-events:none;
+}
+body.opened .ig-flash{animation:igFlash .7s ease-out .95s forwards}
+@keyframes igFlash{0%{opacity:0}12%{opacity:.72}100%{opacity:0}}
+@keyframes igCurtainSparkle{from{background-position:0 0}to{background-position:68px 68px}}
+@media(prefers-reduced-motion:reduce){
+  .ig-curtain-panel,.ig-curtain-logo{transition:none!important}
+  body.opened .ig-flash{animation:none!important}
+}
+
+</style></head>
+<body class="locked">
+
+<div class="ig-curtain" aria-hidden="true">
+  <div class="ig-curtain-panel ig-curtain-left"></div>
+  <div class="ig-curtain-logo">Instagram</div>
+  <div class="ig-curtain-panel ig-curtain-right"></div>
+</div>
+<div class="ig-flash" aria-hidden="true"></div>
+
+<div class="ig-app">
+<form id="giftForm">
+<input type="hidden" id="uid" th:value="${nfcUid}">
+<header class="ig-topbar">
+<button type="button" class="icon-btn" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
+<div class="ig-logo"><span>Chỉnh sửa</span></div>
+<button type="button" id="topSave" class="primary" style="font-weight:700">Xong</button>
+</header>
+
+<section class="section">
+<div class="section-title">Ảnh bài đăng</div>
+<input id="imageInput" type="file" accept="image/*" multiple hidden>
+<div id="previewGrid" class="preview-grid">
+<div class="preview-item old" th:each="img : ${gift.images}" th:data-url="${img.imageUrl}">
+<img th:src="@{'/files/images/' + ${img.imageUrl}}" alt="Ảnh">
+<button class="remove old-remove" type="button"><i class="bi bi-x"></i></button>
+</div>
+</div>
+<div id="uploadZone" class="upload-zone" role="button" tabindex="0" style="margin-top:12px"><i class="bi bi-plus-square"></i><strong>Thêm ảnh</strong></div>
+</section>
+
+<section class="section">
+<div class="section-title">Chú thích</div>
+<textarea id="message" maxlength="2200" th:text="${gift.message}" placeholder="Viết chú thích..."></textarea>
+<div class="charcount"><span id="count">0</span>/2.200</div>
+</section>
+
+<section class="section">
+<div class="section-title">Âm thanh</div>
+<div class="audio-card">
+<div id="oldAudioBox" th:if="${gift.voiceUrl != null and gift.voiceUrl != ''}">
+<audio id="oldAudio" controls style="width:100%" th:src="@{'/files/audio/' + ${gift.voiceUrl}}"></audio>
+<button type="button" id="removeOldAudio" class="pill" style="margin-top:8px;color:var(--ig-red)"><i class="bi bi-trash"></i>Xóa âm thanh cũ</button>
+</div>
+<div class="audio-actions">
+<button type="button" id="recordBtn" class="pill"><i class="bi bi-mic"></i><span id="recordText">Ghi âm mới</span></button>
+<label class="pill" for="audioInput"><i class="bi bi-upload"></i>Tải file mới</label>
+<input id="audioInput" type="file" accept="audio/*" hidden>
+</div>
+<span id="recordStatus" style="font-size:12px;color:var(--ig-soft)"></span>
+<audio id="audioPreview" controls class="hidden" style="width:100%"></audio>
+</div>
+</section>
+
+<div class="savebar"><button id="saveBtn" class="save-btn" type="submit">Lưu thay đổi</button></div>
+</form></div>
+<div id="toast" class="toast"></div>
+<script>
+const uid=document.getElementById('uid').value.trim(),input=document.getElementById('imageInput'),zone=document.getElementById('uploadZone'),grid=document.getElementById('previewGrid');
+const msg=document.getElementById('message'),count=document.getElementById('count'),form=document.getElementById('giftForm'),saveBtn=document.getElementById('saveBtn'),topSave=document.getElementById('topSave'),toast=document.getElementById('toast');
+const audioInput=document.getElementById('audioInput'),audioPreview=document.getElementById('audioPreview'),recordBtn=document.getElementById('recordBtn'),recordText=document.getElementById('recordText'),recordStatus=document.getElementById('recordStatus');
+let newImages=[],deletedImages=[],newAudio=null,removeAudio=false,recorder=null,chunks=[],stream=null,audioUrl=null;
+function showToast(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+document.querySelectorAll('.old-remove').forEach(b=>b.onclick=()=>{const item=b.closest('.old');deletedImages.push(item.dataset.url);item.remove();updateZone()});
+function total(){return document.querySelectorAll('.preview-item').length}function updateZone(){zone.classList.toggle('hidden',total()>=9)}
+zone.onclick=()=>input.click();input.onchange=()=>{[...input.files].slice(0,9-total()).forEach(f=>{if(f.type.startsWith('image/'))newImages.push(f)});input.value='';renderNew()};
+function renderNew(){document.querySelectorAll('.preview-item.new').forEach(x=>x.remove());newImages.forEach((f,i)=>{const d=document.createElement('div');d.className='preview-item new';const im=document.createElement('img');im.src=URL.createObjectURL(f);const b=document.createElement('button');b.type='button';b.className='remove';b.innerHTML='<i class="bi bi-x"></i>';b.onclick=()=>{newImages.splice(i,1);renderNew()};d.append(im,b);grid.append(d)});updateZone()}
+msg.oninput=()=>count.textContent=msg.value.length;count.textContent=msg.value.length;
+audioInput.onchange=()=>{if(!audioInput.files[0])return;newAudio=audioInput.files[0];showAudio(newAudio);recordStatus.textContent='Đã chọn âm thanh mới'};
+function showAudio(f){if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(f);audioPreview.src=audioUrl;audioPreview.classList.remove('hidden')}
+const removeBtn=document.getElementById('removeOldAudio');if(removeBtn)removeBtn.onclick=()=>{removeAudio=true;document.getElementById('oldAudioBox').classList.add('hidden');showToast('Sẽ xóa âm thanh cũ')};
+recordBtn.onclick=async()=>{if(recorder?.state==='recording'){recorder.stop();return}try{stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];const types=['audio/mp4','audio/webm;codecs=opus','audio/webm'];const type=types.find(x=>MediaRecorder.isTypeSupported(x))||'';recorder=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream);recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=()=>{const t=recorder.mimeType||type||'audio/webm';newAudio=new File([new Blob(chunks,{type:t})],t.includes('mp4')?'voice.m4a':'voice.webm',{type:t});showAudio(newAudio);stream.getTracks().forEach(x=>x.stop());recordText.textContent='Ghi âm mới';recordStatus.textContent='Đã ghi xong'};recorder.start();recordText.textContent='Dừng';recordStatus.textContent='Đang ghi...'}catch(e){alert('Không mở được microphone')}};
+topSave.onclick=()=>form.requestSubmit();
+form.onsubmit=async e=>{e.preventDefault();if(recorder?.state==='recording')return alert('Hãy dừng ghi âm trước khi lưu');saveBtn.disabled=topSave.disabled=true;saveBtn.textContent='Đang lưu...';const fd=new FormData();fd.append('message',msg.value);fd.append('theme','instagram');newImages.forEach(f=>fd.append('images',f));if(newAudio)fd.append('audio',newAudio);fd.append('removeOldAudio',String(removeAudio));deletedImages.forEach(x=>fd.append('deleteImages',x));try{const r=await fetch('/api/gift/update/'+encodeURIComponent(uid),{method:'POST',body:fd});if(!r.ok)throw new Error(await r.text());showToast('Đã lưu thay đổi');setTimeout(()=>location.href='/gift/view/'+encodeURIComponent(uid),500)}catch(err){alert(err.message);saveBtn.disabled=topSave.disabled=false;saveBtn.textContent='Lưu thay đổi'}};
+updateZone();
+</script>
+<script>
+(function(){
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const openPage=()=>{
+    document.body.classList.add('opened');
+    document.body.classList.remove('locked');
+  };
+  if(reduce){openPage();return;}
+  window.addEventListener('load',()=>setTimeout(openPage,350));
+})();
+</script>
+
+</body></html>

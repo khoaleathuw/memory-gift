@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matcha Memory</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --milk:#fffef9;
+  --cream:#f8faF3;
+  --foam:#edf5e5;
+  --matcha-soft:#d8e9c5;
+  --matcha:#a4c87a;
+  --matcha-deep:#66884f;
+  --matcha-dark:#415a35;
+  --ink:#2e352b;
+  --muted:#7b8574;
+  --glass:rgba(255,255,255,.72);
+  --line:rgba(102,136,79,.18);
+  --shadow:0 22px 60px rgba(69,92,53,.14);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+html,body,body *,button,input,textarea,select,option,label{
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  color:var(--ink);
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 14% 6%,rgba(255,255,255,.94) 0 7%,transparent 26%),
+    radial-gradient(circle at 86% 12%,rgba(216,233,197,.78) 0 9%,transparent 31%),
+    radial-gradient(circle at 50% 106%,rgba(164,200,122,.24),transparent 35%),
+    linear-gradient(155deg,var(--milk),var(--cream) 46%,var(--foam));
+  background-attachment:fixed;
+}
+body.locked{overflow:hidden;height:100vh}
+
+.matcha-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.matcha-particle{
+  position:absolute;top:-48px;opacity:0;
+  filter:drop-shadow(0 5px 8px rgba(70,95,52,.15));
+  animation:matchaFall linear infinite;
+}
+@keyframes matchaFall{
+  0%{opacity:0;transform:translate3d(0,-7vh,0) rotate(0)}
+  10%{opacity:.72}
+  90%{opacity:.5}
+  100%{opacity:0;transform:translate3d(var(--drift,55px),112vh,0) rotate(280deg)}
+}
+
+body::before,body::after{
+  content:"";position:fixed;z-index:0;pointer-events:none;border-radius:50%;
+  filter:blur(12px);opacity:.7;
+}
+body::before{
+  width:300px;height:300px;left:-135px;top:18%;
+  background:radial-gradient(circle at 35% 30%,#fff 0 18%,rgba(204,226,182,.5) 45%,transparent 72%);
+  animation:orbA 11s ease-in-out infinite alternate;
+}
+body::after{
+  width:350px;height:350px;right:-170px;bottom:2%;
+  background:radial-gradient(circle at 42% 36%,#fff 0 16%,rgba(164,200,122,.35) 44%,transparent 72%);
+  animation:orbB 13s ease-in-out infinite alternate;
+}
+@keyframes orbA{to{transform:translate(48px,55px) scale(1.08)}}
+@keyframes orbB{to{transform:translate(-44px,-38px) scale(.95)}}
+
+.curtain-stage{position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none}
+.curtain-panel{
+  flex:1;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(255,255,255,.75),transparent 30%),
+    linear-gradient(150deg,#edf5e5,#d6e8c2 55%,#fdfdf8);
+  box-shadow:inset 0 0 150px rgba(102,136,79,.12);
+  transition:transform 1.1s cubic-bezier(.76,0,.15,1);
+}
+.curtain-panel::before{
+  content:"";position:absolute;inset:0;
+  background-image:
+    radial-gradient(circle,rgba(102,136,79,.22) 1px,transparent 1.5px),
+    linear-gradient(115deg,transparent 35%,rgba(255,255,255,.46) 49%,transparent 62%);
+  background-size:42px 42px,100% 100%;
+  opacity:.45;
+}
+.curtain-left{transform-origin:left center}
+.curtain-right{transform-origin:right center}
+body.opened .curtain-left{transform:translateX(-101%)}
+body.opened .curtain-right{transform:translateX(101%)}
+.curtain-mark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:2;color:var(--matcha-deep);font-size:clamp(38px,10vw,74px);
+  font-weight:900;letter-spacing:-2px;white-space:nowrap;
+  text-shadow:0 12px 35px rgba(80,108,59,.16);
+  transition:opacity .45s ease;
+}
+.curtain-mark small{
+  display:block;font-size:11px;letter-spacing:4px;text-align:center;margin-bottom:10px;
+  color:var(--matcha-dark);font-weight:800;
+}
+body.opened .curtain-mark{opacity:0}
+.flash-overlay{position:fixed;inset:0;z-index:10000;background:#fff;opacity:0;pointer-events:none}
+body.opened .flash-overlay{animation:flash .65s ease-out .92s forwards}
+@keyframes flash{0%{opacity:0}12%{opacity:.7}100%{opacity:0}}
+
+.app-shell{
+  position:relative;z-index:2;width:min(100%,520px);margin:auto;min-height:100vh;
+  padding:18px 14px 72px;opacity:0;transform:translateY(12px);
+  transition:opacity .7s ease .9s,transform .7s ease .9s;
+}
+body.opened .app-shell{opacity:1;transform:none}
+
+.hero{
+  text-align:center;padding:28px 10px 22px;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);
+  color:var(--matcha-deep);font-size:10px;font-weight:800;letter-spacing:2px;
+  box-shadow:0 8px 24px rgba(78,103,59,.08);
+}
+.hero h1{
+  margin-top:15px;color:var(--matcha-deep);font-size:clamp(42px,12vw,68px);
+  line-height:.9;letter-spacing:-4px;font-weight:900;
+}
+.hero p{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5}
+
+.top-actions{
+  position:sticky;top:10px;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:10px;border-radius:22px;background:rgba(255,255,255,.66);
+  border:1px solid rgba(255,255,255,.9);backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:0 12px 34px rgba(74,98,56,.12);
+}
+.icon-btn,.save-top{
+  border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.icon-btn{
+  width:42px;height:42px;border-radius:50%;background:#fff;color:var(--matcha-deep);
+  box-shadow:0 7px 18px rgba(72,94,56,.1);font-size:17px;
+}
+.save-top{
+  min-width:88px;height:42px;padding:0 16px;border-radius:999px;
+  background:linear-gradient(145deg,var(--matcha),var(--matcha-deep));
+  color:#fff;font-weight:800;font-size:13px;box-shadow:0 8px 18px rgba(102,136,79,.22);
+}
+.mini-title{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--matcha-dark)}
+
+.section{margin-top:24px}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;margin:0 7px 10px;
+}
+.section-title{
+  display:flex;align-items:center;gap:9px;color:var(--matcha-deep);
+  font-size:15px;font-weight:900;
+}
+.section-note{font-size:10px;color:var(--muted)}
+
+.glass-card{
+  background:var(--glass);border:1px solid rgba(255,255,255,.9);border-radius:28px;
+  box-shadow:var(--shadow),inset 0 1px 0 #fff;backdrop-filter:blur(20px) saturate(135%);
+}
+
+.photo-card{padding:14px}
+#previewContainer{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.img-item-wrap{
+  aspect-ratio:1;position:relative;overflow:hidden;border-radius:18px;background:#fff;
+  border:1px solid var(--line);box-shadow:0 10px 24px rgba(76,99,59,.1);
+  animation:pop .25s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.img-item-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.img-item-wrap.rot1,.img-item-wrap.rot2,.img-item-wrap.rot3,.img-item-wrap.rot4,.img-item-wrap.rot5{transform:none}
+.btn-remove{
+  position:absolute;top:7px;right:7px;width:27px;height:27px;border:0;border-radius:50%;
+  background:rgba(32,41,28,.76);color:#fff;display:grid;place-items:center;cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+#addBox{
+  aspect-ratio:1;border:1.5px dashed rgba(102,136,79,.4);border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(227,239,214,.62));
+  color:var(--matcha-deep);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:7px;cursor:pointer;font-size:10px;font-weight:900;
+}
+#addBox i{font-size:25px}
+.upload-hint{text-align:center;color:var(--muted);font-size:10.5px;padding:11px 4px 2px}
+
+.note-card{position:relative;padding:22px 20px}
+.note-card::before{
+  content:"";position:absolute;top:-8px;left:50%;width:84px;height:22px;
+  transform:translateX(-50%) rotate(1.5deg);background:rgba(216,233,197,.86);
+  box-shadow:0 3px 10px rgba(79,102,61,.08);
+}
+.note-card textarea{
+  width:100%;min-height:150px;border:0;outline:0;resize:none;background:transparent;
+  color:var(--ink);font-size:17px;font-weight:600;line-height:1.62;
+}
+.note-card textarea::placeholder{color:rgba(76,88,70,.42);font-size:14px;font-weight:400}
+.charcount{text-align:right;margin:7px 8px 0;color:var(--muted);font-size:10px}
+
+.audio-card{padding:18px;display:flex;gap:15px;align-items:flex-start}
+.matcha-cup{
+  width:74px;height:74px;border-radius:50%;flex:0 0 74px;display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 33% 30%,#fff 0 10%,#dcecc9 22%,#a7cc7b 58%,#66884f 100%);
+  box-shadow:inset 0 0 0 7px rgba(255,255,255,.72),0 12px 28px rgba(82,109,61,.2);
+  color:#fff;font-size:25px;position:relative;
+}
+.matcha-cup::after{
+  content:"";position:absolute;width:22px;height:22px;border:4px solid rgba(102,136,79,.6);
+  border-left:0;border-radius:0 14px 14px 0;right:-15px;top:26px;
+}
+.audio-tools{flex:1;min-width:0}
+.audio-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#recordBtn,.ig-file-label{
+  border:1px solid rgba(102,136,79,.22);background:rgba(255,255,255,.75);
+  color:var(--matcha-dark);border-radius:999px;padding:10px 13px;display:flex;
+  align-items:center;gap:7px;font-size:11px;font-weight:800;cursor:pointer;
+}
+#recordBtn.recording{color:#c54c58;border-color:#dd6a73;animation:pulse 1s ease infinite}
+@keyframes pulse{50%{opacity:.55}}
+#recordStatus{display:block;margin-top:9px;font-size:10px;color:var(--muted)}
+#recordStatus.active{color:#c54c58}
+#audioInput{display:none}
+#audioPreview{display:none;width:100%;height:38px;margin-top:12px}
+
+.submit-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:34px 10px 18px}
+.submit-btn{
+  width:96px;height:96px;border:5px solid rgba(255,255,255,.82);border-radius:50%;
+  background:
+    radial-gradient(circle at 35% 28%,#fff 0 8%,#d9ebc6 18%,var(--matcha) 56%,var(--matcha-deep));
+  color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;box-shadow:0 0 0 7px rgba(164,200,122,.13),0 16px 34px rgba(82,109,61,.26);
+  transition:transform .15s ease,box-shadow .2s ease;
+}
+.submit-btn:active{transform:scale(.94)}
+.submit-btn:disabled{opacity:.62;cursor:not-allowed}
+.submit-btn i{font-size:25px}
+.submit-btn span{font-size:9px;font-weight:900;letter-spacing:1px}
+.submit-btn.done{background:radial-gradient(circle at 35% 30%,#d9f6e8,#63c79f 58%,#2f9472)}
+.submit-caption{font-size:12px;color:var(--muted);font-weight:700}
+
+@media(max-width:380px){
+  #previewContainer{gap:7px}
+  .app-shell{padding-left:9px;padding-right:9px}
+  .audio-card{align-items:center}
+  .matcha-cup{width:64px;height:64px;flex-basis:64px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body class="locked">
+
+<div class="matcha-field" id="matchaField" aria-hidden="true"></div>
+
+<div class="curtain-stage" aria-hidden="true">
+  <div class="curtain-panel curtain-left"></div>
+  <div class="curtain-mark"><small>JAPANESE TEA MEMORY</small>Matcha</div>
+  <div class="curtain-panel curtain-right"></div>
+</div>
+<div class="flash-overlay" aria-hidden="true"></div>
+
+<main class="app-shell">
+  <form id="giftForm">
+    <input type="hidden" id="uid" th:value="${nfcUid}">
+
+    <div class="top-actions">
+      <button class="icon-btn" type="button" onclick="history.back()" aria-label="Quay lại">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="mini-title">MATCHA MEMORY</div>
+      <button class="save-top" type="button" id="topSubmitBtn">Lưu</button>
+    </div>
+
+    <header class="hero">
+      <div class="hero-badge"><i class="bi bi-cup-hot"></i> MATCHA LATTE MEMORY</div>
+      <h1>Matcha<br>Memory</h1>
+      <p>Một chút vị trà, một chút sữa và những khoảnh khắc đáng nhớ.</p>
+    </header>
+
+    <input type="file" id="imageInput"
+           accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.avif"
+           multiple hidden>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title"><i class="bi bi-images"></i> Album ký ức</div>
+        <div class="section-note">Tối đa 9 ảnh</div>
+      </div>
+      <div class="glass-card photo-card">
+        <div id="previewContainer">
+          <div id="addBox" role="button" tabindex="0">
+            <i class="bi bi-plus-lg"></i>
+            <span>THÊM ẢNH</span>
+          </div>
+        </div>
+        <div class="upload-hint">Chạm dấu × trên ảnh để gỡ ảnh đã chọn</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title"><i class="bi bi-envelope-paper-heart"></i> Lời nhắn</div>
+      </div>
+      <div class="glass-card note-card">
+        <textarea id="message" placeholder="Viết một lời nhắn dịu dàng…" maxlength="2200"></textarea>
+      </div>
+      <div class="charcount"><span id="cCount">0</span> / 2.200</div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title"><i class="bi bi-soundwave"></i> Giọng nói</div>
+      </div>
+      <div class="glass-card audio-card">
+        <div class="matcha-cup"><i class="bi bi-mic-fill"></i></div>
+        <div class="audio-tools">
+          <div class="audio-row">
+            <button type="button" id="recordBtn">
+              <i class="bi bi-mic"></i>
+              <span id="recordLabel">Ghi âm</span>
+            </button>
+            <label class="ig-file-label" for="audioInput">
+              <i class="bi bi-upload"></i> Tải lên
+            </label>
+          </div>
+          <span id="recordStatus"></span>
+          <input type="file" id="audioInput" accept="audio/*">
+          <audio id="audioPreview" controls></audio>
+        </div>
+        <div class="tape-reels" hidden>
+          <div class="reel" id="reelL"></div>
+          <div class="reel" id="reelR"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="submit-wrap">
+      <button type="submit" class="submit-btn" id="shareBtn">
+        <i class="bi bi-cup-hot-fill" id="shareIco"></i>
+        <span id="shareLbl">LƯU QUÀ</span>
+      </button>
+      <div class="submit-caption">Lưu lại ký ức matcha của bạn</div>
+    </div>
+  </form>
+</main>
+
+<script>
+
+    /* =========================================
+       STATE
+    ========================================= */
+
+    let selectedImages = [];
+
+    let audioFile = null;
+
+    let mediaRecorder = null;
+
+    let recordedChunks = [];
+
+    let microphoneStream = null;
+
+    let isSaving = false;
+
+    let audioObjectUrl = null;
+
+
+    const rotationClasses = [
+        "rot1",
+        "rot2",
+        "rot3",
+        "rot4",
+        "rot5"
+    ];
+
+
+    /* =========================================
+       ELEMENTS
+    ========================================= */
+
+    const giftForm =
+        document.getElementById("giftForm");
+
+    const uidInput =
+        document.getElementById("uid");
+
+    const imageInput =
+        document.getElementById("imageInput");
+
+    const previewContainer =
+        document.getElementById("previewContainer");
+
+    const addBox =
+        document.getElementById("addBox");
+
+    const messageInput =
+        document.getElementById("message");
+
+    const countElement =
+        document.getElementById("cCount");
+
+    const audioInput =
+        document.getElementById("audioInput");
+
+    const audioPreview =
+        document.getElementById("audioPreview");
+
+    const recordBtn =
+        document.getElementById("recordBtn");
+
+    const recordLabel =
+        document.getElementById("recordLabel");
+
+    const recordStatus =
+        document.getElementById("recordStatus");
+
+    const reelL =
+        document.getElementById("reelL");
+
+    const reelR =
+        document.getElementById("reelR");
+
+    const shareBtn =
+        document.getElementById("shareBtn");
+
+    const shareLabel =
+        document.getElementById("shareLbl");
+
+    const shareIcon =
+        document.getElementById("shareIco");
+
+    const topSubmitBtn =
+        document.getElementById("topSubmitBtn");
+
+
+    /* =========================================
+       MATCHA LEAVES
+    ========================================= */
+
+    (function createMatchaLeaves() {
+
+        const field =
+            document.getElementById("matchaField");
+
+        const reducedMotion =
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        const totalParticles =
+            reducedMotion ? 12 : 34;
+
+
+        for (
+            let index = 0;
+            index < totalParticles;
+            index++
+        ) {
+
+            const particle =
+                document.createElement("span");
+
+            particle.className =
+                "matcha-particle";
+
+            particle.textContent =
+                Math.random() > 0.35
+                    ? "🍃"
+                    : "·";
+
+
+            particle.style.left =
+                Math.random() * 100 + "vw";
+
+            particle.style.fontSize =
+                8 + Math.random() * 11 + "px";
+
+            particle.style.setProperty(
+                "--drift",
+                -80 + Math.random() * 160 + "px"
+            );
+
+            particle.style.animationDuration =
+                7 + Math.random() * 9 + "s";
+
+            particle.style.animationDelay =
+                Math.random() * 10 + "s";
+
+
+            field.appendChild(particle);
+        }
+
+    })();
+
+
+    /* =========================================
+       INTRO
+    ========================================= */
+
+    (function openCurtain() {
+
+        const reducedMotion =
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        const openPage = () => {
+
+            document.body
+                .classList
+                .add("opened");
+
+            document.body
+                .classList
+                .remove("locked");
+        };
+
+
+        if (reducedMotion) {
+
+            openPage();
+
+            return;
+        }
+
+
+        window.addEventListener(
+            "load",
+            () => {
+
+                setTimeout(
+                    openPage,
+                    350
+                );
+
+            }
+        );
+
+    })();
+
+
+    /* =========================================
+       UID
+    ========================================= */
+
+    function getUid() {
+
+        const thymeleafUid =
+            uidInput?.value?.trim();
+
+
+        if (thymeleafUid) {
+
+            return thymeleafUid;
+        }
+
+
+        /*
+         * Fallback cho trường hợp mở:
+         * /index?uid=ABC123
+         */
+
+        const queryUid =
+            new URLSearchParams(
+                window.location.search
+            )
+                .get("uid")
+                ?.trim();
+
+
+        return queryUid || "";
+    }
+
+
+    const uid =
+        getUid();
+
+
+    if (!uid) {
+
+        console.error(
+            "Không tìm thấy UID NFC."
+        );
+
+        alert(
+            "Không tìm thấy UID NFC. Kiểm tra lại Controller có truyền nfcUid hay không."
+        );
+
+        shareBtn.disabled = true;
+
+        topSubmitBtn.disabled = true;
+    }
+
+
+    /* =========================================
+       IMAGE
+    ========================================= */
+
+    addBox.addEventListener(
+        "click",
+        () => {
+
+            if (
+                selectedImages.length < 9
+            ) {
+
+                imageInput.click();
+            }
+
+        }
+    );
+
+
+    addBox.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" ||
+                event.key === " "
+            ) {
+
+                event.preventDefault();
+
+                imageInput.click();
+            }
+
+        }
+    );
+
+
+    imageInput.addEventListener(
+        "change",
+        function () {
+
+            const remainingSlots =
+                9 - selectedImages.length;
+
+
+            const files =
+                Array.from(this.files);
+
+
+            if (
+                files.length > remainingSlots
+            ) {
+
+                alert(
+                    "Bạn chỉ được chọn tối đa 9 ảnh."
+                );
+            }
+
+
+            files
+                .slice(0, remainingSlots)
+                .forEach(addNewImage);
+
+
+            this.value = "";
+        }
+    );
+
+
+    function addNewImage(file) {
+
+        if (
+            !file.type.startsWith("image/")
+        ) {
+
+            return;
+        }
+
+
+        selectedImages.push(file);
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            event => {
+
+                const wrapper =
+                    document.createElement("div");
+
+
+                const randomRotation =
+                    rotationClasses[
+                        Math.floor(
+                            Math.random() *
+                            rotationClasses.length
+                        )
+                    ];
+
+
+                wrapper.className =
+                    "img-item-wrap " +
+                    randomRotation;
+
+
+                const image =
+                    document.createElement("img");
+
+                image.src =
+                    event.target.result;
+
+                image.alt =
+                    "Ảnh đã chọn";
+
+
+                const removeButton =
+                    document.createElement("button");
+
+                removeButton.type =
+                    "button";
+
+                removeButton.className =
+                    "btn-remove";
+
+                removeButton.setAttribute(
+                    "aria-label",
+                    "Xóa ảnh"
+                );
+
+                removeButton.innerHTML =
+                    '<i class="bi bi-x"></i>';
+
+
+                removeButton.addEventListener(
+                    "click",
+                    () => {
+
+                        const fileIndex =
+                            selectedImages
+                                .indexOf(file);
+
+
+                        if (
+                            fileIndex !== -1
+                        ) {
+
+                            selectedImages.splice(
+                                fileIndex,
+                                1
+                            );
+                        }
+
+
+                        wrapper.remove();
+
+                        updateImageLayout();
+                    }
+                );
+
+
+                wrapper.appendChild(image);
+
+                wrapper.appendChild(
+                    removeButton
+                );
+
+
+                previewContainer.insertBefore(
+                    wrapper,
+                    addBox
+                );
+
+
+                updateImageLayout();
+            };
+
+
+        reader.onerror =
+            () => {
+
+                const fileIndex =
+                    selectedImages
+                        .indexOf(file);
+
+
+                if (
+                    fileIndex !== -1
+                ) {
+
+                    selectedImages.splice(
+                        fileIndex,
+                        1
+                    );
+                }
+
+
+                alert(
+                    "Không thể đọc ảnh: " +
+                    file.name
+                );
+            };
+
+
+        reader.readAsDataURL(file);
+    }
+
+
+    function updateImageLayout() {
+
+        addBox.style.display =
+            selectedImages.length >= 9
+                ? "none"
+                : "flex";
+    }
+
+
+    /* =========================================
+       MESSAGE COUNT
+    ========================================= */
+
+    messageInput.addEventListener(
+        "input",
+        () => {
+
+            countElement.textContent =
+                messageInput.value.length;
+        }
+    );
+
+
+    /* =========================================
+       AUDIO HELPERS
+    ========================================= */
+
+    function stopMicrophoneTracks() {
+
+        if (microphoneStream) {
+
+            microphoneStream
+                .getTracks()
+                .forEach(track => {
+
+                    track.stop();
+                });
+
+
+            microphoneStream =
+                null;
+        }
+
+
+        reelL.classList.remove(
+            "spin"
+        );
+
+        reelR.classList.remove(
+            "spin"
+        );
+    }
+
+
+    function revokeOldAudioUrl() {
+
+        if (audioObjectUrl) {
+
+            URL.revokeObjectURL(
+                audioObjectUrl
+            );
+
+            audioObjectUrl =
+                null;
+        }
+    }
+
+
+    function showAudioPreview(file) {
+
+        revokeOldAudioUrl();
+
+
+        audioObjectUrl =
+            URL.createObjectURL(file);
+
+
+        audioPreview.src =
+            audioObjectUrl;
+
+        audioPreview.style.display =
+            "block";
+    }
+
+
+    /* =========================================
+       AUDIO UPLOAD
+    ========================================= */
+
+    audioInput.addEventListener(
+        "change",
+        function () {
+
+            if (
+                !this.files.length
+            ) {
+
+                return;
+            }
+
+
+            /*
+             * Nếu đang ghi thì dừng ghi trước.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                mediaRecorder.stop();
+            }
+
+
+            stopMicrophoneTracks();
+
+
+            audioFile =
+                this.files[0];
+
+
+            showAudioPreview(
+                audioFile
+            );
+
+
+            recordBtn.classList.remove(
+                "recording"
+            );
+
+            recordLabel.textContent =
+                "Ghi âm";
+
+            recordBtn
+                .querySelector("i")
+                .className =
+                "bi bi-mic";
+
+            recordStatus.textContent =
+                "Đã chọn file";
+
+            recordStatus.className =
+                "";
+        }
+    );
+
+
+    /* =========================================
+       AUDIO RECORD
+    ========================================= */
+
+    recordBtn.addEventListener(
+        "click",
+        async () => {
+
+            if (
+                !navigator.mediaDevices
+                ?.getUserMedia
+            ) {
+
+                alert(
+                    "Trình duyệt hoặc thiết bị không hỗ trợ microphone."
+                );
+
+                return;
+            }
+
+
+            /*
+             * Bấm lần nữa để dừng ghi.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                mediaRecorder.stop();
+
+                return;
+            }
+
+
+            try {
+
+                microphoneStream =
+                    await navigator
+                        .mediaDevices
+                        .getUserMedia({
+                            audio: true
+                        });
+
+
+                recordedChunks =
+                    [];
+
+
+                const mimeType =
+                    selectSupportedMimeType();
+
+
+                mediaRecorder =
+                    mimeType
+                        ? new MediaRecorder(
+                            microphoneStream,
+                            {
+                                mimeType
+                            }
+                        )
+                        : new MediaRecorder(
+                            microphoneStream
+                        );
+
+
+                mediaRecorder
+                    .addEventListener(
+                        "dataavailable",
+                        event => {
+
+                            if (
+                                event.data &&
+                                event.data.size > 0
+                            ) {
+
+                                recordedChunks.push(
+                                    event.data
+                                );
+                            }
+
+                        }
+                    );
+
+
+                mediaRecorder
+                    .addEventListener(
+                        "stop",
+                        () => {
+
+                            const realType =
+                                mediaRecorder.mimeType ||
+                                mimeType ||
+                                "audio/webm";
+
+
+                            const audioBlob =
+                                new Blob(
+                                    recordedChunks,
+                                    {
+                                        type:
+                                            realType
+                                    }
+                                );
+
+
+                            const extension =
+                                realType.includes("mp4")
+                                    ? "m4a"
+                                    : realType.includes("ogg")
+                                        ? "ogg"
+                                        : "webm";
+
+
+                            audioFile =
+                                new File(
+                                    [audioBlob],
+                                    "voice." +
+                                    extension,
+                                    {
+                                        type:
+                                            realType
+                                    }
+                                );
+
+
+                            showAudioPreview(
+                                audioFile
+                            );
+
+
+                            stopMicrophoneTracks();
+
+
+                            recordBtn
+                                .classList
+                                .remove(
+                                    "recording"
+                                );
+
+
+                            recordLabel.textContent =
+                                "Ghi âm";
+
+
+                            recordBtn
+                                .querySelector("i")
+                                .className =
+                                "bi bi-mic";
+
+
+                            recordStatus.textContent =
+                                "Đã ghi xong";
+
+
+                            recordStatus.className =
+                                "";
+                        }
+                    );
+
+
+                mediaRecorder.start();
+
+
+                recordBtn.classList.add(
+                    "recording"
+                );
+
+
+                recordLabel.textContent =
+                    "Dừng";
+
+
+                recordBtn
+                    .querySelector("i")
+                    .className =
+                    "bi bi-stop-fill";
+
+
+                recordStatus.textContent =
+                    "Đang ghi…";
+
+
+                recordStatus.className =
+                    "active";
+
+
+                reelL.classList.add(
+                    "spin"
+                );
+
+                reelR.classList.add(
+                    "spin"
+                );
+
+            } catch (error) {
+
+                stopMicrophoneTracks();
+
+
+                console.error(error);
+
+
+                alert(
+                    "Không mở được microphone. Hãy cấp quyền micro cho trình duyệt."
+                );
+            }
+
+        }
+    );
+
+
+    function selectSupportedMimeType() {
+
+        const mimeTypes = [
+            "audio/mp4",
+            "audio/webm;codecs=opus",
+            "audio/webm",
+            "audio/ogg;codecs=opus"
+        ];
+
+
+        for (
+            const mimeType of mimeTypes
+        ) {
+
+            if (
+                MediaRecorder.isTypeSupported(
+                    mimeType
+                )
+            ) {
+
+                return mimeType;
+            }
+        }
+
+
+        return "";
+    }
+
+
+    /* =========================================
+       TOP SUBMIT
+    ========================================= */
+
+    topSubmitBtn.addEventListener(
+        "click",
+        () => {
+
+            giftForm.requestSubmit();
+        }
+    );
+
+
+    /* =========================================
+       FORM SUBMIT
+    ========================================= */
+
+    giftForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (
+                isSaving ||
+                !uid
+            ) {
+
+                return;
+            }
+
+
+            /*
+             * Nếu đang ghi âm mà bấm Lưu,
+             * dừng ghi và chờ file được tạo.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                alert(
+                    "Hãy dừng ghi âm trước khi lưu."
+                );
+
+                return;
+            }
+
+
+            isSaving =
+                true;
+
+
+            setSavingState();
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "message",
+                messageInput.value
+            );
+
+
+            formData.append(
+                "theme",
+                "matcha"
+            );
+
+
+            selectedImages.forEach(
+                image => {
+
+                    formData.append(
+                        "images",
+                        image
+                    );
+                }
+            );
+
+
+            if (audioFile) {
+
+                formData.append(
+                    "audio",
+                    audioFile
+                );
+            }
+
+
+            const apiUrl =
+                    "/api/gift/save/" +
+                    encodeURIComponent(uid);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        apiUrl,
+                        {
+                            method:
+                                "POST",
+
+                            body:
+                                formData
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        responseText ||
+                        "Không thể lưu Gift."
+                    );
+                }
+
+
+                setSuccessState();
+
+
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                                "/gift/view/" +
+                                encodeURIComponent(uid);
+
+                    },
+                    700
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                alert(
+                    "Lỗi: " +
+                    error.message
+                );
+
+
+                resetSavingState();
+            }
+
+        }
+    );
+
+
+    function setSavingState() {
+
+        shareBtn.disabled =
+            true;
+
+        topSubmitBtn.disabled =
+            true;
+
+
+        shareLabel.textContent =
+            "ĐANG LƯU";
+
+
+        shareIcon.className =
+            "bi bi-hourglass-split";
+    }
+
+
+    function setSuccessState() {
+
+        shareBtn.classList.add(
+            "done"
+        );
+
+
+        shareLabel.textContent =
+            "ĐÃ LƯU";
+
+
+        shareIcon.className =
+            "bi bi-check-lg";
+    }
+
+
+    function resetSavingState() {
+
+        isSaving =
+            false;
+
+
+        shareBtn.disabled =
+            false;
+
+        topSubmitBtn.disabled =
+            false;
+
+
+        shareBtn.classList.remove(
+            "done"
+        );
+
+
+        shareLabel.textContent =
+            "LƯU QUÀ";
+
+
+        shareIcon.className =
+            "bi bi-camera-fill";
+    }
+
+
+    /*
+     * Dừng microphone khi người dùng rời trang.
+     */
+
+    window.addEventListener(
+        "beforeunload",
+        () => {
+
+            stopMicrophoneTracks();
+
+            revokeOldAudioUrl();
+        }
+    );
+
+</script>
+</body>
+</html>

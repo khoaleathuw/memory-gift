@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Chọn giao diện Memory</title>
+
+    <style>
+        :root {
+            --text: #27313b;
+            --text-soft: #71808f;
+            --white: #ffffff;
+            --line: rgba(120, 145, 165, 0.18);
+            --shadow: 0 24px 60px rgba(74, 104, 130, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(190, 228, 255, 0.75),
+                    transparent 34%
+                ),
+                radial-gradient(
+                    circle at 85% 15%,
+                    rgba(255, 212, 230, 0.55),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 55% 90%,
+                    rgba(207, 236, 204, 0.6),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    145deg,
+                    #fafdff,
+                    #edf8ff 52%,
+                    #ffffff
+                );
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 38px 18px;
+            overflow-x: hidden;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .page {
+            width: min(1120px, 100%);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            padding: 9px 15px;
+            margin-bottom: 17px;
+
+            border: 1px solid rgba(115, 158, 186, 0.24);
+            border-radius: 999px;
+
+            background: rgba(255, 255, 255, 0.68);
+            backdrop-filter: blur(12px);
+
+            color: #5b7588;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            font-size: clamp(30px, 5vw, 52px);
+            line-height: 1.08;
+            margin-bottom: 14px;
+            color: #223442;
+            letter-spacing: -1.5px;
+        }
+
+        .header p {
+            max-width: 620px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-soft);
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .theme-card {
+            position: relative;
+            border: 1px solid var(--line);
+            border-radius: 30px;
+            overflow: hidden;
+
+            background: rgba(255, 255, 255, 0.74);
+            backdrop-filter: blur(16px);
+
+            box-shadow: var(--shadow);
+
+            cursor: pointer;
+            transition:
+                transform 0.35s ease,
+                box-shadow 0.35s ease,
+                border-color 0.35s ease;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 75px rgba(74, 104, 130, 0.25);
+        }
+
+        .theme-card.active {
+            transform: translateY(-8px);
+        }
+
+        .theme-preview {
+            position: relative;
+            height: 315px;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .phone-preview {
+            position: absolute;
+            left: 50%;
+            bottom: -65px;
+
+            width: 184px;
+            height: 320px;
+
+            transform: translateX(-50%);
+            border: 7px solid rgba(255, 255, 255, 0.9);
+            border-radius: 31px;
+
+            background: rgba(255, 255, 255, 0.36);
+            box-shadow:
+                0 22px 45px rgba(49, 70, 85, 0.24),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+
+            overflow: hidden;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 9px;
+            left: 50%;
+            width: 58px;
+            height: 8px;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: rgba(37, 47, 56, 0.38);
+            z-index: 4;
+        }
+
+        .phone-content {
+            height: 100%;
+            padding: 31px 13px 13px;
+        }
+
+        .mini-title {
+            width: 63%;
+            height: 10px;
+            border-radius: 999px;
+            margin: 0 auto 15px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .mini-image {
+            width: 100%;
+            height: 132px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+        }
+
+        .mini-line {
+            height: 8px;
+            margin-top: 11px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .mini-line.short {
+            width: 68%;
+        }
+
+        .mini-button {
+            width: 92px;
+            height: 30px;
+            margin: 18px auto 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .floating-icon {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 44px;
+            height: 44px;
+
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.68);
+            backdrop-filter: blur(7px);
+
+            box-shadow: 0 12px 25px rgba(58, 79, 93, 0.18);
+            font-size: 22px;
+
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-icon.one {
+            top: 30px;
+            left: 27px;
+        }
+
+        .floating-icon.two {
+            top: 90px;
+            right: 24px;
+            animation-delay: -1.2s;
+        }
+
+        .floating-icon.three {
+            bottom: 44px;
+            left: 24px;
+            animation-delay: -2.2s;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0) rotate(-2deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotate(3deg);
+            }
+        }
+
+        /* Sakura */
+
+        .theme-card[data-theme="sakura"] .theme-preview {
+            background:
+                radial-gradient(
+                    circle at 15% 18%,
+                    rgba(255, 255, 255, 0.8),
+                    transparent 20%
+                ),
+                linear-gradient(145deg, #ffd9e7, #f4b8d1);
+        }
+
+        .theme-card[data-theme="sakura"] .phone-content {
+            background:
+                radial-gradient(
+                    circle at 85% 13%,
+                    rgba(255, 255, 255, 0.75),
+                    transparent 23%
+                ),
+                linear-gradient(155deg, #ffe5ef, #f7bdd4);
+        }
+
+        .theme-card[data-theme="sakura"]:hover,
+        .theme-card[data-theme="sakura"].active {
+            border-color: rgba(235, 116, 160, 0.65);
+        }
+
+        /* Sky */
+
+        .theme-card[data-theme="sky"] .theme-preview {
+            background:
+                radial-gradient(
+                    circle at 78% 20%,
+                    rgba(255, 255, 255, 0.95),
+                    transparent 21%
+                ),
+                linear-gradient(145deg, #d9f3ff, #8ed5fa);
+        }
+
+        .theme-card[data-theme="sky"] .phone-content {
+            background:
+                radial-gradient(
+                    circle at 25% 17%,
+                    rgba(255, 255, 255, 0.96),
+                    transparent 23%
+                ),
+                linear-gradient(155deg, #eefbff, #98dafa);
+        }
+
+        .theme-card[data-theme="sky"]:hover,
+        .theme-card[data-theme="sky"].active {
+            border-color: rgba(65, 166, 225, 0.7);
+        }
+
+        /* Matcha */
+
+        .theme-card[data-theme="matcha"] .theme-preview {
+            background:
+                radial-gradient(
+                    circle at 19% 16%,
+                    rgba(255, 255, 255, 0.7),
+                    transparent 21%
+                ),
+                linear-gradient(145deg, #e7f1d0, #9ebd78);
+        }
+
+        .theme-card[data-theme="matcha"] .phone-content {
+            background:
+                radial-gradient(
+                    circle at 80% 13%,
+                    rgba(255, 255, 255, 0.65),
+                    transparent 25%
+                ),
+                linear-gradient(155deg, #f2f6df, #acc889);
+        }
+
+        .theme-card[data-theme="matcha"]:hover,
+        .theme-card[data-theme="matcha"].active {
+            border-color: rgba(109, 151, 70, 0.72);
+        }
+
+
+        /* Instagram */
+
+        .theme-card[data-theme="instagram"] .theme-preview {
+            background:
+                radial-gradient(
+                    circle at 18% 18%,
+                    rgba(255, 255, 255, 0.65),
+                    transparent 20%
+                ),
+                radial-gradient(
+                    circle at 82% 24%,
+                    rgba(255, 221, 111, 0.42),
+                    transparent 24%
+                ),
+                linear-gradient(
+                    145deg,
+                    #feda75 0%,
+                    #fa7e1e 24%,
+                    #d62976 52%,
+                    #962fbf 76%,
+                    #4f5bd5 100%
+                );
+        }
+
+        .theme-card[data-theme="instagram"] .phone-content {
+            background: #ffffff;
+            padding: 27px 10px 12px;
+        }
+
+        .theme-card[data-theme="instagram"]:hover,
+        .theme-card[data-theme="instagram"].active {
+            border-color: rgba(214, 41, 118, 0.72);
+        }
+
+        .instagram-preview .phone-notch {
+            background: rgba(0, 0, 0, 0.22);
+        }
+
+        .ig-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+            color: #171717;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .ig-logo {
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: -0.7px;
+        }
+
+        .ig-top-icons {
+            display: flex;
+            gap: 7px;
+            font-size: 12px;
+        }
+
+        .ig-stories {
+            display: flex;
+            gap: 7px;
+            margin-bottom: 9px;
+            overflow: hidden;
+        }
+
+        .ig-story {
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            padding: 2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #feda75, #fa7e1e, #d62976, #962fbf);
+        }
+
+        .ig-story::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f3f3f3, #cfcfcf);
+        }
+
+        .ig-post-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 7px;
+        }
+
+        .ig-user {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ig-avatar {
+            width: 22px;
+            height: 22px;
+            padding: 2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #feda75, #d62976, #4f5bd5);
+        }
+
+        .ig-avatar::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            background: #ececec;
+        }
+
+        .ig-user-lines {
+            width: 58px;
+        }
+
+        .ig-user-lines span {
+            display: block;
+            height: 4px;
+            border-radius: 999px;
+            background: #252525;
+        }
+
+        .ig-user-lines span:last-child {
+            width: 68%;
+            margin-top: 4px;
+            background: #a9a9a9;
+        }
+
+        .ig-more {
+            color: #222222;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .ig-photo {
+            position: relative;
+            width: calc(100% + 20px);
+            height: 132px;
+            margin-left: -10px;
+            background:
+                radial-gradient(circle at 70% 30%, rgba(255,255,255,.7), transparent 20%),
+                linear-gradient(145deg, #ffc7d9, #9bcaf5 52%, #f7d38a);
+            overflow: hidden;
+        }
+
+        .ig-photo::before,
+        .ig-photo::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.42);
+        }
+
+        .ig-photo::before {
+            width: 64px;
+            height: 64px;
+            left: 18px;
+            bottom: -20px;
+        }
+
+        .ig-photo::after {
+            width: 82px;
+            height: 82px;
+            right: -18px;
+            top: 18px;
+        }
+
+        .ig-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: #171717;
+            font-size: 14px;
+        }
+
+        .ig-actions-left {
+            display: flex;
+            gap: 9px;
+        }
+
+        .ig-dots {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-top: -12px;
+            margin-bottom: 8px;
+        }
+
+        .ig-dots span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #c7c7c7;
+        }
+
+        .ig-dots span.active {
+            background: #3897f0;
+        }
+
+        .ig-caption-line {
+            height: 5px;
+            margin-top: 6px;
+            border-radius: 999px;
+            background: #d5d5d5;
+        }
+
+        .ig-caption-line.short {
+            width: 70%;
+        }
+
+        .theme-info {
+            padding: 25px 25px 26px;
+        }
+
+        .theme-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 13px;
+            margin-bottom: 10px;
+        }
+
+        .theme-name {
+            font-size: 25px;
+            font-weight: 800;
+            color: #273541;
+        }
+
+        .theme-tag {
+            flex-shrink: 0;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sakura-tag {
+            color: #ad4c72;
+            background: #ffe9f1;
+        }
+
+        .sky-tag {
+            color: #267aa6;
+            background: #e2f5ff;
+        }
+
+        .matcha-tag {
+            color: #557839;
+            background: #eaf2dc;
+        }
+
+        .instagram-tag {
+            color: #b51d6d;
+            background: linear-gradient(
+                135deg,
+                rgba(254, 218, 117, 0.34),
+                rgba(214, 41, 118, 0.18),
+                rgba(79, 91, 213, 0.18)
+            );
+        }
+
+        .theme-description {
+            min-height: 68px;
+            color: #73808a;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .choose-button {
+            width: 100%;
+            min-height: 50px;
+            margin-top: 20px;
+
+            border: none;
+            border-radius: 16px;
+
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                filter 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .choose-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+        }
+
+        .choose-button:active {
+            transform: scale(0.98);
+        }
+
+        .sakura-button {
+            background: linear-gradient(135deg, #e979a2, #c95381);
+            box-shadow: 0 13px 25px rgba(205, 83, 132, 0.25);
+        }
+
+        .sky-button {
+            background: linear-gradient(135deg, #55bce9, #348fc4);
+            box-shadow: 0 13px 25px rgba(55, 150, 200, 0.25);
+        }
+
+        .matcha-button {
+            background: linear-gradient(135deg, #8cae61, #688d43);
+            box-shadow: 0 13px 25px rgba(101, 139, 64, 0.25);
+        }
+
+        .instagram-button {
+            background: linear-gradient(
+                135deg,
+                #feda75 0%,
+                #fa7e1e 22%,
+                #d62976 52%,
+                #962fbf 76%,
+                #4f5bd5 100%
+            );
+            box-shadow: 0 13px 25px rgba(214, 41, 118, 0.28);
+        }
+
+        .selected-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 8;
+
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+            width: 35px;
+            height: 35px;
+
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+
+            color: #ffffff;
+            background: #263743;
+            box-shadow: 0 8px 20px rgba(34, 49, 60, 0.24);
+
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .theme-card.active .selected-badge {
+            display: flex;
+        }
+
+        .bottom-note {
+            margin-top: 28px;
+            text-align: center;
+            color: #81909c;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .bubble {
+            position: fixed;
+            z-index: 1;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.55;
+            filter: blur(1px);
+            animation: bubbleMove 8s ease-in-out infinite;
+        }
+
+        .bubble.b1 {
+            top: 12%;
+            left: 5%;
+            width: 74px;
+            height: 74px;
+            background: rgba(180, 225, 255, 0.45);
+        }
+
+        .bubble.b2 {
+            right: 4%;
+            bottom: 15%;
+            width: 105px;
+            height: 105px;
+            background: rgba(255, 202, 221, 0.36);
+            animation-delay: -3s;
+        }
+
+        .bubble.b3 {
+            left: 22%;
+            bottom: 4%;
+            width: 48px;
+            height: 48px;
+            background: rgba(191, 222, 172, 0.43);
+            animation-delay: -5s;
+        }
+
+        @keyframes bubbleMove {
+            0%,
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+
+            50% {
+                transform: translateY(-20px) translateX(7px);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .theme-grid {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+                margin: 0 auto;
+            }
+
+            .theme-description {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 26px 13px;
+            }
+
+            .header {
+                margin-bottom: 27px;
+            }
+
+            .header h1 {
+                font-size: 34px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .theme-card {
+                border-radius: 25px;
+            }
+
+            .theme-preview {
+                height: 285px;
+            }
+
+            .phone-preview {
+                width: 165px;
+                height: 290px;
+            }
+
+            .theme-info {
+                padding: 22px 20px 23px;
+            }
+
+            .theme-name {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="bubble b1"></div>
+<div class="bubble b2"></div>
+<div class="bubble b3"></div>
+
+<main class="page">
+
+    <header class="header">
+        <div class="header-badge">
+            ✦ Memory Gift
+        </div>
+
+        <h1>Chọn giao diện của bạn</h1>
+
+        <p>
+            Chọn một phong cách phù hợp với kỷ niệm của bạn.
+            Bạn vẫn có thể thay đổi nội dung, hình ảnh và âm thanh ở bước tiếp theo.
+        </p>
+    </header>
+
+    <section class="theme-grid">
+
+        <!-- SAKURA -->
+        <article class="theme-card"
+                 data-theme="sakura"
+                 onclick="selectTheme('sakura', this)">
+
+            <div class="selected-badge">✓</div>
+
+            <div class="theme-preview">
+
+                <div class="floating-icon one">🌸</div>
+                <div class="floating-icon two">♡</div>
+                <div class="floating-icon three">✿</div>
+
+                <div class="phone-preview">
+                    <div class="phone-notch"></div>
+
+                    <div class="phone-content">
+                        <div class="mini-title"></div>
+                        <div class="mini-image"></div>
+                        <div class="mini-line"></div>
+                        <div class="mini-line short"></div>
+                        <div class="mini-button"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="theme-info">
+
+                <div class="theme-heading">
+                    <h2 class="theme-name">Sakura</h2>
+
+                    <span class="theme-tag sakura-tag">
+                        Romantic
+                    </span>
+                </div>
+
+                <p class="theme-description">
+                    Giao diện hoa anh đào với sắc hồng nhẹ nhàng,
+                    phù hợp cho những kỷ niệm ngọt ngào và lãng mạn.
+                </p>
+
+                <button type="button"
+                        class="choose-button sakura-button"
+                        onclick="chooseTheme(event, 'sakura')">
+                    Chọn Sakura
+                </button>
+
+            </div>
+        </article>
+
+        <!-- SKY -->
+        <article class="theme-card"
+                 data-theme="sky"
+                 onclick="selectTheme('sky', this)">
+
+            <div class="selected-badge">✓</div>
+
+            <div class="theme-preview">
+
+                <div class="floating-icon one">☁️</div>
+                <div class="floating-icon two">✦</div>
+                <div class="floating-icon three">🫧</div>
+
+                <div class="phone-preview">
+                    <div class="phone-notch"></div>
+
+                    <div class="phone-content">
+                        <div class="mini-title"></div>
+                        <div class="mini-image"></div>
+                        <div class="mini-line"></div>
+                        <div class="mini-line short"></div>
+                        <div class="mini-button"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="theme-info">
+
+                <div class="theme-heading">
+                    <h2 class="theme-name">Sky</h2>
+
+                    <span class="theme-tag sky-tag">
+                        Fresh
+                    </span>
+                </div>
+
+                <p class="theme-description">
+                    Tone trắng xanh trong trẻo như bầu trời,
+                    mang lại cảm giác nhẹ nhàng, tự do và dễ chịu.
+                </p>
+
+                <button type="button"
+                        class="choose-button sky-button"
+                        onclick="chooseTheme(event, 'sky')">
+                    Chọn Sky
+                </button>
+
+            </div>
+        </article>
+
+        <!-- MATCHA -->
+        <article class="theme-card"
+                 data-theme="matcha"
+                 onclick="selectTheme('matcha', this)">
+
+            <div class="selected-badge">✓</div>
+
+            <div class="theme-preview">
+
+                <div class="floating-icon one">🍵</div>
+                <div class="floating-icon two">🍃</div>
+                <div class="floating-icon three">✦</div>
+
+                <div class="phone-preview">
+                    <div class="phone-notch"></div>
+
+                    <div class="phone-content">
+                        <div class="mini-title"></div>
+                        <div class="mini-image"></div>
+                        <div class="mini-line"></div>
+                        <div class="mini-line short"></div>
+                        <div class="mini-button"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="theme-info">
+
+                <div class="theme-heading">
+                    <h2 class="theme-name">Matcha</h2>
+
+                    <span class="theme-tag matcha-tag">
+                        Calm
+                    </span>
+                </div>
+
+                <p class="theme-description">
+                    Sắc xanh matcha dịu mắt, gần gũi với thiên nhiên,
+                    phù hợp cho phong cách ấm áp và bình yên.
+                </p>
+
+                <button type="button"
+                        class="choose-button matcha-button"
+                        onclick="chooseTheme(event, 'matcha')">
+                    Chọn Matcha
+                </button>
+
+            </div>
+        </article>
+
+
+        <!-- INSTAGRAM -->
+        <article class="theme-card"
+                 data-theme="instagram"
+                 onclick="selectTheme('instagram', this)">
+
+            <div class="selected-badge">✓</div>
+
+            <div class="theme-preview instagram-preview">
+
+                <div class="floating-icon one">📸</div>
+                <div class="floating-icon two">♡</div>
+                <div class="floating-icon three">✦</div>
+
+                <div class="phone-preview">
+                    <div class="phone-notch"></div>
+
+                    <div class="phone-content">
+                        <div class="ig-topbar">
+                            <span class="ig-logo">Instagram</span>
+
+                            <div class="ig-top-icons">
+                                <span>♡</span>
+                                <span>✉</span>
+                            </div>
+                        </div>
+
+                        <div class="ig-stories">
+                            <span class="ig-story"></span>
+                            <span class="ig-story"></span>
+                            <span class="ig-story"></span>
+                            <span class="ig-story"></span>
+                        </div>
+
+                        <div class="ig-post-head">
+                            <div class="ig-user">
+                                <span class="ig-avatar"></span>
+
+                                <div class="ig-user-lines">
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+
+                            <span class="ig-more">•••</span>
+                        </div>
+
+                        <div class="ig-photo"></div>
+
+                        <div class="ig-actions">
+                            <div class="ig-actions-left">
+                                <span>♡</span>
+                                <span>○</span>
+                                <span>⌁</span>
+                            </div>
+
+                            <span>▱</span>
+                        </div>
+
+                        <div class="ig-dots">
+                            <span class="active"></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+
+                        <div class="ig-caption-line"></div>
+                        <div class="ig-caption-line short"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="theme-info">
+
+                <div class="theme-heading">
+                    <h2 class="theme-name">Instagram</h2>
+
+                    <span class="theme-tag instagram-tag">
+                        Social
+                    </span>
+                </div>
+
+                <p class="theme-description">
+                    Giao diện lấy cảm hứng từ Instagram với story,
+                    bài đăng ảnh, nút tương tác và gradient cam hồng tím nổi bật.
+                </p>
+
+                <button type="button"
+                        class="choose-button instagram-button"
+                        onclick="chooseTheme(event, 'instagram')">
+                    Chọn Instagram
+                </button>
+
+            </div>
+        </article>
+
+    </section>
+
+    <p class="bottom-note">
+        Sau khi chọn theme, bạn sẽ được chuyển đến trang chỉnh sửa Memory.
+    </p>
+
+</main>
+<script th:inline="javascript">
+
+    const nfcUid = /*[[${nfcUid}]]*/ "";
+
+    let selectedTheme = null;
+
+    function selectTheme(theme, card) {
+
+        selectedTheme = theme;
+
+        document
+            .querySelectorAll(".theme-card")
+            .forEach(item => {
+                item.classList.remove("active");
+            });
+
+        card.classList.add("active");
+    }
+
+    function chooseTheme(event, theme) {
+
+        event.stopPropagation();
+
+        selectedTheme = theme;
+
+        const selectedCard = document.querySelector(
+            `.theme-card[data-theme="${theme}"]`
+        );
+
+        if (selectedCard) {
+            selectTheme(theme, selectedCard);
+        }
+
+        if (!nfcUid) {
+
+            console.error("Không tìm thấy nfcUid từ Controller.");
+
+            alert("Không tìm thấy mã NFC. Vui lòng quét lại thẻ.");
+
+            return;
+        }
+
+        window.location.href =
+            `/gift/index/${encodeURIComponent(nfcUid)}?theme=${encodeURIComponent(theme)}`;
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Memory Booth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" th:href="@{/css/gift.css}">
+
+<style>
+:root{
+  /* ===== SAKURA THEME ===== */
+  --sakura-bg-1:#fff6f8;
+  --sakura-bg-2:#ffe9ef;
+  --sakura-bg-3:#ffd6e2;
+  --sakura-mid:#ffc4d6;
+  --sakura-accent:#ff8fab;
+  --sakura-accent-deep:#ff6f91;
+  --sakura-gold:#fff0e6;
+  --silver:#fff;
+  --lilac:var(--sakura-accent);
+  --ink:#5a3346;
+  --ink-soft:#a9788c;
+  --flash-white:#fff8fa;
+
+  /* kept for compatibility with old class names used below */
+  --night-deep:var(--sakura-bg-1);
+  --night-navy:var(--sakura-bg-2);
+  --night-mid:var(--sakura-bg-3);
+  --night-indigo:var(--sakura-accent-deep);
+  --star-white:#fff;
+  --star-soft:#ffd6e2;
+  --moon-glow:var(--sakura-gold);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html,body{height:100%;}
+
+body{
+  background:
+    radial-gradient(ellipse 70% 40% at 78% 6%, rgba(255,240,230,0.5), transparent 60%),
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(255,143,171,0.18), transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(255,214,226,0.6), transparent 60%),
+    linear-gradient(180deg, var(--sakura-bg-1), var(--sakura-bg-2) 60%, var(--sakura-mid));
+  background-size:100% 100%;
+  animation:bgBreathe 16s ease-in-out infinite;
+  min-height:100vh;
+  font-family:Arial, sans-serif;
+  color:var(--ink);
+  overflow-x:hidden;
+  padding-bottom:40px;
+  position:relative;
+}
+@keyframes bgBreathe{
+  0%,100%{ background-position:78% 6%, 50% -10%, 50% 110%, 0 0; }
+  50%{ background-position:74% 2%, 50% -4%, 50% 104%, 0 0; }
+}
+
+body.locked{overflow:hidden;height:100vh;}
+
+/* ============ PETAL FIELD (was star field) ============ */
+.leaf-field{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.star-twinkle{
+  position:absolute;border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 6px 1px rgba(255,180,200,0.6);
+  animation:twinkle ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{ opacity:.2; transform:scale(.7); }
+  50%{ opacity:.9; transform:scale(1.15); }
+}
+.leaf{
+  position:absolute;
+  font-size:14px;
+  opacity:0;
+  filter:drop-shadow(0 0 4px rgba(255,143,171,.35));
+  animation:leafFall linear infinite;
+}
+@keyframes leafFall{
+  0%{ transform:translate(0,-8vh) rotate(0deg); opacity:0; }
+  8%{ opacity:.85; }
+  92%{ opacity:.6; }
+  100%{ transform:translate(var(--drift,40px),112vh) rotate(160deg); opacity:0; }
+}
+.shooting-star{
+  position:absolute;
+  width:2px;height:2px;
+  background:#fff;
+  border-radius:50%;
+  box-shadow:0 0 8px 2px rgba(255,180,200,0.9);
+  opacity:0;
+  animation:shootAcross 5.5s ease-in infinite;
+}
+.shooting-star::before{
+  content:'';
+  position:absolute;top:50%;right:0;
+  width:90px;height:1px;
+  background:linear-gradient(90deg, rgba(255,180,200,0.9), transparent);
+  transform:translateY(-50%);
+}
+@keyframes shootAcross{
+  0%{ opacity:0; transform:translate(0,0); }
+  2%{ opacity:1; }
+  14%{ opacity:0; transform:translate(-260px,180px); }
+  100%{ opacity:0; }
+}
+
+/* ============ CURTAIN INTRO ============ */
+.curtain-stage{position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none;}
+.curtain-panel{
+  flex:1;
+  background:
+    linear-gradient(160deg, var(--sakura-mid) 0%, var(--sakura-bg-2) 55%, var(--sakura-bg-1) 100%);
+  box-shadow:inset 0 0 140px rgba(255,143,171,0.15);
+  transition:transform 1.15s cubic-bezier(.76,0,.15,1);
+  position:relative;
+  overflow:hidden;
+}
+.curtain-panel::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle, rgba(255,143,171,0.35) 1px, transparent 1.4px);
+  background-size:38px 46px;
+  opacity:.35;
+}
+.curtain-panel::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.25), transparent 14%, transparent 86%, rgba(255,255,255,.3));
+}
+.curtain-left{transform-origin:left center;}
+.curtain-right{transform-origin:right center;}
+body.opened .curtain-left{transform:translateX(-101%);}
+body.opened .curtain-right{transform:translateX(101%);}
+
+.curtain-mark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:9.5vw;
+  letter-spacing:3px;
+  color:var(--sakura-accent-deep);
+  text-shadow:0 0 30px rgba(255,143,171,0.45);
+  white-space:nowrap;
+  z-index:2;
+  opacity:1;
+  transition:opacity .5s ease .05s;
+}
+body.opened .curtain-mark{opacity:0;}
+
+.flash-overlay{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--flash-white);
+  opacity:0;pointer-events:none;
+}
+body.opened .flash-overlay{animation:flashPulse .7s ease-out .95s forwards;}
+@keyframes flashPulse{0%{opacity:0}12%{opacity:.7}100%{opacity:0}}
+
+
+/* =========================================
+   EXTRA WHITE–PINK AMBIENT EFFECTS
+========================================= */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.72;
+}
+
+body::before {
+    width: 260px;
+    height: 260px;
+    top: 8%;
+    left: -110px;
+    background:
+        radial-gradient(circle at 35% 35%,
+            rgba(255,255,255,0.95) 0 18%,
+            rgba(255,190,211,0.42) 42%,
+            transparent 72%);
+    animation: pinkOrbLeft 10s ease-in-out infinite alternate;
+}
+
+body::after {
+    width: 310px;
+    height: 310px;
+    right: -145px;
+    bottom: 5%;
+    background:
+        radial-gradient(circle at 45% 40%,
+            rgba(255,255,255,0.92) 0 16%,
+            rgba(255,143,171,0.34) 40%,
+            transparent 72%);
+    animation: pinkOrbRight 12s ease-in-out infinite alternate;
+}
+
+@keyframes pinkOrbLeft {
+    from { transform: translate3d(0, 0, 0) scale(0.94); }
+    to   { transform: translate3d(42px, 55px, 0) scale(1.08); }
+}
+
+@keyframes pinkOrbRight {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(-48px, -38px, 0) scale(1.1); }
+}
+
+.booth-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(255,143,171,.35) 0 1px, transparent 1.7px);
+    background-size: 54px 54px, 76px 76px;
+    background-position: 0 0, 20px 30px;
+    opacity: .42;
+    animation: pinkSparkleDrift 18s linear infinite;
+}
+
+@keyframes pinkSparkleDrift {
+    from { background-position: 0 0, 20px 30px; }
+    to   { background-position: 54px 108px, -56px 106px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .curtain-panel,.curtain-mark,.leaf,.star-twinkle,.shooting-star,body{animation:none !important;transition:none !important;}
+  body.opened .flash-overlay{animation:none !important;}
+}
+
+/* ============ SHELL ============ */
+.booth-shell{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  border-left:1px solid rgba(255,143,171,0.2);
+  border-right:1px solid rgba(255,143,171,0.2);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .7s ease .95s, transform .7s ease .95s;
+  position:relative;
+  z-index:2;
+}
+body.opened .booth-shell{opacity:1;transform:translateY(0);}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+/* ============ MARQUEE TOPBAR ============ */
+.booth-marquee{
+  position:sticky;top:0;z-index:10;
+  background:linear-gradient(180deg, var(--sakura-bg-2), var(--sakura-bg-1) 95%);
+  border-bottom:1px solid rgba(255,143,171,0.3);
+  padding:14px 16px 10px;
+  text-align:center;
+  box-shadow:0 4px 18px rgba(255,143,171,0.15);
+}
+.booth-marquee .bulbs{
+  display:flex;justify-content:center;gap:8px;margin-bottom:6px;
+}
+.booth-marquee .bulb{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--sakura-accent);
+  box-shadow:0 0 6px 1px rgba(255,143,171,0.7);
+  opacity:.85;
+  animation:leafPulse 2.6s ease-in-out infinite;
+}
+.booth-marquee .bulb:nth-child(odd){animation-delay:.3s;}
+.booth-marquee .bulb:nth-child(3n){animation-delay:.6s;}
+@keyframes leafPulse{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+
+.booth-marquee-row{display:flex;align-items:center;justify-content:space-between;}
+.booth-back, .booth-edit{
+  background:none;border:none;color:var(--ink);font-size:20px;
+  cursor:pointer;opacity:.9;text-decoration:none;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  width:34px;height:34px;border-radius:50%;
+}
+.booth-back:active, .booth-edit:active{background:rgba(255,143,171,0.18);}
+.booth-title{
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:23px;letter-spacing:1px;
+  color:var(--ink);
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.booth-title span{color:var(--sakura-accent-deep);}
+.topbar-spacer{width:34px;height:34px;display:block;flex:0 0 34px;}
+.booth-title:focus-visible{
+  outline:2px solid rgba(255,111,145,.5);
+  outline-offset:4px;
+  border-radius:6px;
+}
+
+.booth-tagline{
+  font-family:Arial, sans-serif;
+  font-weight:500;
+  font-size:11.5px;color:rgba(90,51,70,0.65);
+  margin-top:4px;letter-spacing:.3px;
+}
+
+/* ============ SECTION LABEL ============ */
+.booth-label{
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-size:16px;letter-spacing:1px;
+  color:var(--sakura-accent-deep);
+  padding:20px 18px 8px;
+}
+
+/* ============ FILMSTRIP VIEWER ============ */
+.filmstrip{
+  margin:0 12px;
+  padding:14px 14px 16px;
+  background:rgba(255,255,255,0.58);
+  border:1px solid rgba(255,143,171,0.3);
+  border-radius:16px;
+  position:relative;
+  backdrop-filter:blur(4px);
+  overflow:hidden;
+}
+
+.ig-swiper{
+  display:flex;
+  width:100%;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  border-radius:12px;
+  touch-action:pan-x pan-y;
+}
+
+.ig-swiper::-webkit-scrollbar{
+  display:none;
+}
+
+.ig-slide{
+  flex:0 0 100%;
+  width:100%;
+  aspect-ratio:1 / 1;
+  position:relative;
+  scroll-snap-align:center;
+  scroll-snap-stop:always;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,143,171,0.25);
+  box-shadow:0 8px 24px rgba(255,143,171,.18);
+  cursor:zoom-in;
+  transform:none !important;
+}
+
+.ig-slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.ig-slide::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.4) 48%, transparent 62%);
+  transform:translateX(-120%);
+  transition:transform .7s ease;
+  pointer-events:none;
+}
+
+.ig-slide:active::after{
+  transform:translateX(120%);
+}
+
+.ig-carousel-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+}
+
+.ig-arrow{
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.9);
+  color:var(--sakura-accent-deep);
+  box-shadow:0 4px 14px rgba(255,143,171,.22);
+  cursor:pointer;
+  font-size:16px;
+}
+
+.ig-arrow:disabled{
+  opacity:.35;
+  cursor:default;
+}
+
+.ig-dots{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:70px;
+}
+
+.ig-dot{
+  width:6px;
+  height:6px;
+  border:0;
+  padding:0;
+  border-radius:50%;
+  background:rgba(255,143,171,.35);
+  transition:width .2s ease, background .2s ease, transform .2s ease;
+  cursor:pointer;
+}
+
+.ig-dot.active{
+  width:16px;
+  border-radius:999px;
+  background:var(--sakura-accent-deep);
+}
+
+.filmstrip-hint{
+  font-family:Arial, sans-serif;
+  font-size:11px;
+  color:var(--ink-soft);
+  text-align:center;
+  padding:10px 4px 0;
+}
+
+@media (max-width:600px){
+  .filmstrip{
+    margin:0 8px;
+    padding:10px 10px 14px;
+  }
+
+  .ig-slide{
+    border-radius:10px;
+  }
+}
+
+/* ============ CAPTION CARD ============ */
+.caption-card{
+  margin:18px 16px 0;
+  background:rgba(255,255,255,0.65);
+  border-radius:12px;
+  padding:16px 18px 14px 20px;
+  box-shadow:0 6px 20px rgba(255,143,171,.2), inset 0 0 0 1px rgba(255,143,171,0.25);
+  position:relative;
+  border-left:4px solid var(--sakura-accent);
+  overflow:hidden;
+  backdrop-filter:blur(2px);
+}
+.caption-card .cap-from{
+  font-family:Arial, sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:1px;color:var(--sakura-accent-deep);text-transform:uppercase;
+  margin-bottom:4px;
+}
+.caption-card .cap-text{
+  color:var(--ink);
+  font-family:Arial, sans-serif;
+  font-weight:600;
+  font-size:16px;
+  line-height:26px;
+  white-space:pre-wrap;
+  overflow-wrap:break-word;
+  word-break:break-word;
+}
+
+.booth-timestamp{
+  font-family:Arial, sans-serif;font-size:10.5px;
+  color:var(--ink-soft);
+  text-align:right;padding:6px 20px 4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+
+/* ============ VOICE / TAPE PLAYER ============ */
+.tape-unit{
+  margin:12px 16px 0;
+  background:linear-gradient(160deg,rgba(255,214,226,0.7),rgba(255,246,248,0.85));
+  border:1px solid rgba(255,143,171,0.3);
+  border-radius:14px;
+  padding:16px;
+  display:flex;align-items:center;gap:16px;
+  transition:box-shadow .3s ease;
+  backdrop-filter:blur(2px);
+}
+.tape-unit.playing{
+  box-shadow:0 0 0 2px rgba(255,143,171,0.3), 0 10px 26px rgba(255,143,171,.2);
+}
+.tape-reels{display:flex;gap:10px;flex-shrink:0;}
+.reel{
+  width:34px;height:34px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--sakura-accent) 55%, var(--sakura-accent-deep) 100%);
+  border:2px solid rgba(255,255,255,0.6);
+}
+.reel.spin{animation:reelSpin 1.1s linear infinite;}
+@keyframes reelSpin{to{transform:rotate(360deg);}}
+
+.tape-controls{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tape-play-row{display:flex;align-items:center;gap:12px;}
+
+.tape-play-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--sakura-accent));
+  border:none;color:#fff;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:filter .15s, transform .1s;
+  position:relative;
+  overflow:visible;
+}
+.tape-play-btn::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid var(--sakura-gold);
+  opacity:0;transform:scale(.85);
+}
+.tape-unit.playing .tape-play-btn::before{
+  animation:pulseRing 1.5s ease-out infinite;
+}
+@keyframes pulseRing{
+  0%{opacity:.6;transform:scale(.85);}
+  100%{opacity:0;transform:scale(1.4);}
+}
+.tape-play-btn:hover{filter:brightness(1.08);}
+.tape-play-btn:active{transform:scale(.92);}
+
+.tape-progress-wrap{flex:1;min-width:0;}
+.tape-progress{
+  width:100%;height:4px;border-radius:2px;
+  background:rgba(255,143,171,0.25);
+  cursor:pointer;position:relative;
+}
+.tape-progress-bar{
+  height:100%;border-radius:2px;
+  background:var(--sakura-accent-deep);
+  width:0%;
+  transition:width .1s linear;
+  pointer-events:none;
+  box-shadow:0 0 6px rgba(255,143,171,0.6);
+}
+.tape-times{
+  display:flex;justify-content:space-between;
+  font-family:Arial, sans-serif;
+  font-size:10px;color:var(--ink-soft);
+  margin-top:4px;
+}
+audio#hiddenAudio{display:none;}
+
+/* ============ EMPTY STATES ============ */
+.booth-empty{
+  margin:18px 16px 0;
+  font-family:Arial, sans-serif;
+  font-size:12px;color:var(--ink-soft);
+  text-align:center;padding:24px 10px;
+  border:1px dashed rgba(255,143,171,0.4);
+  border-radius:10px;
+}
+
+/* ============ FOOTER STAMP ============ */
+.booth-footer{
+  text-align:center;padding:34px 16px 10px;
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:14px;letter-spacing:1px;
+  color:var(--sakura-accent-deep);
+  opacity:.75;
+}
+
+/* ripple effect */
+.ripple-dot{
+  position:absolute;border-radius:50%;
+  background:rgba(255,143,171,0.4);
+  transform:scale(0);
+  animation:rippleAnim .55s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleAnim{
+  to{ transform:scale(2.6); opacity:0; }
+}
+
+/* =========================================
+   FORCE ARIAL FONT
+========================================= */
+html,
+body,
+button,
+input,
+textarea,
+select,
+.booth-title,
+.booth-tagline,
+.booth-label,
+.caption-card,
+.cap-text,
+.booth-empty,
+.booth-footer,
+.tape-times {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+
+
+/* =========================================
+   IMAGE LIGHTBOX / SLIDESHOW
+========================================= */
+.ig-slide {
+    cursor: zoom-in;
+}
+
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(70, 28, 47, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.image-lightbox.open {
+    display: flex;
+    animation: lightboxFadeIn .22s ease-out;
+}
+
+@keyframes lightboxFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lightbox-inner {
+    width: min(100%, 960px);
+    height: min(88vh, 760px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(0,0,0,.42);
+    user-select: none;
+    -webkit-user-drag: none;
+    animation: lightboxZoom .24s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes lightboxZoom {
+    from { opacity: 0; transform: scale(.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    border: 0;
+    color: #fff;
+    background: rgba(255, 143, 171, .72);
+    box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s ease, background .15s ease;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+    background: rgba(255, 111, 145, .95);
+}
+
+.lightbox-close:active,
+.lightbox-prev:active,
+.lightbox-next:active {
+    transform: scale(.92);
+}
+
+.lightbox-close {
+    top: 8px;
+    right: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 23px;
+    z-index: 3;
+}
+
+.lightbox-prev,
+.lightbox-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 58px;
+    border-radius: 14px;
+    font-size: 24px;
+    z-index: 3;
+}
+
+.lightbox-prev:active,
+.lightbox-next:active {
+    transform: translateY(-50%) scale(.92);
+}
+
+.lightbox-prev { left: 8px; }
+.lightbox-next { right: 8px; }
+
+.lightbox-counter {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.9);
+    color: #5a3346;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+
+body.lightbox-lock {
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .image-lightbox {
+        padding: 8px;
+    }
+
+    .lightbox-inner {
+        height: 86vh;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        width: 40px;
+        height: 52px;
+        font-size: 21px;
+        background: rgba(255, 143, 171, .82);
+    }
+
+    .lightbox-prev { left: 2px; }
+    .lightbox-next { right: 2px; }
+    .lightbox-close { top: 2px; right: 2px; }
+}
+
+
+/* =========================================
+   CENTER VIEW TITLE - NO BACK BUTTON
+========================================= */
+.booth-marquee-row.center-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booth-marquee-row.center-title .booth-title {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.booth-back {
+    display: none !important;
+}
+
+</style>
+</head>
+
+<body class="locked">
+
+<!-- PETAL FIELD -->
+<div class="leaf-field" id="leafField" aria-hidden="true"></div>
+
+<!-- CURTAIN INTRO -->
+<div class="curtain-stage" aria-hidden="true">
+  <div class="curtain-panel curtain-left"></div>
+  <div class="curtain-mark">Mùa hoa anh đào</div>
+  <div class="curtain-panel curtain-right"></div>
+</div>
+<div class="flash-overlay" aria-hidden="true"></div>
+
+<div class="booth-shell">
+
+  <!-- MARQUEE TOPBAR -->
+  <div class="booth-marquee">
+    <div class="bulbs">
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span>
+    </div>
+    <div class="booth-marquee-row center-title">
+<!-- Bấm/chạm 3 lần liên tiếp vào MEMORY GIFT để mở trang chỉnh sửa -->
+      <span class="booth-title"
+            id="boothTitle"
+            role="button"
+            tabindex="0"
+            aria-label="Bấm 3 lần để chỉnh sửa"
+            th:attr="data-edit-url=@{'/gift/edit/' + ${uid}}">
+        MEMORY <span>GIFT</span>
+      </span>
+</div>
+    <div class="booth-tagline">— những cánh hoa ký ức —</div>
+  </div>
+
+  <!-- FILMSTRIP VIEWER -->
+  <div class="booth-label">Cuộn phim của bạn</div>
+  <div class="filmstrip reveal" th:if="${gift.images != null and !gift.images.isEmpty()}">
+    <div class="ig-swiper" id="swiper">
+      <div class="ig-slide"
+           role="button"
+           tabindex="0"
+           aria-label="Mở ảnh phóng to"
+           th:each="img, iter : ${gift.images}">
+        <img th:src="@{'/files/images/' + ${img.imageUrl}}"
+             th:alt="${'Ảnh ' + (iter.index + 1)}"
+             draggable="false">
+      </div>
+    </div>
+
+    <div class="ig-carousel-controls" th:if="${gift.images.size() > 1}">
+      <button type="button" class="ig-arrow" id="igPrevBtn" aria-label="Ảnh trước">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <div class="ig-dots" id="igDots" aria-label="Chọn ảnh"></div>
+
+      <button type="button" class="ig-arrow" id="igNextBtn" aria-label="Ảnh tiếp theo">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="filmstrip-hint">
+      vuốt trái hoặc phải để xem ảnh
+    </div>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.images == null or gift.images.isEmpty()}">
+    chưa có tấm ảnh nào trong cuộn phim này
+  </div>
+
+  <!-- CAPTION -->
+  <div class="booth-label">Viết sau tấm ảnh</div>
+  <div class="caption-card reveal" th:if="${gift.message != null and gift.message != ''}">
+    <div class="cap-text" id="capText" th:text="${gift.message}"></div>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.message == null or gift.message == ''}">
+    chưa có lời nhắn nào được viết
+  </div>
+  <div class="booth-timestamp">Just now</div>
+
+  <!-- VOICE / TAPE -->
+  <div class="booth-label">Lời nhắn bằng giọng nói</div>
+  <div class="tape-unit reveal" id="tapeUnit" th:if="${gift.voiceUrl != null and gift.voiceUrl != ''}">
+    <div class="tape-reels">
+      <div class="reel" id="reelL"></div>
+      <div class="reel" id="reelR"></div>
+    </div>
+    <div class="tape-controls">
+      <div class="tape-play-row">
+        <button class="tape-play-btn ripple-btn" id="playBtn" onclick="toggleAudio()">
+          <i class="bi bi-play-fill" id="playIco"></i>
+        </button>
+        <div class="tape-progress-wrap">
+          <div class="tape-progress" id="progressBar" onclick="seekAudio(event)">
+            <div class="tape-progress-bar" id="audioBar"></div>
+          </div>
+          <div class="tape-times">
+            <span id="curTime">0:00</span>
+            <span id="durTime">0:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+   <audio id="hiddenAudio">
+       <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
+  </audio>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.voiceUrl == null or gift.voiceUrl == ''}">
+    chưa có ghi âm nào được lưu lại
+  </div>
+
+  <div class="booth-footer reveal">— MEMORY BOOTH —</div>
+
+</div>
+
+<script>
+// ================= INTRO CURTAIN =================
+(function initCurtain(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const openNow = () => {
+    document.body.classList.add('opened');
+    document.body.classList.remove('locked');
+  };
+  if (reduce){
+    document.querySelectorAll('.curtain-panel,.curtain-mark').forEach(el=>el.style.transition='none');
+    openNow();
+    return;
+  }
+  window.addEventListener('load', () => {
+    setTimeout(openNow, 350);
+    setTimeout(() => {
+      document.body.classList.remove('locked');
+    }, 1700);
+  });
+})();
+
+// ================= PETAL FIELD (twinkles + shooting stars + falling sakura petals) =================
+(function initStars(){
+  const field = document.getElementById('leafField');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // static twinkling sparkles
+  const starCount = 40;
+  for(let i=0;i<starCount;i++){
+    const s = document.createElement('span');
+    s.className = 'star-twinkle';
+    const size = (Math.random()*2 + 1).toFixed(1);
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = (Math.random()*100)+'vw';
+    s.style.top = (Math.random()*100)+'vh';
+    s.style.animationDuration = (2 + Math.random()*3).toFixed(1)+'s';
+    s.style.animationDelay = (Math.random()*4).toFixed(1)+'s';
+    field.appendChild(s);
+  }
+
+  if(reduce) return;
+
+  // drifting sakura petals
+  const symbols = ['🌸','🌸','✿'];
+  for(let i=0;i<10;i++){
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    leaf.style.left = (Math.random()*100)+'vw';
+    leaf.style.fontSize = (10+Math.random()*10).toFixed(0)+'px';
+    leaf.style.animationDuration = (16 + Math.random()*14)+'s';
+    leaf.style.animationDelay = (Math.random()*14)+'s';
+    leaf.style.setProperty('--drift', (Math.random()*80-40).toFixed(0)+'px');
+    field.appendChild(leaf);
+  }
+
+  // shooting sparkle streaks
+  for(let i=0;i<2;i++){
+    const sh = document.createElement('span');
+    sh.className = 'shooting-star';
+    sh.style.top = (10 + Math.random()*30)+'vh';
+    sh.style.right = (-10)+'vw';
+    sh.style.animationDelay = (i*3 + Math.random()*4)+'s';
+    field.appendChild(sh);
+  }
+})();
+
+// ================= SCROLL REVEAL =================
+(function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(el=>el.classList.add('in'));
+    return;
+  }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:.15});
+  els.forEach(el=>io.observe(el));
+})();
+
+// ================= CAPTION TEXT =================
+// Nội dung hiển thị nguyên văn, không còn con trỏ nhấp nháy/typewriter.
+
+// ================= RIPPLE ON BUTTONS =================
+(function initRipple(){
+  document.querySelectorAll('.ripple-btn').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      const rect = btn.getBoundingClientRect();
+      const dot = document.createElement('span');
+      const size = Math.max(rect.width, rect.height);
+      dot.className = 'ripple-dot';
+      dot.style.width = dot.style.height = size+'px';
+      dot.style.left = ((e.clientX ?? rect.left+rect.width/2) - rect.left - size/2)+'px';
+      dot.style.top = ((e.clientY ?? rect.top+rect.height/2) - rect.top - size/2)+'px';
+      btn.style.position = btn.style.position || 'relative';
+      btn.style.overflow = 'hidden';
+      btn.appendChild(dot);
+      setTimeout(()=>dot.remove(), 600);
+    });
+  });
+})();
+
+// ================= TRIPLE-PRESS MEMORY GIFT -> EDIT PAGE =================
+(function initTripleClickEdit(){
+  const titleEl = document.getElementById('boothTitle');
+  if(!titleEl) return;
+
+  let clickCount = 0;
+  let resetTimer = null;
+  const WINDOW_MS = 700; // thời gian tối đa giữa các lần bấm để tính là "bấm liên tiếp"
+
+  function registerTitlePress(){
+
+    clickCount++;
+    clearTimeout(resetTimer);
+
+    if(clickCount >= 3){
+      clickCount = 0;
+      const editUrl = titleEl.getAttribute('data-edit-url');
+      if(editUrl){
+        window.location.href = editUrl;
+      }
+      return;
+    }
+
+    resetTimer = setTimeout(() => { clickCount = 0; }, WINDOW_MS);
+  }
+
+  titleEl.addEventListener('click', registerTitlePress);
+  titleEl.addEventListener('keydown', function(event){
+    if(event.key === 'Enter' || event.key === ' '){
+      event.preventDefault();
+      registerTitlePress();
+    }
+  });
+})();
+
+/* ── AUDIO / TAPE PLAYER ── */
+const audio = document.getElementById('hiddenAudio');
+if(audio){
+    audio.addEventListener("loadedmetadata", () => {
+        console.log("duration", audio.duration);
+    });
+    audio.addEventListener("error", () => {
+        console.log(audio.error);
+    });
+}
+
+const reelL = document.getElementById('reelL');
+const reelR = document.getElementById('reelR');
+const tapeUnit = document.getElementById('tapeUnit');
+
+function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
+
+if(audio){
+    audio.addEventListener('timeupdate',()=>{
+        const pct = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
+        document.getElementById('audioBar').style.width = pct+'%';
+        document.getElementById('curTime').textContent = fmt(audio.currentTime);
+    });
+    audio.addEventListener('loadedmetadata',()=>{
+        document.getElementById('durTime').textContent = fmt(audio.duration);
+    });
+    audio.addEventListener('ended',()=>{
+        document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
+        if(tapeUnit) tapeUnit.classList.remove('playing');
+    });
+}
+function toggleAudio(){
+    if(!audio) return;
+    if(audio.paused){
+        audio.play().catch(err => alert('Lỗi phát audio: ' + err.name + ' - ' + err.message));
+        document.getElementById('playIco').className='bi bi-pause-fill';
+        reelL.classList.add('spin');
+        reelR.classList.add('spin');
+        if(tapeUnit) tapeUnit.classList.add('playing');
+    } else {
+        audio.pause();
+        document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
+        if(tapeUnit) tapeUnit.classList.remove('playing');
+    }
+}
+function seekAudio(e){
+    if(!audio || !audio.duration) return;
+    const rect = document.getElementById('progressBar').getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+}
+
+
+
+// ================= INSTAGRAM-STYLE IMAGE CAROUSEL =================
+(function initInstagramCarousel(){
+  const swiper = document.getElementById('swiper');
+  if(!swiper) return;
+
+  const slides = Array.from(swiper.querySelectorAll('.ig-slide'));
+  const dotsWrap = document.getElementById('igDots');
+  const prevBtn = document.getElementById('igPrevBtn');
+  const nextBtn = document.getElementById('igNextBtn');
+
+  if(!slides.length) return;
+
+  let currentIndex = 0;
+  let scrollTimer = null;
+
+  function goTo(index){
+    currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+
+    slides[currentIndex].scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+
+    updateControls();
+  }
+
+  function updateControls(){
+    if(dotsWrap){
+      dotsWrap.querySelectorAll('.ig-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+        dot.setAttribute('aria-current', index === currentIndex ? 'true' : 'false');
+      });
+    }
+
+    if(prevBtn) prevBtn.disabled = currentIndex === 0;
+    if(nextBtn) nextBtn.disabled = currentIndex === slides.length - 1;
+  }
+
+  if(dotsWrap){
+    slides.forEach((_, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'ig-dot';
+      dot.setAttribute('aria-label', 'Xem ảnh ' + (index + 1));
+      dot.addEventListener('click', () => goTo(index));
+      dotsWrap.appendChild(dot);
+    });
+  }
+
+  prevBtn?.addEventListener('click', () => goTo(currentIndex - 1));
+  nextBtn?.addEventListener('click', () => goTo(currentIndex + 1));
+
+  swiper.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+
+    scrollTimer = setTimeout(() => {
+      const slideWidth = swiper.clientWidth || 1;
+      currentIndex = Math.round(swiper.scrollLeft / slideWidth);
+      currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
+      updateControls();
+    }, 70);
+  }, {passive:true});
+
+  window.addEventListener('resize', () => {
+    swiper.scrollLeft = currentIndex * swiper.clientWidth;
+  });
+
+  updateControls();
+})();
+
+
+/* ================= IMAGE LIGHTBOX / SLIDESHOW ================= */
+(function initImageLightbox(){
+  const slides = Array.from(document.querySelectorAll('.ig-slide img'));
+  const lightbox = document.getElementById('imageLightbox');
+  const lightboxImage = document.getElementById('lightboxImage');
+  const counter = document.getElementById('lightboxCounter');
+  const closeBtn = document.getElementById('lightboxClose');
+  const prevBtn = document.getElementById('lightboxPrev');
+  const nextBtn = document.getElementById('lightboxNext');
+
+  if (!slides.length || !lightbox || !lightboxImage) return;
+
+  let currentIndex = 0;
+  let touchStartX = 0;
+
+  function showImage(index){
+    currentIndex = (index + slides.length) % slides.length;
+    lightboxImage.src = slides[currentIndex].currentSrc || slides[currentIndex].src;
+    lightboxImage.alt = slides[currentIndex].alt || ('Ảnh ' + (currentIndex + 1));
+    counter.textContent = (currentIndex + 1) + ' / ' + slides.length;
+
+    const hideNavigation = slides.length <= 1;
+    prevBtn.style.display = hideNavigation ? 'none' : 'flex';
+    nextBtn.style.display = hideNavigation ? 'none' : 'flex';
+  }
+
+  function openLightbox(index){
+    showImage(index);
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-lock');
+    closeBtn.focus();
+  }
+
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-lock');
+  }
+
+  function previousImage(){
+    showImage(currentIndex - 1);
+  }
+
+  function nextImage(){
+    showImage(currentIndex + 1);
+  }
+
+  slides.forEach((img, index) => {
+    const slide = img.closest('.ig-slide');
+
+    slide.addEventListener('click', () => openLightbox(index));
+
+    slide.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter' || event.key === ' '){
+        event.preventDefault();
+        openLightbox(index);
+      }
+    });
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', previousImage);
+  nextBtn.addEventListener('click', nextImage);
+
+  lightbox.addEventListener('click', (event) => {
+    if(event.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if(!lightbox.classList.contains('open')) return;
+
+    if(event.key === 'Escape') closeLightbox();
+    if(event.key === 'ArrowLeft') previousImage();
+    if(event.key === 'ArrowRight') nextImage();
+  });
+
+  lightbox.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].clientX;
+  }, {passive:true});
+
+  lightbox.addEventListener('touchend', (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX;
+
+    if(Math.abs(deltaX) < 45) return;
+    deltaX > 0 ? previousImage() : nextImage();
+  }, {passive:true});
+})();
+
+</script>
+
+
+<!-- IMAGE LIGHTBOX / SLIDESHOW -->
+<div class="image-lightbox" id="imageLightbox" aria-hidden="true">
+  <div class="lightbox-inner">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Đóng ảnh">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <button type="button" class="lightbox-prev" id="lightboxPrev" aria-label="Ảnh trước">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+
+    <img class="lightbox-image" id="lightboxImage" alt="Ảnh phóng to">
+
+    <button type="button" class="lightbox-next" id="lightboxNext" aria-label="Ảnh tiếp theo">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+
+    <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+  </div>
+</div>
+
+</body>
+</html>

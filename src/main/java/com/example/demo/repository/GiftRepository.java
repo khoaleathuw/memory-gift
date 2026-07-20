@@ -1,7 +1,8 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.GiftImage;
 import com.example.demo.entity.Gift;
+import com.example.demo.entity.GiftImage;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,202 +17,319 @@ public class GiftRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-
     public GiftRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
 
-
-    // =========================================
+    // ==================================================
     // INSERT GIFT
-    // =========================================
+    // ==================================================
+
     public Long insertGift(Gift gift) {
 
+        if (gift == null) {
+            throw new IllegalArgumentException(
+                    "Gift không được để trống"
+            );
+        }
+
+        if (gift.getUid() == null || gift.getUid().isBlank()) {
+            throw new IllegalArgumentException(
+                    "UID không được để trống"
+            );
+        }
+
         String sql = """
-                INSERT INTO gift(title, message, voice_url)
-                VALUES(?, ?, ?)
+                INSERT INTO gift (
+                    uid,
+                    title,
+                    theme,
+                    message,
+                    voice_url
+                )
+                VALUES (?, ?, ?, ?, ?)
                 """;
 
+        KeyHolder keyHolder =
+                new GeneratedKeyHolder();
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        int affectedRows = jdbcTemplate.update(
+                connection -> {
 
+                    PreparedStatement ps =
+                            connection.prepareStatement(
+                                    sql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            );
 
-        jdbcTemplate.update(connection -> {
+                    ps.setString(1, gift.getUid());
+                    ps.setString(2, gift.getTitle());
+                    ps.setString(3, gift.getTheme());
+                    ps.setString(4, gift.getMessage());
+                    ps.setString(5, gift.getVoiceUrl());
 
-            PreparedStatement ps =
-                    connection.prepareStatement(
-                            sql,
-                            Statement.RETURN_GENERATED_KEYS
-                    );
+                    return ps;
+                },
+                keyHolder
+        );
 
+        if (affectedRows == 0) {
+            throw new RuntimeException(
+                    "Không thể tạo Gift mới"
+            );
+        }
 
-            ps.setString(1, gift.getTitle());
+        Number generatedId =
+                keyHolder.getKey();
 
-            ps.setString(2, gift.getMessage());
+        if (generatedId == null) {
+            throw new RuntimeException(
+                    "Không lấy được ID của Gift vừa tạo"
+            );
+        }
 
-            ps.setString(3, gift.getVoiceUrl());
-
-
-
-            return ps;
-
-        }, keyHolder);
-
-
-
-        return keyHolder.getKey().longValue();
+        return generatedId.longValue();
     }
 
 
-
-
-
-    // =========================================
+    // ==================================================
     // UPDATE GIFT
-    // =========================================
+    // ==================================================
+
     public void updateGift(Gift gift) {
 
+        if (gift == null || gift.getId() == null) {
+            throw new IllegalArgumentException(
+                    "Gift hoặc Gift ID không hợp lệ"
+            );
+        }
 
         String sql = """
                 UPDATE gift
                 SET
+                    uid = ?,
                     title = ?,
+                    theme = ?,
                     message = ?,
                     voice_url = ?
                 WHERE id = ?
                 """;
 
-
-        jdbcTemplate.update(
+        int affectedRows = jdbcTemplate.update(
                 sql,
-
+                gift.getUid(),
                 gift.getTitle(),
-
+                gift.getTheme(),
                 gift.getMessage(),
-
                 gift.getVoiceUrl(),
-
                 gift.getId()
         );
 
+        if (affectedRows == 0) {
+            throw new RuntimeException(
+                    "Không tìm thấy Gift ID: " + gift.getId()
+            );
+        }
     }
 
 
+    // ==================================================
+    // FIND GIFT BY UID
+    // ==================================================
 
+    public Gift findByUid(String uid) {
 
-
-    // =========================================
-    // INSERT IMAGE
-    // =========================================
-    public void insertImage(Long giftId, String imageUrl) {
-
-
-        String sql = """
-                INSERT INTO gift_image(gift_id, image_url)
-                VALUES(?, ?)
-                """;
-
-
-        jdbcTemplate.update(
-                sql,
-                giftId,
-                imageUrl
-        );
-
-    }
-
-
-
-
-
-    // =========================================
-    // FIND GIFT BY ID
-    // =========================================
-    public Gift findById(Long id) {
-
+        if (uid == null || uid.isBlank()) {
+            return null;
+        }
 
         String sql = """
                 SELECT
                     id,
+                    uid,
                     title,
+                    theme,
+                    message,
+                    voice_url
+                FROM gift
+                WHERE uid = ?
+                """;
+
+        List<Gift> gifts = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> mapGift(rs),
+                uid
+        );
+
+        if (gifts.isEmpty()) {
+            return null;
+        }
+
+        Gift gift = gifts.get(0);
+
+        gift.setImages(
+                findImagesByGiftId(gift.getId())
+        );
+
+        return gift;
+    }
+
+
+    // ==================================================
+    // FIND GIFT BY ID
+    // ==================================================
+
+    public Gift findById(Long id) {
+
+        if (id == null) {
+            return null;
+        }
+
+        String sql = """
+                SELECT
+                    id,
+                    uid,
+                    title,
+                    theme,
                     message,
                     voice_url
                 FROM gift
                 WHERE id = ?
                 """;
 
-
-
-        List<Gift> list = jdbcTemplate.query(
-
+        List<Gift> gifts = jdbcTemplate.query(
                 sql,
-
-                (rs, rowNum) -> {
-
-
-                    Gift gift = new Gift();
-
-
-                    gift.setId(
-                            rs.getLong("id")
-                    );
-
-
-                    gift.setTitle(
-                            rs.getString("title")
-                    );
-
-
-                    gift.setMessage(
-                            rs.getString("message")
-                    );
-
-
-                    gift.setVoiceUrl(
-                            rs.getString("voice_url")
-                    );
-
-
-
-                    return gift;
-
-                },
-
+                (rs, rowNum) -> mapGift(rs),
                 id
         );
 
-
-
-        if(list.isEmpty()){
+        if (gifts.isEmpty()) {
             return null;
         }
 
-
-
-        Gift gift = list.get(0);
-
-
+        Gift gift = gifts.get(0);
 
         gift.setImages(
-                findImagesByGiftId(id)
+                findImagesByGiftId(gift.getId())
         );
 
-
-
         return gift;
-
     }
 
 
+    // ==================================================
+    // MAP RESULTSET TO GIFT
+    // ==================================================
+
+    private Gift mapGift(java.sql.ResultSet rs)
+            throws java.sql.SQLException {
+
+        Gift gift = new Gift();
+
+        gift.setId(
+                rs.getLong("id")
+        );
+
+        gift.setUid(
+                rs.getString("uid")
+        );
+
+        gift.setTitle(
+                rs.getString("title")
+        );
+
+        gift.setTheme(
+                rs.getString("theme")
+        );
+
+        gift.setMessage(
+                rs.getString("message")
+        );
+
+        gift.setVoiceUrl(
+                rs.getString("voice_url")
+        );
+
+        return gift;
+    }
 
 
+    // ==================================================
+    // INSERT IMAGE
+    // ==================================================
 
-    // =========================================
-    // FIND IMAGES
-    // =========================================
-    public List<GiftImage> findImagesByGiftId(Long giftId) {
+    public Long insertImage(
+            Long giftId,
+            String imageUrl
+    ) {
 
+        if (giftId == null) {
+            throw new IllegalArgumentException(
+                    "Gift ID không được để trống"
+            );
+        }
+
+        if (imageUrl == null || imageUrl.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Image URL không được để trống"
+            );
+        }
+
+        String sql = """
+                INSERT INTO gift_image (
+                    gift_id,
+                    image_url
+                )
+                VALUES (?, ?)
+                """;
+
+        KeyHolder keyHolder =
+                new GeneratedKeyHolder();
+
+        int affectedRows = jdbcTemplate.update(
+                connection -> {
+
+                    PreparedStatement ps =
+                            connection.prepareStatement(
+                                    sql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            );
+
+                    ps.setLong(1, giftId);
+                    ps.setString(2, imageUrl);
+
+                    return ps;
+                },
+                keyHolder
+        );
+
+        if (affectedRows == 0) {
+            throw new RuntimeException(
+                    "Không thể thêm ảnh vào Gift ID: " + giftId
+            );
+        }
+
+        Number generatedId =
+                keyHolder.getKey();
+
+        return generatedId == null
+                ? null
+                : generatedId.longValue();
+    }
+
+
+    // ==================================================
+    // FIND IMAGES BY GIFT ID
+    // ==================================================
+
+    public List<GiftImage> findImagesByGiftId(
+            Long giftId
+    ) {
+
+        if (giftId == null) {
+            return List.of();
+        }
 
         String sql = """
                 SELECT
@@ -220,59 +338,50 @@ public class GiftRepository {
                     image_url
                 FROM gift_image
                 WHERE gift_id = ?
-                ORDER BY id
+                ORDER BY id ASC
                 """;
 
-
-
         return jdbcTemplate.query(
-
                 sql,
+                (rs, rowNum) -> {
 
-
-                (rs,rowNum)->{
-
-
-                    GiftImage image = new GiftImage();
-
+                    GiftImage image =
+                            new GiftImage();
 
                     image.setId(
                             rs.getLong("id")
                     );
 
-
                     image.setGiftId(
                             rs.getLong("gift_id")
                     );
-
 
                     image.setImageUrl(
                             rs.getString("image_url")
                     );
 
-
                     return image;
-
                 },
-
-
                 giftId
         );
-
     }
 
 
+    // ==================================================
+    // DELETE IMAGE BY URL
+    // ==================================================
 
-
-
-    // =========================================
-    // DELETE IMAGE
-    // =========================================
-    public void deleteImageByUrl(
+    public int deleteImageByUrl(
             Long giftId,
             String imageUrl
-    ){
+    ) {
 
+        if (giftId == null ||
+                imageUrl == null ||
+                imageUrl.isBlank()) {
+
+            return 0;
+        }
 
         String sql = """
                 DELETE FROM gift_image
@@ -280,34 +389,49 @@ public class GiftRepository {
                 AND image_url = ?
                 """;
 
-
-        jdbcTemplate.update(
+        return jdbcTemplate.update(
                 sql,
                 giftId,
                 imageUrl
         );
-
     }
 
 
+    // ==================================================
+    // DELETE ALL IMAGES BY GIFT ID
+    // ==================================================
 
+    public int deleteImagesByGiftId(
+            Long giftId
+    ) {
 
+        if (giftId == null) {
+            return 0;
+        }
 
-    // =========================================
-    // DELETE GIFT
-    // =========================================
-    public void deleteGift(Long id) {
-
-
-        jdbcTemplate.update(
-                """
+        String sql = """
                 DELETE FROM gift_image
                 WHERE gift_id = ?
-                """,
-                id
+                """;
+
+        return jdbcTemplate.update(
+                sql,
+                giftId
         );
+    }
 
 
+    // ==================================================
+    // DELETE GIFT
+    // ==================================================
+
+    public void deleteGift(Long id) {
+
+        if (id == null) {
+            return;
+        }
+
+        deleteImagesByGiftId(id);
 
         jdbcTemplate.update(
                 """
@@ -316,7 +440,5 @@ public class GiftRepository {
                 """,
                 id
         );
-
     }
-
 }

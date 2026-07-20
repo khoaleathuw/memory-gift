@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Memory Booth</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+
+        :root {
+            --sakura-bg-1: #fff6f8;
+            --sakura-bg-2: #ffe9ef;
+            --sakura-bg-3: #ffd6e2;
+            --sakura-mid: #ffc4d6;
+            --sakura-accent: #ff8fab;
+            --sakura-deep: #ff6f91;
+            --sakura-gold: #fff0e6;
+            --ink: #5a3346;
+            --ink-soft: #a9788c;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+
+            background:
+                    radial-gradient(
+                            ellipse 70% 40% at 78% 6%,
+                            rgba(255, 240, 230, 0.55),
+                            transparent 60%
+                    ),
+                    radial-gradient(
+                            ellipse 120% 60% at 50% -10%,
+                            rgba(255, 143, 171, 0.18),
+                            transparent 60%
+                    ),
+                    radial-gradient(
+                            ellipse 90% 50% at 50% 110%,
+                            rgba(255, 214, 226, 0.65),
+                            transparent 60%
+                    ),
+                    linear-gradient(
+                            180deg,
+                            var(--sakura-bg-1),
+                            var(--sakura-bg-2) 60%,
+                            var(--sakura-mid)
+                    );
+
+            color: var(--ink);
+            font-family: Arial, Helvetica, sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.locked {
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* =========================================
+           PETAL FIELD
+        ========================================= */
+
+        .petal-field {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -40px;
+            opacity: 0;
+            filter:
+                    drop-shadow(
+                            0 2px 3px rgba(255, 111, 145, 0.2)
+                    );
+
+            animation:
+                    petalFall linear infinite;
+        }
+
+        @keyframes petalFall {
+            0% {
+                opacity: 0;
+                transform:
+                        translate3d(0, -5vh, 0)
+                        rotate(0deg);
+            }
+
+            10% {
+                opacity: 0.85;
+            }
+
+            90% {
+                opacity: 0.65;
+            }
+
+            100% {
+                opacity: 0;
+                transform:
+                        translate3d(
+                                var(--drift, 60px),
+                                110vh,
+                                0
+                        )
+                        rotate(360deg);
+            }
+        }
+
+        /* =========================================
+           CURTAIN INTRO
+        ========================================= */
+
+        .curtain-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            pointer-events: none;
+        }
+
+        .curtain-panel {
+            flex: 1;
+
+            background:
+                    linear-gradient(
+                            160deg,
+                            var(--sakura-mid) 0%,
+                            var(--sakura-bg-2) 55%,
+                            var(--sakura-bg-1) 100%
+                    );
+
+            box-shadow:
+                    inset 0 0 140px
+                    rgba(255, 143, 171, 0.15);
+
+            transition:
+                    transform 1.15s
+                    cubic-bezier(.76, 0, .15, 1);
+
+            position: relative;
+            overflow: hidden;
+        }
+
+        .curtain-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background-image:
+                    radial-gradient(
+                            circle,
+                            rgba(255, 143, 171, 0.35) 1px,
+                            transparent 1.4px
+                    );
+
+            background-size: 38px 46px;
+            opacity: 0.35;
+        }
+
+        .curtain-left {
+            transform-origin: left center;
+        }
+
+        .curtain-right {
+            transform-origin: right center;
+        }
+
+        body.opened .curtain-left {
+            transform: translateX(-101%);
+        }
+
+        body.opened .curtain-right {
+            transform: translateX(101%);
+        }
+
+        .curtain-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+
+            transform:
+                    translate(-50%, -50%);
+
+            font-weight: 800;
+            font-style: italic;
+            font-size: clamp(38px, 9vw, 78px);
+            letter-spacing: 3px;
+
+            color: var(--sakura-deep);
+
+            text-shadow:
+                    0 0 30px
+                    rgba(255, 143, 171, 0.45);
+
+            white-space: nowrap;
+            z-index: 2;
+
+            transition:
+                    opacity 0.5s ease 0.05s;
+        }
+
+        body.opened .curtain-mark {
+            opacity: 0;
+        }
+
+        .flash-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+
+            background: #fff8fa;
+
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body.opened .flash-overlay {
+            animation:
+                    flashPulse 0.7s ease-out
+                    0.95s forwards;
+        }
+
+        @keyframes flashPulse {
+            0% {
+                opacity: 0;
+            }
+
+            12% {
+                opacity: 0.72;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* =========================================
+           SHELL
+        ========================================= */
+
+        .booth-shell {
+            width: min(100%, 480px);
+            min-height: 100vh;
+            min-height: 100dvh;
+
+            margin: 0 auto;
+
+            position: relative;
+            z-index: 1;
+
+            border-left:
+                    1px solid
+                    rgba(255, 143, 171, 0.2);
+
+            border-right:
+                    1px solid
+                    rgba(255, 143, 171, 0.2);
+
+            display: flex;
+            flex-direction: column;
+
+            opacity: 0;
+            transform: translateY(10px);
+
+            transition:
+                    opacity 0.7s ease 0.95s,
+                    transform 0.7s ease 0.95s;
+        }
+
+        body.opened .booth-shell {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #giftForm {
+            min-height: 100vh;
+            min-height: 100dvh;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =========================================
+           TOP BAR
+        ========================================= */
+
+        .booth-marquee {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+
+            padding:
+                    14px 16px 10px;
+
+            text-align: center;
+
+            background:
+                    linear-gradient(
+                            180deg,
+                            var(--sakura-bg-2),
+                            var(--sakura-bg-1) 95%
+                    );
+
+            border-bottom:
+                    1px solid
+                    rgba(255, 143, 171, 0.3);
+
+            box-shadow:
+                    0 4px 18px
+                    rgba(255, 143, 171, 0.15);
+        }
+
+        .bulbs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+
+            margin-bottom: 6px;
+        }
+
+        .bulb {
+            width: 5px;
+            height: 5px;
+
+            border-radius: 50%;
+
+            background:
+                    var(--sakura-accent);
+
+            box-shadow:
+                    0 0 6px
+                    rgba(255, 143, 171, 0.8);
+
+            animation:
+                    bulbPulse 2.4s
+                    ease-in-out infinite;
+        }
+
+        .bulb:nth-child(odd) {
+            animation-delay: 0.3s;
+        }
+
+        .bulb:nth-child(3n) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bulbPulse {
+            0%,
+            100% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.7);
+            }
+        }
+
+        .booth-marquee-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .booth-back,
+        .booth-share-top {
+            border: 0;
+            background: none;
+            cursor: pointer;
+
+            color: var(--ink);
+        }
+
+        .booth-back {
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 20px;
+            border-radius: 50%;
+        }
+
+        .booth-back:active {
+            background:
+                    rgba(255, 143, 171, 0.16);
+        }
+
+        .booth-share-top {
+            min-width: 50px;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            color: var(--sakura-deep);
+        }
+
+        .booth-title {
+            font-weight: 800;
+            font-style: italic;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .booth-title span {
+            color: var(--sakura-deep);
+        }
+
+        .booth-tagline {
+            margin-top: 4px;
+
+            font-size: 11px;
+            color: var(--ink-soft);
+        }
+
+        /* =========================================
+           LABEL
+        ========================================= */
+
+        .booth-label {
+            padding:
+                    20px 18px 8px;
+
+            color: var(--sakura-deep);
+
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+        }
+
+        /* =========================================
+           PHOTO GRID
+        ========================================= */
+
+        .filmstrip {
+            margin: 0 12px;
+            padding: 14px;
+
+            background:
+                    rgba(255, 255, 255, 0.58);
+
+            border:
+                    1px solid
+                    rgba(255, 143, 171, 0.3);
+
+            border-radius: 14px;
+
+            backdrop-filter:
+                    blur(3px);
+        }
+
+        #previewContainer {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(3, 1fr);
+
+            gap: 10px;
+        }
+
+        .img-item-wrap {
+            aspect-ratio: 1;
+
+            position: relative;
+
+            background: #fff;
+
+            padding:
+                    5px 5px 9px;
+
+            border-radius: 6px;
+
+            border:
+                    1px solid
+                    rgba(255, 143, 171, 0.3);
+
+            box-shadow:
+                    0 4px 12px
+                    rgba(255, 143, 171, 0.22);
+        }
+
+        .img-item-wrap img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+            display: block;
+
+            border-radius: 3px;
+        }
+
+        .img-item-wrap.rot1 {
+            transform: rotate(-3deg);
+        }
+
+        .img-item-wrap.rot2 {
+            transform: rotate(2deg);
+        }
+
+        .img-item-wrap.rot3 {
+            transform: rotate(-1.5deg);
+        }
+
+        .img-item-wrap.rot4 {
+            transform: rotate(3deg);
+        }
+
+        .img-item-wrap.rot5 {
+            transform: rotate(0deg);
+        }
+
+        .btn-remove {
+            position: absolute;
+
+            top: 5px;
+            right: 5px;
+
+            width: 24px;
+            height: 24px;
+
+            border: 0;
+            border-radius: 50%;
+
+            background:
+                    rgba(90, 51, 70, 0.76);
+
+            color: #fff;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #addBox {
+            aspect-ratio: 1;
+
+            border:
+                    1.5px dashed
+                    rgba(255, 143, 171, 0.55);
+
+            border-radius: 6px;
+
+            background:
+                    rgba(255, 255, 255, 0.42);
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            gap: 6px;
+
+            color: var(--sakura-deep);
+
+            font-size: 11px;
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        #addBox i {
+            font-size: 23px;
+        }
+
+        .filmstrip-hint {
+            text-align: center;
+
+            color: var(--ink-soft);
+
+            font-size: 11px;
+
+            padding:
+                    10px 18px 4px;
+        }
+
+        /* =========================================
+           MESSAGE
+        ========================================= */
+
+        .caption-card {
+            margin: 0 16px;
+
+            background:
+                    rgba(255, 255, 255, 0.65);
+
+            border:
+                    1px solid
+                    rgba(255, 143, 171, 0.25);
+
+            border-left:
+                    4px solid
+                    var(--sakura-accent);
+
+            border-radius: 12px;
+
+            padding:
+                    16px 18px;
+
+            box-shadow:
+                    0 6px 20px
+                    rgba(255, 143, 171, 0.18);
+        }
+
+        .caption-card textarea {
+            width: 100%;
+            min-height: 120px;
+
+            border: 0;
+            outline: 0;
+            resize: none;
+
+            background: transparent;
+
+            color: var(--ink);
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.45;
+        }
+
+        .caption-card textarea::placeholder {
+            color:
+                    rgba(90, 51, 70, 0.4);
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .booth-charcount {
+            text-align: right;
+
+            padding:
+                    5px 20px 0;
+
+            color: var(--ink-soft);
+
+            font-size: 10.5px;
+        }
+
+        /* =========================================
+           AUDIO
+        ========================================= */
+
+        .tape-unit {
+            margin:
+                    0 16px;
+
+            padding:
+                    16px;
+
+            border:
+                    1px solid
+                    rgba(255, 143, 171, 0.3);
+
+            border-radius: 14px;
+
+            background:
+                    rgba(255, 255, 255, 0.62);
+
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+        }
+
+        .tape-reels {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .reel {
+            width: 30px;
+            height: 30px;
+
+            border-radius: 50%;
+
+            background:
+                    radial-gradient(
+                            circle at 35% 30%,
+                            #fff,
+                            var(--sakura-accent) 58%,
+                            var(--sakura-deep)
+                    );
+
+            border:
+                    2px solid
+                    rgba(255, 255, 255, 0.65);
+        }
+
+        .reel.spin {
+            animation:
+                    reelSpin 1s linear infinite;
+        }
+
+        @keyframes reelSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .tape-controls {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tape-controls-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
+            gap: 10px;
+        }
+
+        #recordBtn,
+        .ig-file-label {
+            display: flex;
+            align-items: center;
+
+            gap: 7px;
+
+            border:
+                    1px solid
+                    rgba(255, 143, 171, 0.45);
+
+            border-radius: 22px;
+
+            padding:
+                    9px 14px;
+
+            background:
+                    rgba(255, 255, 255, 0.58);
+
+            color: var(--ink);
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        #recordBtn.recording {
+            border-color: #e05050;
+            color: #d83c52;
+
+            animation:
+                    recordingPulse 1.2s
+                    ease infinite;
+        }
+
+        @keyframes recordingPulse {
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        #recordStatus {
+            color: var(--ink-soft);
+            font-size: 11px;
+        }
+
+        #recordStatus.active {
+            color: #d83c52;
+        }
+
+        #audioInput {
+            display: none;
+        }
+
+        #audioPreview {
+            width: 100%;
+            height: 36px;
+
+            display: none;
+
+            margin-top: 12px;
+        }
+
+        /* =========================================
+           SUBMIT
+        ========================================= */
+
+        .shutter-wrap {
+            margin-top: auto;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            gap: 10px;
+
+            padding:
+                    34px 16px 40px;
+        }
+
+        .shutter-btn {
+            width: 88px;
+            height: 88px;
+
+            border-radius: 50%;
+
+            border:
+                    4px solid
+                    rgba(255, 255, 255, 0.72);
+
+            background:
+                    radial-gradient(
+                            circle at 35% 30%,
+                            #fff,
+                            var(--sakura-accent) 55%,
+                            var(--sakura-deep) 100%
+                    );
+
+            box-shadow:
+                    0 0 0 6px
+                    rgba(255, 143, 171, 0.12),
+                    0 8px 26px
+                    rgba(255, 143, 171, 0.35);
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            gap: 2px;
+
+            color: #fff;
+
+            cursor: pointer;
+
+            transition:
+                    transform 0.12s,
+                    box-shadow 0.2s;
+        }
+
+        .shutter-btn:active {
+            transform: scale(0.94);
+        }
+
+        .shutter-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .shutter-btn i {
+            font-size: 24px;
+        }
+
+        .shutter-btn span {
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .shutter-btn.done {
+            background:
+                    radial-gradient(
+                            circle at 35% 30%,
+                            #a8efd7,
+                            #53c4a2 60%,
+                            #239476 100%
+                    );
+        }
+
+        .shutter-caption {
+            color: var(--ink-soft);
+
+            font-size: 13px;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        
+/* =========================================
+   EXTRA WHITE–PINK AMBIENT EFFECTS
+========================================= */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.72;
+}
+
+body::before {
+    width: 260px;
+    height: 260px;
+    top: 8%;
+    left: -110px;
+    background:
+        radial-gradient(circle at 35% 35%,
+            rgba(255,255,255,0.95) 0 18%,
+            rgba(255,190,211,0.42) 42%,
+            transparent 72%);
+    animation: pinkOrbLeft 10s ease-in-out infinite alternate;
+}
+
+body::after {
+    width: 310px;
+    height: 310px;
+    right: -145px;
+    bottom: 5%;
+    background:
+        radial-gradient(circle at 45% 40%,
+            rgba(255,255,255,0.92) 0 16%,
+            rgba(255,143,171,0.34) 40%,
+            transparent 72%);
+    animation: pinkOrbRight 12s ease-in-out infinite alternate;
+}
+
+@keyframes pinkOrbLeft {
+    from { transform: translate3d(0, 0, 0) scale(0.94); }
+    to   { transform: translate3d(42px, 55px, 0) scale(1.08); }
+}
+
+@keyframes pinkOrbRight {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(-48px, -38px, 0) scale(1.1); }
+}
+
+.booth-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(255,143,171,.35) 0 1px, transparent 1.7px);
+    background-size: 54px 54px, 76px 76px;
+    background-position: 0 0, 20px 30px;
+    opacity: .42;
+    animation: pinkSparkleDrift 18s linear infinite;
+}
+
+@keyframes pinkSparkleDrift {
+    from { background-position: 0 0, 20px 30px; }
+    to   { background-position: 54px 108px, -56px 106px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration:
+                        0.01ms !important;
+
+                animation-iteration-count:
+                        1 !important;
+
+                transition-duration:
+                        0.01ms !important;
+            }
+        }
+
+    
+/* FORCE ARIAL */
+html,body,button,input,textarea,select,option,label,
+h1,h2,h3,h4,h5,h6,p,span,div,a,small,strong,em{
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+</style>
+</head>
+
+<body class="locked">
+
+<div class="petal-field"
+     id="petalField"
+     aria-hidden="true">
+</div>
+
+<div class="curtain-stage"
+     aria-hidden="true">
+
+    <div class="curtain-panel curtain-left"></div>
+
+    <div class="curtain-mark">
+        MEMORY BOOTH
+    </div>
+
+    <div class="curtain-panel curtain-right"></div>
+
+</div>
+
+<div class="flash-overlay"
+     aria-hidden="true">
+</div>
+
+
+<div class="booth-shell">
+
+    <form id="giftForm">
+
+        <!-- UID được Controller truyền qua model -->
+        <input type="hidden"
+               id="uid"
+               th:value="${nfcUid}">
+
+        <!-- Nếu Controller đang truyền gift.uid thì dùng dòng này thay dòng trên -->
+        <!--
+        <input type="hidden"
+               id="uid"
+               th:value="${gift.uid}">
+        -->
+
+
+        <!-- =========================================
+             TOP BAR
+        ========================================== -->
+
+        <div class="booth-marquee">
+
+            <div class="bulbs">
+
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+                <span class="bulb"></span>
+
+            </div>
+
+            <div class="booth-marquee-row">
+
+                <button class="booth-back"
+                        type="button"
+                        onclick="history.back()">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                </button>
+
+
+                <span class="booth-title">
+
+                    MEMORY
+                    <span>BOOTH</span>
+
+                </span>
+
+
+                <button class="booth-share-top"
+                        type="button"
+                        id="topSubmitBtn">
+
+                    Lưu
+
+                </button>
+
+            </div>
+
+
+            <div class="booth-tagline">
+
+                — bước vào, cười lên, lưu lại khoảnh khắc —
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             IMAGE
+        ========================================== -->
+
+        <input type="file"
+               id="imageInput"
+               accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.avif"
+               multiple
+               hidden>
+
+
+        <div class="booth-label">
+
+            Cuộn phim của bạn
+
+        </div>
+
+
+        <div class="filmstrip">
+
+            <div id="previewContainer">
+
+                <div id="addBox"
+                     role="button"
+                     tabindex="0">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    <span>THÊM ẢNH</span>
+
+                </div>
+
+            </div>
+
+            <div class="filmstrip-hint">
+
+                tối đa 9 tấm — chạm dấu × để gỡ ảnh
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             MESSAGE
+        ========================================== -->
+
+        <div class="booth-label">
+
+            Viết sau tấm ảnh
+
+        </div>
+
+
+        <div class="caption-card">
+
+            <textarea id="message"
+                      placeholder="Viết vài dòng lưu niệm…"
+                      maxlength="2200"></textarea>
+
+        </div>
+
+
+        <div class="booth-charcount">
+
+            <span id="cCount">0</span>
+            / 2.200
+
+        </div>
+
+
+        <!-- =========================================
+             AUDIO
+        ========================================== -->
+
+        <div class="booth-label">
+
+            Ghi âm một lời nhắn
+
+        </div>
+
+
+        <div class="tape-unit">
+
+            <div class="tape-reels">
+
+                <div class="reel"
+                     id="reelL">
+                </div>
+
+                <div class="reel"
+                     id="reelR">
+                </div>
+
+            </div>
+
+
+            <div class="tape-controls">
+
+                <div class="tape-controls-row">
+
+                    <button type="button"
+                            id="recordBtn">
+
+                        <i class="bi bi-mic"></i>
+
+                        <span id="recordLabel">
+
+                            Ghi âm
+
+                        </span>
+
+                    </button>
+
+
+                    <label class="ig-file-label"
+                           for="audioInput">
+
+                        <i class="bi bi-upload"></i>
+
+                        Tải lên
+
+                    </label>
+
+
+                    <span id="recordStatus"></span>
+
+                </div>
+
+
+                <input type="file"
+                       id="audioInput"
+                       accept="audio/*">
+
+
+                <audio id="audioPreview"
+                       controls>
+                </audio>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             SUBMIT
+        ========================================== -->
+
+        <div class="shutter-wrap">
+
+            <button type="submit"
+                    class="shutter-btn"
+                    id="shareBtn">
+
+                <i class="bi bi-camera-fill"
+                   id="shareIco">
+                </i>
+
+                <span id="shareLbl">
+
+                    LƯU QUÀ
+
+                </span>
+
+            </button>
+
+
+            <div class="shutter-caption">
+
+                nhấn nút để lưu khoảnh khắc
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    /* =========================================
+       STATE
+    ========================================= */
+
+    let selectedImages = [];
+
+    let audioFile = null;
+
+    let mediaRecorder = null;
+
+    let recordedChunks = [];
+
+    let microphoneStream = null;
+
+    let isSaving = false;
+
+    let audioObjectUrl = null;
+
+
+    const rotationClasses = [
+        "rot1",
+        "rot2",
+        "rot3",
+        "rot4",
+        "rot5"
+    ];
+
+
+    /* =========================================
+       ELEMENTS
+    ========================================= */
+
+    const giftForm =
+        document.getElementById("giftForm");
+
+    const uidInput =
+        document.getElementById("uid");
+
+    const imageInput =
+        document.getElementById("imageInput");
+
+    const previewContainer =
+        document.getElementById("previewContainer");
+
+    const addBox =
+        document.getElementById("addBox");
+
+    const messageInput =
+        document.getElementById("message");
+
+    const countElement =
+        document.getElementById("cCount");
+
+    const audioInput =
+        document.getElementById("audioInput");
+
+    const audioPreview =
+        document.getElementById("audioPreview");
+
+    const recordBtn =
+        document.getElementById("recordBtn");
+
+    const recordLabel =
+        document.getElementById("recordLabel");
+
+    const recordStatus =
+        document.getElementById("recordStatus");
+
+    const reelL =
+        document.getElementById("reelL");
+
+    const reelR =
+        document.getElementById("reelR");
+
+    const shareBtn =
+        document.getElementById("shareBtn");
+
+    const shareLabel =
+        document.getElementById("shareLbl");
+
+    const shareIcon =
+        document.getElementById("shareIco");
+
+    const topSubmitBtn =
+        document.getElementById("topSubmitBtn");
+
+
+    /* =========================================
+       PETALS
+    ========================================= */
+
+    (function createPetals() {
+
+        const field =
+            document.getElementById("petalField");
+
+        const reducedMotion =
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        const totalPetals =
+            reducedMotion ? 12 : 34;
+
+
+        for (
+            let index = 0;
+            index < totalPetals;
+            index++
+        ) {
+
+            const petal =
+                document.createElement("span");
+
+            petal.className =
+                "petal";
+
+            petal.textContent =
+                Math.random() > 0.35
+                    ? "🌸"
+                    : "·";
+
+
+            petal.style.left =
+                Math.random() * 100 + "vw";
+
+            petal.style.fontSize =
+                8 + Math.random() * 11 + "px";
+
+            petal.style.setProperty(
+                "--drift",
+                -80 + Math.random() * 160 + "px"
+            );
+
+            petal.style.animationDuration =
+                7 + Math.random() * 9 + "s";
+
+            petal.style.animationDelay =
+                Math.random() * 10 + "s";
+
+
+            field.appendChild(petal);
+        }
+
+    })();
+
+
+    /* =========================================
+       INTRO
+    ========================================= */
+
+    (function openCurtain() {
+
+        const reducedMotion =
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        const openPage = () => {
+
+            document.body
+                .classList
+                .add("opened");
+
+            document.body
+                .classList
+                .remove("locked");
+        };
+
+
+        if (reducedMotion) {
+
+            openPage();
+
+            return;
+        }
+
+
+        window.addEventListener(
+            "load",
+            () => {
+
+                setTimeout(
+                    openPage,
+                    350
+                );
+
+            }
+        );
+
+    })();
+
+
+    /* =========================================
+       UID
+    ========================================= */
+
+    function getUid() {
+
+        const thymeleafUid =
+            uidInput?.value?.trim();
+
+
+        if (thymeleafUid) {
+
+            return thymeleafUid;
+        }
+
+
+        /*
+         * Fallback cho trường hợp mở:
+         * /index?uid=ABC123
+         */
+
+        const queryUid =
+            new URLSearchParams(
+                window.location.search
+            )
+                .get("uid")
+                ?.trim();
+
+
+        return queryUid || "";
+    }
+
+
+    const uid =
+        getUid();
+
+
+    if (!uid) {
+
+        console.error(
+            "Không tìm thấy UID NFC."
+        );
+
+        alert(
+            "Không tìm thấy UID NFC. Kiểm tra lại Controller có truyền nfcUid hay không."
+        );
+
+        shareBtn.disabled = true;
+
+        topSubmitBtn.disabled = true;
+    }
+
+
+    /* =========================================
+       IMAGE
+    ========================================= */
+
+    addBox.addEventListener(
+        "click",
+        () => {
+
+            if (
+                selectedImages.length < 9
+            ) {
+
+                imageInput.click();
+            }
+
+        }
+    );
+
+
+    addBox.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" ||
+                event.key === " "
+            ) {
+
+                event.preventDefault();
+
+                imageInput.click();
+            }
+
+        }
+    );
+
+
+    imageInput.addEventListener(
+        "change",
+        function () {
+
+            const remainingSlots =
+                9 - selectedImages.length;
+
+
+            const files =
+                Array.from(this.files);
+
+
+            if (
+                files.length > remainingSlots
+            ) {
+
+                alert(
+                    "Bạn chỉ được chọn tối đa 9 ảnh."
+                );
+            }
+
+
+            files
+                .slice(0, remainingSlots)
+                .forEach(addNewImage);
+
+
+            this.value = "";
+        }
+    );
+
+
+    function addNewImage(file) {
+
+        if (
+            !file.type.startsWith("image/")
+        ) {
+
+            return;
+        }
+
+
+        selectedImages.push(file);
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            event => {
+
+                const wrapper =
+                    document.createElement("div");
+
+
+                const randomRotation =
+                    rotationClasses[
+                        Math.floor(
+                            Math.random() *
+                            rotationClasses.length
+                        )
+                    ];
+
+
+                wrapper.className =
+                    "img-item-wrap " +
+                    randomRotation;
+
+
+                const image =
+                    document.createElement("img");
+
+                image.src =
+                    event.target.result;
+
+                image.alt =
+                    "Ảnh đã chọn";
+
+
+                const removeButton =
+                    document.createElement("button");
+
+                removeButton.type =
+                    "button";
+
+                removeButton.className =
+                    "btn-remove";
+
+                removeButton.setAttribute(
+                    "aria-label",
+                    "Xóa ảnh"
+                );
+
+                removeButton.innerHTML =
+                    '<i class="bi bi-x"></i>';
+
+
+                removeButton.addEventListener(
+                    "click",
+                    () => {
+
+                        const fileIndex =
+                            selectedImages
+                                .indexOf(file);
+
+
+                        if (
+                            fileIndex !== -1
+                        ) {
+
+                            selectedImages.splice(
+                                fileIndex,
+                                1
+                            );
+                        }
+
+
+                        wrapper.remove();
+
+                        updateImageLayout();
+                    }
+                );
+
+
+                wrapper.appendChild(image);
+
+                wrapper.appendChild(
+                    removeButton
+                );
+
+
+                previewContainer.insertBefore(
+                    wrapper,
+                    addBox
+                );
+
+
+                updateImageLayout();
+            };
+
+
+        reader.onerror =
+            () => {
+
+                const fileIndex =
+                    selectedImages
+                        .indexOf(file);
+
+
+                if (
+                    fileIndex !== -1
+                ) {
+
+                    selectedImages.splice(
+                        fileIndex,
+                        1
+                    );
+                }
+
+
+                alert(
+                    "Không thể đọc ảnh: " +
+                    file.name
+                );
+            };
+
+
+        reader.readAsDataURL(file);
+    }
+
+
+    function updateImageLayout() {
+
+        addBox.style.display =
+            selectedImages.length >= 9
+                ? "none"
+                : "flex";
+    }
+
+
+    /* =========================================
+       MESSAGE COUNT
+    ========================================= */
+
+    messageInput.addEventListener(
+        "input",
+        () => {
+
+            countElement.textContent =
+                messageInput.value.length;
+        }
+    );
+
+
+    /* =========================================
+       AUDIO HELPERS
+    ========================================= */
+
+    function stopMicrophoneTracks() {
+
+        if (microphoneStream) {
+
+            microphoneStream
+                .getTracks()
+                .forEach(track => {
+
+                    track.stop();
+                });
+
+
+            microphoneStream =
+                null;
+        }
+
+
+        reelL.classList.remove(
+            "spin"
+        );
+
+        reelR.classList.remove(
+            "spin"
+        );
+    }
+
+
+    function revokeOldAudioUrl() {
+
+        if (audioObjectUrl) {
+
+            URL.revokeObjectURL(
+                audioObjectUrl
+            );
+
+            audioObjectUrl =
+                null;
+        }
+    }
+
+
+    function showAudioPreview(file) {
+
+        revokeOldAudioUrl();
+
+
+        audioObjectUrl =
+            URL.createObjectURL(file);
+
+
+        audioPreview.src =
+            audioObjectUrl;
+
+        audioPreview.style.display =
+            "block";
+    }
+
+
+    /* =========================================
+       AUDIO UPLOAD
+    ========================================= */
+
+    audioInput.addEventListener(
+        "change",
+        function () {
+
+            if (
+                !this.files.length
+            ) {
+
+                return;
+            }
+
+
+            /*
+             * Nếu đang ghi thì dừng ghi trước.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                mediaRecorder.stop();
+            }
+
+
+            stopMicrophoneTracks();
+
+
+            audioFile =
+                this.files[0];
+
+
+            showAudioPreview(
+                audioFile
+            );
+
+
+            recordBtn.classList.remove(
+                "recording"
+            );
+
+            recordLabel.textContent =
+                "Ghi âm";
+
+            recordBtn
+                .querySelector("i")
+                .className =
+                "bi bi-mic";
+
+            recordStatus.textContent =
+                "Đã chọn file";
+
+            recordStatus.className =
+                "";
+        }
+    );
+
+
+    /* =========================================
+       AUDIO RECORD
+    ========================================= */
+
+    recordBtn.addEventListener(
+        "click",
+        async () => {
+
+            if (
+                !navigator.mediaDevices
+                ?.getUserMedia
+            ) {
+
+                alert(
+                    "Trình duyệt hoặc thiết bị không hỗ trợ microphone."
+                );
+
+                return;
+            }
+
+
+            /*
+             * Bấm lần nữa để dừng ghi.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                mediaRecorder.stop();
+
+                return;
+            }
+
+
+            try {
+
+                microphoneStream =
+                    await navigator
+                        .mediaDevices
+                        .getUserMedia({
+                            audio: true
+                        });
+
+
+                recordedChunks =
+                    [];
+
+
+                const mimeType =
+                    selectSupportedMimeType();
+
+
+                mediaRecorder =
+                    mimeType
+                        ? new MediaRecorder(
+                            microphoneStream,
+                            {
+                                mimeType
+                            }
+                        )
+                        : new MediaRecorder(
+                            microphoneStream
+                        );
+
+
+                mediaRecorder
+                    .addEventListener(
+                        "dataavailable",
+                        event => {
+
+                            if (
+                                event.data &&
+                                event.data.size > 0
+                            ) {
+
+                                recordedChunks.push(
+                                    event.data
+                                );
+                            }
+
+                        }
+                    );
+
+
+                mediaRecorder
+                    .addEventListener(
+                        "stop",
+                        () => {
+
+                            const realType =
+                                mediaRecorder.mimeType ||
+                                mimeType ||
+                                "audio/webm";
+
+
+                            const audioBlob =
+                                new Blob(
+                                    recordedChunks,
+                                    {
+                                        type:
+                                            realType
+                                    }
+                                );
+
+
+                            const extension =
+                                realType.includes("mp4")
+                                    ? "m4a"
+                                    : realType.includes("ogg")
+                                        ? "ogg"
+                                        : "webm";
+
+
+                            audioFile =
+                                new File(
+                                    [audioBlob],
+                                    "voice." +
+                                    extension,
+                                    {
+                                        type:
+                                            realType
+                                    }
+                                );
+
+
+                            showAudioPreview(
+                                audioFile
+                            );
+
+
+                            stopMicrophoneTracks();
+
+
+                            recordBtn
+                                .classList
+                                .remove(
+                                    "recording"
+                                );
+
+
+                            recordLabel.textContent =
+                                "Ghi âm";
+
+
+                            recordBtn
+                                .querySelector("i")
+                                .className =
+                                "bi bi-mic";
+
+
+                            recordStatus.textContent =
+                                "Đã ghi xong";
+
+
+                            recordStatus.className =
+                                "";
+                        }
+                    );
+
+
+                mediaRecorder.start();
+
+
+                recordBtn.classList.add(
+                    "recording"
+                );
+
+
+                recordLabel.textContent =
+                    "Dừng";
+
+
+                recordBtn
+                    .querySelector("i")
+                    .className =
+                    "bi bi-stop-fill";
+
+
+                recordStatus.textContent =
+                    "Đang ghi…";
+
+
+                recordStatus.className =
+                    "active";
+
+
+                reelL.classList.add(
+                    "spin"
+                );
+
+                reelR.classList.add(
+                    "spin"
+                );
+
+            } catch (error) {
+
+                stopMicrophoneTracks();
+
+
+                console.error(error);
+
+
+                alert(
+                    "Không mở được microphone. Hãy cấp quyền micro cho trình duyệt."
+                );
+            }
+
+        }
+    );
+
+
+    function selectSupportedMimeType() {
+
+        const mimeTypes = [
+            "audio/mp4",
+            "audio/webm;codecs=opus",
+            "audio/webm",
+            "audio/ogg;codecs=opus"
+        ];
+
+
+        for (
+            const mimeType of mimeTypes
+        ) {
+
+            if (
+                MediaRecorder.isTypeSupported(
+                    mimeType
+                )
+            ) {
+
+                return mimeType;
+            }
+        }
+
+
+        return "";
+    }
+
+
+    /* =========================================
+       TOP SUBMIT
+    ========================================= */
+
+    topSubmitBtn.addEventListener(
+        "click",
+        () => {
+
+            giftForm.requestSubmit();
+        }
+    );
+
+
+    /* =========================================
+       FORM SUBMIT
+    ========================================= */
+
+    giftForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (
+                isSaving ||
+                !uid
+            ) {
+
+                return;
+            }
+
+
+            /*
+             * Nếu đang ghi âm mà bấm Lưu,
+             * dừng ghi và chờ file được tạo.
+             */
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state ===
+                "recording"
+            ) {
+
+                alert(
+                    "Hãy dừng ghi âm trước khi lưu."
+                );
+
+                return;
+            }
+
+
+            isSaving =
+                true;
+
+
+            setSavingState();
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "message",
+                messageInput.value
+            );
+
+
+            formData.append(
+                "theme",
+                "sakura"
+            );
+
+
+            selectedImages.forEach(
+                image => {
+
+                    formData.append(
+                        "images",
+                        image
+                    );
+                }
+            );
+
+
+            if (audioFile) {
+
+                formData.append(
+                    "audio",
+                    audioFile
+                );
+            }
+
+
+            const apiUrl =
+                    "/api/gift/save/" +
+                    encodeURIComponent(uid);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        apiUrl,
+                        {
+                            method:
+                                "POST",
+
+                            body:
+                                formData
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        responseText ||
+                        "Không thể lưu Gift."
+                    );
+                }
+
+
+                setSuccessState();
+
+
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                                "/gift/view/" +
+                                encodeURIComponent(uid);
+
+                    },
+                    700
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                alert(
+                    "Lỗi: " +
+                    error.message
+                );
+
+
+                resetSavingState();
+            }
+
+        }
+    );
+
+
+    function setSavingState() {
+
+        shareBtn.disabled =
+            true;
+
+        topSubmitBtn.disabled =
+            true;
+
+
+        shareLabel.textContent =
+            "ĐANG LƯU";
+
+
+        shareIcon.className =
+            "bi bi-hourglass-split";
+    }
+
+
+    function setSuccessState() {
+
+        shareBtn.classList.add(
+            "done"
+        );
+
+
+        shareLabel.textContent =
+            "ĐÃ LƯU";
+
+
+        shareIcon.className =
+            "bi bi-check-lg";
+    }
+
+
+    function resetSavingState() {
+
+        isSaving =
+            false;
+
+
+        shareBtn.disabled =
+            false;
+
+        topSubmitBtn.disabled =
+            false;
+
+
+        shareBtn.classList.remove(
+            "done"
+        );
+
+
+        shareLabel.textContent =
+            "LƯU QUÀ";
+
+
+        shareIcon.className =
+            "bi bi-camera-fill";
+    }
+
+
+    /*
+     * Dừng microphone khi người dùng rời trang.
+     */
+
+    window.addEventListener(
+        "beforeunload",
+        () => {
+
+            stopMicrophoneTracks();
+
+            revokeOldAudioUrl();
+        }
+    );
+
+</script>
+
+</body>
+</html>

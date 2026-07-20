@@ -9,167 +9,136 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/gift")
 @CrossOrigin("*")
 public class GiftController {
 
-
     private final GiftService giftService;
 
-
-    public GiftController(GiftService giftService){
-
+    public GiftController(GiftService giftService) {
         this.giftService = giftService;
-
     }
 
-
-
-    // =========================
-    // SAVE
-    // =========================
+    // ==================================================
+    // SAVE GIFT
+    // ==================================================
 
     @PostMapping("/save/{uid}")
     public ResponseEntity<?> saveGift(
 
             @PathVariable String uid,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
             String message,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
+            String theme,
+
+            @RequestParam(required = false)
             MultipartFile[] images,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
             MultipartFile audio
 
-    ){
+    ) {
 
         try {
 
-
-            Gift gift =
-                    giftService.saveGift(
-                            uid,
-                            null,
-                            message,
-                            images,
-                            audio
-                    );
-
+            Gift gift = giftService.saveGift(
+                    uid,
+                    theme,
+                    message,
+                    images,
+                    audio
+            );
 
             return ResponseEntity.ok(gift);
 
-
-        }catch(Exception e){
+        } catch (Exception e) {
 
             e.printStackTrace();
 
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
-
         }
-
     }
 
+    // ==================================================
+    // UPDATE GIFT BY UID
+    // ==================================================
 
-
-    // =========================
-    // UPDATE UID
-    // =========================
-
-    @PutMapping("/update/{uid}")
+    @PostMapping("/update/{uid}")
     public ResponseEntity<?> updateGift(
 
             @PathVariable String uid,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
+            String title,
+
+            @RequestParam(required = false)
             String message,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
+            String theme,
+
+            @RequestParam(required = false)
             MultipartFile[] images,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
             MultipartFile audio,
 
-            @RequestParam(defaultValue="false")
+            @RequestParam(defaultValue = "false")
             boolean removeOldAudio,
 
-            @RequestParam(required=false)
+            @RequestParam(required = false)
             List<String> deleteImages
 
-    ){
+    ) {
 
-        try{
+        try {
 
-
-            Gift gift =
-                    giftService.updateGiftByUid(
-
-                            uid,
-
-                            null,
-
-                            message,
-
-                            images,
-
-                            audio,
-
-                            removeOldAudio,
-
-                            deleteImages
-
-                    );
-
+            Gift gift = giftService.updateGiftByUid(
+                    uid,
+                    title,
+                    message,
+                    theme,
+                    images,
+                    audio,
+                    removeOldAudio,
+                    deleteImages
+            );
 
             return ResponseEntity.ok(gift);
 
-
-
-        }catch(Exception e){
+        } catch (Exception e) {
 
             e.printStackTrace();
 
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
-
         }
-
     }
 
-
-
-    // =========================
-    // GET UID
-    // =========================
+    // ==================================================
+    // GET GIFT BY UID
+    // ==================================================
 
     @GetMapping("/uid/{uid}")
     public ResponseEntity<?> getByUid(
-
             @PathVariable String uid
+    ) {
 
-    ){
+        Gift gift = giftService.getByUid(uid);
 
-
-        Gift gift =
-                giftService.getByUid(uid);
-
-
-
-        if(gift == null){
-
-            return ResponseEntity.notFound().build();
-
+        if (gift == null) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
-
         return ResponseEntity.ok(gift);
-
     }
-
 }

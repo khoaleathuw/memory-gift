@@ -26,6 +26,7 @@ public class GiftResponse {
     private List<String> images;
 
 
+    private String theme;
 
 
 
@@ -105,4 +106,11 @@ public class GiftResponse {
         this.images = images;
     }
 
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+}
 }

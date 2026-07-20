@@ -23,7 +23,8 @@ public class Gift {
 
 
     private List<GiftImage> images = new ArrayList<>();
-
+    
+    private String theme;
 
     public Gift() {
     }
@@ -34,13 +35,15 @@ public class Gift {
                 String uid,
                 String title,
                 String message,
-                String voiceUrl) {
+                String voiceUrl,
+                String theme) {
 
         this.id = id;
         this.uid = uid;
         this.title = title;
         this.message = message;
         this.voiceUrl = voiceUrl;
+        this.theme = theme;
 
     }
 
@@ -118,4 +121,11 @@ public class Gift {
 
     }
 
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
 }

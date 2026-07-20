@@ -21,7 +21,7 @@ public class GiftRequest {
 
     private MultipartFile audio;
 
-
+    private String theme;
 
     public GiftRequest() {
     }
@@ -86,4 +86,11 @@ public class GiftRequest {
         this.audio = audio;
     }
 
+    public String getTheme() {
+    return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+}
 }
