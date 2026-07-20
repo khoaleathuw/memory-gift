@@ -1,207 +1,1489 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chỉnh sửa Instagram Memory</title>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Memory Booth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" th:href="@{/css/gift.css}">
+
 <style>
 :root{
-  --ig-bg:#fafafa;--ig-card:#fff;--ig-line:#dbdbdb;--ig-text:#262626;
-  --ig-soft:#737373;--ig-blue:#0095f6;--ig-red:#ed4956;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body,button,input,textarea,label{font-family:Arial,Helvetica,sans-serif!important}
-body{background:var(--ig-bg);color:var(--ig-text);min-height:100vh}
-button{border:0;background:none;color:inherit;cursor:pointer}
-.ig-app{width:min(100%,470px);margin:0 auto;min-height:100vh;background:#fff;border-left:1px solid var(--ig-line);border-right:1px solid var(--ig-line)}
-.ig-topbar{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--ig-line);position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);z-index:30}
-.ig-logo{font-size:24px;font-weight:800;letter-spacing:-1px}
-.ig-logo span{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);-webkit-background-clip:text;background-clip:text;color:transparent}
-.icon-btn{font-size:24px;width:38px;height:38px;display:grid;place-items:center;border-radius:50%}
-.icon-btn:active{background:#f2f2f2}
-.story-strip{display:flex;gap:14px;overflow:auto;padding:14px 12px;border-bottom:1px solid var(--ig-line);scrollbar-width:none}
-.story-strip::-webkit-scrollbar{display:none}
-.story{min-width:72px;text-align:center;font-size:11px}
-.story-ring{width:66px;height:66px;padding:3px;border-radius:50%;margin:auto;background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf)}
-.story-ring>div{width:100%;height:100%;border-radius:50%;background:#fff;padding:3px}
-.story-ring img,.story-placeholder{width:100%;height:100%;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#fff3df,#ffc4d8);display:grid;place-items:center;font-size:24px}
-.story-name{margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.post{background:#fff;border-bottom:1px solid var(--ig-line)}
-.post-head{display:flex;align-items:center;padding:11px 12px;gap:10px}
-.avatar{width:34px;height:34px;border-radius:50%;padding:2px;background:linear-gradient(45deg,#feda75,#d62976,#4f5bd5)}
-.avatar-inner{width:100%;height:100%;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:16px}
-.post-user{font-size:13px;font-weight:700;flex:1}
-.post-meta{font-size:11px;color:var(--ig-soft);margin-top:2px}
-.media{position:relative;background:#efefef;overflow:hidden}
-.media-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-.media-track::-webkit-scrollbar{display:none}
-.slide{min-width:100%;aspect-ratio:1/1;scroll-snap-align:start;background:#eee;display:grid;place-items:center}
-.slide img{width:100%;height:100%;object-fit:cover;display:block}
-.media-empty{aspect-ratio:1/1;display:grid;place-items:center;color:var(--ig-soft);font-size:14px;background:linear-gradient(135deg,#f7f7f7,#ececec)}
-.dots{display:flex;justify-content:center;gap:4px;padding-top:8px}
-.dot{width:6px;height:6px;border-radius:50%;background:#c7c7c7}.dot.active{background:var(--ig-blue)}
-.actions{display:flex;align-items:center;padding:8px 10px 2px;gap:4px}
-.actions .icon-btn{font-size:25px}
-.actions .save{margin-left:auto}
-.liked{color:var(--ig-red)}
-.post-body{padding:0 14px 14px}
-.like-count{font-size:13px;font-weight:700;margin:6px 0}
-.caption{font-size:14px;line-height:1.4;white-space:pre-wrap}
-.caption strong{margin-right:5px}
-.comments-link{color:var(--ig-soft);font-size:13px;margin-top:7px;display:block}
-.comment-list{margin-top:8px;display:grid;gap:6px}
-.comment-item{font-size:13px;line-height:1.35}.comment-item strong{margin-right:5px}
-.comment-box{display:flex;align-items:center;gap:8px;margin-top:10px}
-.comment-box input{flex:1;border:0;outline:0;font-size:13px;padding:8px 0}
-.comment-box button{color:var(--ig-blue);font-size:13px;font-weight:700}
-.time{font-size:10px;text-transform:uppercase;color:var(--ig-soft);margin-top:10px}
-.section{padding:16px;border-bottom:1px solid var(--ig-line)}
-.section-title{font-size:14px;font-weight:700;margin-bottom:12px}
-.upload-zone{border:1px dashed #b8b8b8;border-radius:10px;padding:16px;text-align:center;color:var(--ig-soft)}
-.upload-zone i{font-size:30px;display:block;margin-bottom:7px}
-.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:12px}
-.preview-item{aspect-ratio:1;position:relative;background:#eee}
-.preview-item img{width:100%;height:100%;object-fit:cover}
-.remove{position:absolute;right:5px;top:5px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center}
-textarea{width:100%;min-height:110px;border:1px solid var(--ig-line);border-radius:10px;padding:12px;outline:none;resize:vertical;font-size:14px}
-.charcount{text-align:right;font-size:11px;color:var(--ig-soft);margin-top:5px}
-.audio-card{border:1px solid var(--ig-line);border-radius:10px;padding:12px;display:grid;gap:10px}
-.audio-actions{display:flex;gap:8px;flex-wrap:wrap}
-.pill{border:1px solid var(--ig-line);border-radius:999px;padding:9px 13px;font-size:13px;font-weight:700;display:flex;gap:7px;align-items:center}
-.primary{color:var(--ig-blue)}
-.savebar{position:sticky;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--ig-line);padding:12px 16px;z-index:20}
-.save-btn{width:100%;border-radius:9px;background:var(--ig-blue);color:#fff;padding:13px;font-size:15px;font-weight:700}
-.save-btn:disabled{opacity:.55}
-.hidden{display:none!important}
-.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);background:#262626;color:#fff;padding:10px 15px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:500px){.ig-app{border:0}}
+  /* ===== SAKURA THEME ===== */
+  --sakura-bg-1:#fff6f8;
+  --sakura-bg-2:#ffe9ef;
+  --sakura-bg-3:#ffd6e2;
+  --sakura-mid:#ffc4d6;
+  --sakura-accent:#ff8fab;
+  --sakura-accent-deep:#ff6f91;
+  --sakura-gold:#fff0e6;
+  --silver:#fff;
+  --lilac:var(--sakura-accent);
+  --ink:#5a3346;
+  --ink-soft:#a9788c;
+  --flash-white:#fff8fa;
 
-body.locked{overflow:hidden;height:100vh}
-.ig-curtain{
-  position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none;
+  /* kept for compatibility with old class names used below */
+  --night-deep:var(--sakura-bg-1);
+  --night-navy:var(--sakura-bg-2);
+  --night-mid:var(--sakura-bg-3);
+  --night-indigo:var(--sakura-accent-deep);
+  --star-white:#fff;
+  --star-soft:#ffd6e2;
+  --moon-glow:var(--sakura-gold);
 }
-.ig-curtain-panel{
-  flex:1;position:relative;overflow:hidden;
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html,body{height:100%;}
+
+body{
   background:
-    radial-gradient(circle at 25% 22%,rgba(255,255,255,.35),transparent 24%),
-    linear-gradient(160deg,#feda75 0%,#fa7e1e 24%,#d62976 52%,#962fbf 76%,#4f5bd5 100%);
+    radial-gradient(ellipse 70% 40% at 78% 6%, rgba(255,240,230,0.5), transparent 60%),
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(255,143,171,0.18), transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(255,214,226,0.6), transparent 60%),
+    linear-gradient(180deg, var(--sakura-bg-1), var(--sakura-bg-2) 60%, var(--sakura-mid));
+  background-size:100% 100%;
+  animation:bgBreathe 16s ease-in-out infinite;
+  min-height:100vh;
+  font-family:Arial, sans-serif;
+  color:var(--ink);
+  overflow-x:hidden;
+  padding-bottom:40px;
+  position:relative;
+}
+@keyframes bgBreathe{
+  0%,100%{ background-position:78% 6%, 50% -10%, 50% 110%, 0 0; }
+  50%{ background-position:74% 2%, 50% -4%, 50% 104%, 0 0; }
+}
+
+body.locked{overflow:hidden;height:100vh;}
+
+/* ============ PETAL FIELD (was star field) ============ */
+.leaf-field{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.star-twinkle{
+  position:absolute;border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 6px 1px rgba(255,180,200,0.6);
+  animation:twinkle ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{ opacity:.2; transform:scale(.7); }
+  50%{ opacity:.9; transform:scale(1.15); }
+}
+.leaf{
+  position:absolute;
+  font-size:14px;
+  opacity:0;
+  filter:drop-shadow(0 0 4px rgba(255,143,171,.35));
+  animation:leafFall linear infinite;
+}
+@keyframes leafFall{
+  0%{ transform:translate(0,-8vh) rotate(0deg); opacity:0; }
+  8%{ opacity:.85; }
+  92%{ opacity:.6; }
+  100%{ transform:translate(var(--drift,40px),112vh) rotate(160deg); opacity:0; }
+}
+.shooting-star{
+  position:absolute;
+  width:2px;height:2px;
+  background:#fff;
+  border-radius:50%;
+  box-shadow:0 0 8px 2px rgba(255,180,200,0.9);
+  opacity:0;
+  animation:shootAcross 5.5s ease-in infinite;
+}
+.shooting-star::before{
+  content:'';
+  position:absolute;top:50%;right:0;
+  width:90px;height:1px;
+  background:linear-gradient(90deg, rgba(255,180,200,0.9), transparent);
+  transform:translateY(-50%);
+}
+@keyframes shootAcross{
+  0%{ opacity:0; transform:translate(0,0); }
+  2%{ opacity:1; }
+  14%{ opacity:0; transform:translate(-260px,180px); }
+  100%{ opacity:0; }
+}
+
+/* ============ CURTAIN INTRO ============ */
+.curtain-stage{position:fixed;inset:0;z-index:9999;display:flex;pointer-events:none;}
+.curtain-panel{
+  flex:1;
+  background:
+    linear-gradient(160deg, var(--sakura-mid) 0%, var(--sakura-bg-2) 55%, var(--sakura-bg-1) 100%);
+  box-shadow:inset 0 0 140px rgba(255,143,171,0.15);
   transition:transform 1.15s cubic-bezier(.76,0,.15,1);
+  position:relative;
+  overflow:hidden;
 }
-.ig-curtain-panel::before{
-  content:"";position:absolute;inset:0;
-  background:
-    radial-gradient(circle,rgba(255,255,255,.28) 1px,transparent 1.5px);
-  background-size:34px 34px;
-  animation:igCurtainSparkle 8s linear infinite;
+.curtain-panel::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle, rgba(255,143,171,0.35) 1px, transparent 1.4px);
+  background-size:38px 46px;
+  opacity:.35;
 }
-.ig-curtain-left{transform-origin:left center}
-.ig-curtain-right{transform-origin:right center}
-body.opened .ig-curtain-left{transform:translateX(-101%)}
-body.opened .ig-curtain-right{transform:translateX(101%)}
-.ig-curtain-logo{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  z-index:10000;color:#fff;font-size:clamp(34px,9vw,68px);font-weight:800;
-  letter-spacing:-2px;text-shadow:0 8px 30px rgba(0,0,0,.25);
-  transition:opacity .45s ease .05s;white-space:nowrap;
+.curtain-panel::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.25), transparent 14%, transparent 86%, rgba(255,255,255,.3));
 }
-body.opened .ig-curtain-logo{opacity:0}
-.ig-flash{
-  position:fixed;inset:0;z-index:10001;background:#fff;opacity:0;pointer-events:none;
+.curtain-left{transform-origin:left center;}
+.curtain-right{transform-origin:right center;}
+body.opened .curtain-left{transform:translateX(-101%);}
+body.opened .curtain-right{transform:translateX(101%);}
+
+.curtain-mark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:9.5vw;
+  letter-spacing:3px;
+  color:var(--sakura-accent-deep);
+  text-shadow:0 0 30px rgba(255,143,171,0.45);
+  white-space:nowrap;
+  z-index:2;
+  opacity:1;
+  transition:opacity .5s ease .05s;
 }
-body.opened .ig-flash{animation:igFlash .7s ease-out .95s forwards}
-@keyframes igFlash{0%{opacity:0}12%{opacity:.72}100%{opacity:0}}
-@keyframes igCurtainSparkle{from{background-position:0 0}to{background-position:68px 68px}}
-@media(prefers-reduced-motion:reduce){
-  .ig-curtain-panel,.ig-curtain-logo{transition:none!important}
-  body.opened .ig-flash{animation:none!important}
+body.opened .curtain-mark{opacity:0;}
+
+.flash-overlay{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--flash-white);
+  opacity:0;pointer-events:none;
+}
+body.opened .flash-overlay{animation:flashPulse .7s ease-out .95s forwards;}
+@keyframes flashPulse{0%{opacity:0}12%{opacity:.7}100%{opacity:0}}
+
+
+/* =========================================
+   EXTRA WHITE–PINK AMBIENT EFFECTS
+========================================= */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.72;
 }
 
-</style></head>
+body::before {
+    width: 260px;
+    height: 260px;
+    top: 8%;
+    left: -110px;
+    background:
+        radial-gradient(circle at 35% 35%,
+            rgba(255,255,255,0.95) 0 18%,
+            rgba(255,190,211,0.42) 42%,
+            transparent 72%);
+    animation: pinkOrbLeft 10s ease-in-out infinite alternate;
+}
+
+body::after {
+    width: 310px;
+    height: 310px;
+    right: -145px;
+    bottom: 5%;
+    background:
+        radial-gradient(circle at 45% 40%,
+            rgba(255,255,255,0.92) 0 16%,
+            rgba(255,143,171,0.34) 40%,
+            transparent 72%);
+    animation: pinkOrbRight 12s ease-in-out infinite alternate;
+}
+
+@keyframes pinkOrbLeft {
+    from { transform: translate3d(0, 0, 0) scale(0.94); }
+    to   { transform: translate3d(42px, 55px, 0) scale(1.08); }
+}
+
+@keyframes pinkOrbRight {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(-48px, -38px, 0) scale(1.1); }
+}
+
+.booth-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(255,143,171,.35) 0 1px, transparent 1.7px);
+    background-size: 54px 54px, 76px 76px;
+    background-position: 0 0, 20px 30px;
+    opacity: .42;
+    animation: pinkSparkleDrift 18s linear infinite;
+}
+
+@keyframes pinkSparkleDrift {
+    from { background-position: 0 0, 20px 30px; }
+    to   { background-position: 54px 108px, -56px 106px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .curtain-panel,.curtain-mark,.leaf,.star-twinkle,.shooting-star,body{animation:none !important;transition:none !important;}
+  body.opened .flash-overlay{animation:none !important;}
+}
+
+/* ============ SHELL ============ */
+.booth-shell{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  border-left:1px solid rgba(255,143,171,0.2);
+  border-right:1px solid rgba(255,143,171,0.2);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .7s ease .95s, transform .7s ease .95s;
+  position:relative;
+  z-index:2;
+}
+body.opened .booth-shell{opacity:1;transform:translateY(0);}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+/* ============ MARQUEE TOPBAR ============ */
+.booth-marquee{
+  position:sticky;top:0;z-index:10;
+  background:linear-gradient(180deg, var(--sakura-bg-2), var(--sakura-bg-1) 95%);
+  border-bottom:1px solid rgba(255,143,171,0.3);
+  padding:14px 16px 10px;
+  text-align:center;
+  box-shadow:0 4px 18px rgba(255,143,171,0.15);
+}
+.booth-marquee .bulbs{
+  display:flex;justify-content:center;gap:8px;margin-bottom:6px;
+}
+.booth-marquee .bulb{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--sakura-accent);
+  box-shadow:0 0 6px 1px rgba(255,143,171,0.7);
+  opacity:.85;
+  animation:leafPulse 2.6s ease-in-out infinite;
+}
+.booth-marquee .bulb:nth-child(odd){animation-delay:.3s;}
+.booth-marquee .bulb:nth-child(3n){animation-delay:.6s;}
+@keyframes leafPulse{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+
+.booth-marquee-row{display:flex;align-items:center;justify-content:space-between;}
+.booth-back, .booth-edit{
+  background:none;border:none;color:var(--ink);font-size:20px;
+  cursor:pointer;opacity:.9;text-decoration:none;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  width:34px;height:34px;border-radius:50%;
+}
+.booth-back:active, .booth-edit:active{background:rgba(255,143,171,0.18);}
+.booth-title{
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:23px;letter-spacing:1px;
+  color:var(--ink);
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.booth-title span{color:var(--sakura-accent-deep);}
+.topbar-spacer{width:34px;height:34px;display:block;flex:0 0 34px;}
+.booth-title:focus-visible{
+  outline:2px solid rgba(255,111,145,.5);
+  outline-offset:4px;
+  border-radius:6px;
+}
+
+.booth-tagline{
+  font-family:Arial, sans-serif;
+  font-weight:500;
+  font-size:11.5px;color:rgba(90,51,70,0.65);
+  margin-top:4px;letter-spacing:.3px;
+}
+
+/* ============ SECTION LABEL ============ */
+.booth-label{
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-size:16px;letter-spacing:1px;
+  color:var(--sakura-accent-deep);
+  padding:20px 18px 8px;
+}
+
+/* ============ FILMSTRIP VIEWER ============ */
+.filmstrip{
+  margin:0 12px;
+  padding:14px 14px 16px;
+  background:rgba(255,255,255,0.58);
+  border:1px solid rgba(255,143,171,0.3);
+  border-radius:16px;
+  position:relative;
+  backdrop-filter:blur(4px);
+  overflow:hidden;
+}
+
+.ig-swiper{
+  display:flex;
+  width:100%;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  border-radius:12px;
+  touch-action:pan-x pan-y;
+}
+
+.ig-swiper::-webkit-scrollbar{
+  display:none;
+}
+
+.ig-slide{
+  flex:0 0 100%;
+  width:100%;
+  aspect-ratio:1 / 1;
+  position:relative;
+  scroll-snap-align:center;
+  scroll-snap-stop:always;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,143,171,0.25);
+  box-shadow:0 8px 24px rgba(255,143,171,.18);
+  cursor:zoom-in;
+  transform:none !important;
+}
+
+.ig-slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.ig-slide::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.4) 48%, transparent 62%);
+  transform:translateX(-120%);
+  transition:transform .7s ease;
+  pointer-events:none;
+}
+
+.ig-slide:active::after{
+  transform:translateX(120%);
+}
+
+.ig-carousel-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+}
+
+.ig-arrow{
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.9);
+  color:var(--sakura-accent-deep);
+  box-shadow:0 4px 14px rgba(255,143,171,.22);
+  cursor:pointer;
+  font-size:16px;
+}
+
+.ig-arrow:disabled{
+  opacity:.35;
+  cursor:default;
+}
+
+.ig-dots{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:70px;
+}
+
+.ig-dot{
+  width:6px;
+  height:6px;
+  border:0;
+  padding:0;
+  border-radius:50%;
+  background:rgba(255,143,171,.35);
+  transition:width .2s ease, background .2s ease, transform .2s ease;
+  cursor:pointer;
+}
+
+.ig-dot.active{
+  width:16px;
+  border-radius:999px;
+  background:var(--sakura-accent-deep);
+}
+
+.filmstrip-hint{
+  font-family:Arial, sans-serif;
+  font-size:11px;
+  color:var(--ink-soft);
+  text-align:center;
+  padding:10px 4px 0;
+}
+
+@media (max-width:600px){
+  .filmstrip{
+    margin:0 8px;
+    padding:10px 10px 14px;
+  }
+
+  .ig-slide{
+    border-radius:10px;
+  }
+}
+
+/* ============ CAPTION CARD ============ */
+.caption-card{
+  margin:18px 16px 0;
+  background:rgba(255,255,255,0.65);
+  border-radius:12px;
+  padding:16px 18px 14px 20px;
+  box-shadow:0 6px 20px rgba(255,143,171,.2), inset 0 0 0 1px rgba(255,143,171,0.25);
+  position:relative;
+  border-left:4px solid var(--sakura-accent);
+  overflow:hidden;
+  backdrop-filter:blur(2px);
+}
+.caption-card .cap-from{
+  font-family:Arial, sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:1px;color:var(--sakura-accent-deep);text-transform:uppercase;
+  margin-bottom:4px;
+}
+.caption-card .cap-text{
+  color:var(--ink);
+  font-family:Arial, sans-serif;
+  font-weight:600;
+  font-size:16px;
+  line-height:26px;
+  white-space:pre-wrap;
+  overflow-wrap:break-word;
+  word-break:break-word;
+}
+
+.booth-timestamp{
+  font-family:Arial, sans-serif;font-size:10.5px;
+  color:var(--ink-soft);
+  text-align:right;padding:6px 20px 4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+
+/* ============ VOICE / TAPE PLAYER ============ */
+.tape-unit{
+  margin:12px 16px 0;
+  background:linear-gradient(160deg,rgba(255,214,226,0.7),rgba(255,246,248,0.85));
+  border:1px solid rgba(255,143,171,0.3);
+  border-radius:14px;
+  padding:16px;
+  display:flex;align-items:center;gap:16px;
+  transition:box-shadow .3s ease;
+  backdrop-filter:blur(2px);
+}
+.tape-unit.playing{
+  box-shadow:0 0 0 2px rgba(255,143,171,0.3), 0 10px 26px rgba(255,143,171,.2);
+}
+.tape-reels{display:flex;gap:10px;flex-shrink:0;}
+.reel{
+  width:34px;height:34px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--sakura-accent) 55%, var(--sakura-accent-deep) 100%);
+  border:2px solid rgba(255,255,255,0.6);
+}
+.reel.spin{animation:reelSpin 1.1s linear infinite;}
+@keyframes reelSpin{to{transform:rotate(360deg);}}
+
+.tape-controls{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.tape-play-row{display:flex;align-items:center;gap:12px;}
+
+.tape-play-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--sakura-accent));
+  border:none;color:#fff;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:filter .15s, transform .1s;
+  position:relative;
+  overflow:visible;
+}
+.tape-play-btn::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid var(--sakura-gold);
+  opacity:0;transform:scale(.85);
+}
+.tape-unit.playing .tape-play-btn::before{
+  animation:pulseRing 1.5s ease-out infinite;
+}
+@keyframes pulseRing{
+  0%{opacity:.6;transform:scale(.85);}
+  100%{opacity:0;transform:scale(1.4);}
+}
+.tape-play-btn:hover{filter:brightness(1.08);}
+.tape-play-btn:active{transform:scale(.92);}
+
+.tape-progress-wrap{flex:1;min-width:0;}
+.tape-progress{
+  width:100%;height:4px;border-radius:2px;
+  background:rgba(255,143,171,0.25);
+  cursor:pointer;position:relative;
+}
+.tape-progress-bar{
+  height:100%;border-radius:2px;
+  background:var(--sakura-accent-deep);
+  width:0%;
+  transition:width .1s linear;
+  pointer-events:none;
+  box-shadow:0 0 6px rgba(255,143,171,0.6);
+}
+.tape-times{
+  display:flex;justify-content:space-between;
+  font-family:Arial, sans-serif;
+  font-size:10px;color:var(--ink-soft);
+  margin-top:4px;
+}
+audio#hiddenAudio{display:none;}
+
+/* ============ EMPTY STATES ============ */
+.booth-empty{
+  margin:18px 16px 0;
+  font-family:Arial, sans-serif;
+  font-size:12px;color:var(--ink-soft);
+  text-align:center;padding:24px 10px;
+  border:1px dashed rgba(255,143,171,0.4);
+  border-radius:10px;
+}
+
+/* ============ FOOTER STAMP ============ */
+.booth-footer{
+  text-align:center;padding:34px 16px 10px;
+  font-family:Arial, sans-serif;
+  font-weight:700;
+  font-style:italic;
+  font-size:14px;letter-spacing:1px;
+  color:var(--sakura-accent-deep);
+  opacity:.75;
+}
+
+/* ripple effect */
+.ripple-dot{
+  position:absolute;border-radius:50%;
+  background:rgba(255,143,171,0.4);
+  transform:scale(0);
+  animation:rippleAnim .55s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleAnim{
+  to{ transform:scale(2.6); opacity:0; }
+}
+
+/* =========================================
+   FORCE ARIAL FONT
+========================================= */
+html,
+body,
+button,
+input,
+textarea,
+select,
+.booth-title,
+.booth-tagline,
+.booth-label,
+.caption-card,
+.cap-text,
+.booth-empty,
+.booth-footer,
+.tape-times {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+
+
+/* =========================================
+   IMAGE LIGHTBOX / SLIDESHOW
+========================================= */
+.ig-slide {
+    cursor: zoom-in;
+}
+
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(70, 28, 47, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.image-lightbox.open {
+    display: flex;
+    animation: lightboxFadeIn .22s ease-out;
+}
+
+@keyframes lightboxFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lightbox-inner {
+    width: min(100%, 960px);
+    height: min(88vh, 760px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(0,0,0,.42);
+    user-select: none;
+    -webkit-user-drag: none;
+    animation: lightboxZoom .24s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes lightboxZoom {
+    from { opacity: 0; transform: scale(.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    border: 0;
+    color: #fff;
+    background: rgba(255, 143, 171, .72);
+    box-shadow: 0 8px 24px rgba(0,0,0,.22);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s ease, background .15s ease;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+    background: rgba(255, 111, 145, .95);
+}
+
+.lightbox-close:active,
+.lightbox-prev:active,
+.lightbox-next:active {
+    transform: scale(.92);
+}
+
+.lightbox-close {
+    top: 8px;
+    right: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 23px;
+    z-index: 3;
+}
+
+.lightbox-prev,
+.lightbox-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 58px;
+    border-radius: 14px;
+    font-size: 24px;
+    z-index: 3;
+}
+
+.lightbox-prev:active,
+.lightbox-next:active {
+    transform: translateY(-50%) scale(.92);
+}
+
+.lightbox-prev { left: 8px; }
+.lightbox-next { right: 8px; }
+
+.lightbox-counter {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.9);
+    color: #5a3346;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+
+body.lightbox-lock {
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .image-lightbox {
+        padding: 8px;
+    }
+
+    .lightbox-inner {
+        height: 86vh;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        width: 40px;
+        height: 52px;
+        font-size: 21px;
+        background: rgba(255, 143, 171, .82);
+    }
+
+    .lightbox-prev { left: 2px; }
+    .lightbox-next { right: 2px; }
+    .lightbox-close { top: 2px; right: 2px; }
+}
+
+
+/* =========================================
+   CENTER VIEW TITLE - NO BACK BUTTON
+========================================= */
+.booth-marquee-row.center-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booth-marquee-row.center-title .booth-title {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.booth-back {
+    display: none !important;
+}
+
+
+
+/* =========================================================
+   INSTAGRAM UI OVERRIDE — đồng bộ với trang tạo bài viết
+   Giữ nguyên toàn bộ Thymeleaf, ID, audio, carousel và edit.
+========================================================= */
+:root{
+  --ig-bg:#fafafa;
+  --ig-card:#ffffff;
+  --ig-line:#dbdbdb;
+  --ig-text:#262626;
+  --ig-soft:#737373;
+  --ig-blue:#0095f6;
+  --ig-red:#ed4956;
+}
+
+html,body,button,input,textarea,label,span,div,p,a{
+  font-family:Arial,Helvetica,sans-serif!important;
+}
+body{
+  color:var(--ig-text)!important;
+  background:var(--ig-bg)!important;
+  animation:none!important;
+  padding-bottom:0!important;
+}
+body::before,body::after,.booth-shell::before,.leaf-field{display:none!important}
+
+.curtain-panel{
+  background:linear-gradient(160deg,#feda75 0%,#fa7e1e 24%,#d62976 52%,#962fbf 76%,#4f5bd5 100%)!important;
+  box-shadow:none!important;
+}
+.curtain-panel::before{
+  background:radial-gradient(circle,rgba(255,255,255,.28) 1px,transparent 1.5px)!important;
+  background-size:34px 34px!important;
+}
+.curtain-mark{
+  color:#fff!important;
+  font-style:normal!important;
+  font-size:clamp(38px,9vw,68px)!important;
+  letter-spacing:-2px!important;
+  text-shadow:0 8px 30px rgba(0,0,0,.25)!important;
+}
+.flash-overlay{background:#fff!important}
+
+.booth-shell{
+  width:min(100%,470px)!important;
+  max-width:470px!important;
+  background:#fff!important;
+  border-left:1px solid var(--ig-line)!important;
+  border-right:1px solid var(--ig-line)!important;
+}
+.booth-marquee{
+  min-height:60px!important;
+  padding:10px 14px!important;
+  background:rgba(255,255,255,.96)!important;
+  border-bottom:1px solid var(--ig-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(12px)!important;
+  -webkit-backdrop-filter:blur(12px)!important;
+}
+.booth-marquee .bulbs{display:none!important}
+.booth-marquee-row.center-title{min-height:39px!important}
+.booth-title{
+  font-size:23px!important;
+  font-style:normal!important;
+  letter-spacing:-1px!important;
+  color:var(--ig-text)!important;
+  font-weight:800!important;
+}
+.booth-title span{
+  background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  color:transparent!important;
+}
+.booth-tagline{display:none!important}
+
+.booth-label{
+  padding:17px 14px 10px!important;
+  color:var(--ig-text)!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+}
+.filmstrip{
+  margin:0!important;
+  padding:0!important;
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  backdrop-filter:none!important;
+}
+.ig-swiper{border-radius:0!important;background:#efefef!important}
+.ig-slide{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:#efefef!important;
+}
+.ig-slide::after{display:none!important}
+.ig-carousel-controls{margin:8px 0 0!important}
+.ig-arrow{
+  width:32px!important;height:32px!important;
+  background:#fff!important;
+  color:var(--ig-text)!important;
+  border:1px solid var(--ig-line)!important;
+  box-shadow:none!important;
+}
+.ig-dot{background:#c7c7c7!important}
+.ig-dot.active{background:var(--ig-blue)!important}
+.filmstrip-hint{color:var(--ig-soft)!important;padding:8px 0 0!important}
+
+.caption-card{
+  margin:0 14px!important;
+  padding:12px 0 0!important;
+  background:#fff!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.caption-card .cap-text{
+  color:var(--ig-text)!important;
+  font-size:14px!important;
+  line-height:1.45!important;
+  font-weight:400!important;
+}
+.caption-card .cap-text::before{
+  content:'memory.gift';
+  margin-right:6px;
+  font-weight:700;
+}
+.booth-timestamp{
+  padding:9px 14px 4px!important;
+  color:var(--ig-soft)!important;
+  font-size:10px!important;
+  text-align:left!important;
+}
+
+.tape-unit{
+  margin:0 14px!important;
+  padding:12px!important;
+  border:1px solid var(--ig-line)!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.tape-unit.playing{box-shadow:none!important;border-color:#b8b8b8!important}
+.tape-reels{display:none!important}
+.tape-play-btn{
+  width:38px!important;height:38px!important;
+  background:var(--ig-text)!important;
+  color:#fff!important;
+}
+.tape-play-btn::before{display:none!important}
+.tape-progress{background:#efefef!important}
+.tape-progress-bar{background:var(--ig-blue)!important;box-shadow:none!important}
+.tape-times{color:var(--ig-soft)!important}
+.booth-empty{
+  margin:0 14px!important;
+  padding:18px 10px!important;
+  border:1px dashed #b8b8b8!important;
+  border-radius:10px!important;
+  color:var(--ig-soft)!important;
+  background:#fafafa!important;
+}
+.booth-footer{
+  padding:30px 16px!important;
+  color:var(--ig-soft)!important;
+  font-style:normal!important;
+  font-size:11px!important;
+  letter-spacing:.6px!important;
+}
+
+.image-lightbox{background:rgba(0,0,0,.92)!important}
+.lightbox-image{border-radius:0!important;background:#111!important}
+.lightbox-close,.lightbox-prev,.lightbox-next{
+  background:rgba(38,38,38,.82)!important;
+  color:#fff!important;
+}
+.lightbox-counter{background:rgba(38,38,38,.8)!important;color:#fff!important}
+
+@media(max-width:500px){.booth-shell{border:0!important}}
+</style>
+</head>
+
 <body class="locked">
 
-<div class="ig-curtain" aria-hidden="true">
-  <div class="ig-curtain-panel ig-curtain-left"></div>
-  <div class="ig-curtain-logo">Instagram</div>
-  <div class="ig-curtain-panel ig-curtain-right"></div>
-</div>
-<div class="ig-flash" aria-hidden="true"></div>
+<!-- PETAL FIELD -->
+<div class="leaf-field" id="leafField" aria-hidden="true"></div>
 
-<div class="ig-app">
-<form id="giftForm">
-<input type="hidden" id="uid" th:value="${nfcUid}">
-<header class="ig-topbar">
-<button type="button" class="icon-btn" onclick="history.back()"><i class="bi bi-x-lg"></i></button>
-<div class="ig-logo"><span>Chỉnh sửa</span></div>
-<button type="button" id="topSave" class="primary" style="font-weight:700">Xong</button>
-</header>
+<!-- CURTAIN INTRO -->
+<div class="curtain-stage" aria-hidden="true">
+  <div class="curtain-panel curtain-left"></div>
+  <div class="curtain-mark">Instagram</div>
+  <div class="curtain-panel curtain-right"></div>
+</div>
+<div class="flash-overlay" aria-hidden="true"></div>
 
-<section class="section">
-<div class="section-title">Ảnh bài đăng</div>
-<input id="imageInput" type="file" accept="image/*" multiple hidden>
-<div id="previewGrid" class="preview-grid">
-<div class="preview-item old" th:each="img : ${gift.images}" th:data-url="${img.imageUrl}">
-<img th:src="@{'/files/images/' + ${img.imageUrl}}" alt="Ảnh">
-<button class="remove old-remove" type="button"><i class="bi bi-x"></i></button>
-</div>
-</div>
-<div id="uploadZone" class="upload-zone" role="button" tabindex="0" style="margin-top:12px"><i class="bi bi-plus-square"></i><strong>Thêm ảnh</strong></div>
-</section>
+<div class="booth-shell">
 
-<section class="section">
-<div class="section-title">Chú thích</div>
-<textarea id="message" maxlength="2200" th:text="${gift.message}" placeholder="Viết chú thích..."></textarea>
-<div class="charcount"><span id="count">0</span>/2.200</div>
-</section>
+  <!-- MARQUEE TOPBAR -->
+  <div class="booth-marquee">
+    <div class="bulbs">
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span><span class="bulb"></span><span class="bulb"></span>
+      <span class="bulb"></span>
+    </div>
+    <div class="booth-marquee-row center-title">
+<!-- Bấm/chạm 3 lần liên tiếp vào MEMORY GIFT để mở trang chỉnh sửa -->
+      <span class="booth-title"
+            id="boothTitle"
+            role="button"
+            tabindex="0"
+            aria-label="Bấm 3 lần để chỉnh sửa"
+            th:attr="data-edit-url=@{'/gift/edit/' + ${uid}}">
+        Instagram <span>Memory</span>
+      </span>
+</div>
+    <div class="booth-tagline">— những cánh hoa ký ức —</div>
+  </div>
 
-<section class="section">
-<div class="section-title">Âm thanh</div>
-<div class="audio-card">
-<div id="oldAudioBox" th:if="${gift.voiceUrl != null and gift.voiceUrl != ''}">
-<audio id="oldAudio" controls style="width:100%" th:src="@{'/files/audio/' + ${gift.voiceUrl}}"></audio>
-<button type="button" id="removeOldAudio" class="pill" style="margin-top:8px;color:var(--ig-red)"><i class="bi bi-trash"></i>Xóa âm thanh cũ</button>
-</div>
-<div class="audio-actions">
-<button type="button" id="recordBtn" class="pill"><i class="bi bi-mic"></i><span id="recordText">Ghi âm mới</span></button>
-<label class="pill" for="audioInput"><i class="bi bi-upload"></i>Tải file mới</label>
-<input id="audioInput" type="file" accept="audio/*" hidden>
-</div>
-<span id="recordStatus" style="font-size:12px;color:var(--ig-soft)"></span>
-<audio id="audioPreview" controls class="hidden" style="width:100%"></audio>
-</div>
-</section>
+  <!-- FILMSTRIP VIEWER -->
+  <div class="booth-label">Cuộn phim của bạn</div>
+  <div class="filmstrip reveal" th:if="${gift.images != null and !gift.images.isEmpty()}">
+    <div class="ig-swiper" id="swiper">
+      <div class="ig-slide"
+           role="button"
+           tabindex="0"
+           aria-label="Mở ảnh phóng to"
+           th:each="img, iter : ${gift.images}">
+        <img th:src="@{'/files/images/' + ${img.imageUrl}}"
+             th:alt="${'Ảnh ' + (iter.index + 1)}"
+             draggable="false">
+      </div>
+    </div>
 
-<div class="savebar"><button id="saveBtn" class="save-btn" type="submit">Lưu thay đổi</button></div>
-</form></div>
-<div id="toast" class="toast"></div>
+    <div class="ig-carousel-controls" th:if="${gift.images.size() > 1}">
+      <button type="button" class="ig-arrow" id="igPrevBtn" aria-label="Ảnh trước">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <div class="ig-dots" id="igDots" aria-label="Chọn ảnh"></div>
+
+      <button type="button" class="ig-arrow" id="igNextBtn" aria-label="Ảnh tiếp theo">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="filmstrip-hint">
+      vuốt trái hoặc phải để xem ảnh
+    </div>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.images == null or gift.images.isEmpty()}">
+    chưa có tấm ảnh nào trong cuộn phim này
+  </div>
+
+  <!-- CAPTION -->
+  <div class="booth-label">Viết sau tấm ảnh</div>
+  <div class="caption-card reveal" th:if="${gift.message != null and gift.message != ''}">
+    <div class="cap-text" id="capText" th:text="${gift.message}"></div>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.message == null or gift.message == ''}">
+    chưa có lời nhắn nào được viết
+  </div>
+  <div class="booth-timestamp">Just now</div>
+
+  <!-- VOICE / TAPE -->
+  <div class="booth-label">Lời nhắn bằng giọng nói</div>
+  <div class="tape-unit reveal" id="tapeUnit" th:if="${gift.voiceUrl != null and gift.voiceUrl != ''}">
+    <div class="tape-reels">
+      <div class="reel" id="reelL"></div>
+      <div class="reel" id="reelR"></div>
+    </div>
+    <div class="tape-controls">
+      <div class="tape-play-row">
+        <button class="tape-play-btn ripple-btn" id="playBtn" onclick="toggleAudio()">
+          <i class="bi bi-play-fill" id="playIco"></i>
+        </button>
+        <div class="tape-progress-wrap">
+          <div class="tape-progress" id="progressBar" onclick="seekAudio(event)">
+            <div class="tape-progress-bar" id="audioBar"></div>
+          </div>
+          <div class="tape-times">
+            <span id="curTime">0:00</span>
+            <span id="durTime">0:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+   <audio id="hiddenAudio">
+       <source th:src="@{'/files/audio/' + ${gift.voiceUrl}}">
+  </audio>
+  </div>
+  <div class="booth-empty reveal" th:if="${gift.voiceUrl == null or gift.voiceUrl == ''}">
+    chưa có ghi âm nào được lưu lại
+  </div>
+
+  <div class="booth-footer reveal">— INSTAGRAM MEMORY —</div>
+
+</div>
+
 <script>
-const uid=document.getElementById('uid').value.trim(),input=document.getElementById('imageInput'),zone=document.getElementById('uploadZone'),grid=document.getElementById('previewGrid');
-const msg=document.getElementById('message'),count=document.getElementById('count'),form=document.getElementById('giftForm'),saveBtn=document.getElementById('saveBtn'),topSave=document.getElementById('topSave'),toast=document.getElementById('toast');
-const audioInput=document.getElementById('audioInput'),audioPreview=document.getElementById('audioPreview'),recordBtn=document.getElementById('recordBtn'),recordText=document.getElementById('recordText'),recordStatus=document.getElementById('recordStatus');
-let newImages=[],deletedImages=[],newAudio=null,removeAudio=false,recorder=null,chunks=[],stream=null,audioUrl=null;
-function showToast(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
-document.querySelectorAll('.old-remove').forEach(b=>b.onclick=()=>{const item=b.closest('.old');deletedImages.push(item.dataset.url);item.remove();updateZone()});
-function total(){return document.querySelectorAll('.preview-item').length}function updateZone(){zone.classList.toggle('hidden',total()>=9)}
-zone.onclick=()=>input.click();input.onchange=()=>{[...input.files].slice(0,9-total()).forEach(f=>{if(f.type.startsWith('image/'))newImages.push(f)});input.value='';renderNew()};
-function renderNew(){document.querySelectorAll('.preview-item.new').forEach(x=>x.remove());newImages.forEach((f,i)=>{const d=document.createElement('div');d.className='preview-item new';const im=document.createElement('img');im.src=URL.createObjectURL(f);const b=document.createElement('button');b.type='button';b.className='remove';b.innerHTML='<i class="bi bi-x"></i>';b.onclick=()=>{newImages.splice(i,1);renderNew()};d.append(im,b);grid.append(d)});updateZone()}
-msg.oninput=()=>count.textContent=msg.value.length;count.textContent=msg.value.length;
-audioInput.onchange=()=>{if(!audioInput.files[0])return;newAudio=audioInput.files[0];showAudio(newAudio);recordStatus.textContent='Đã chọn âm thanh mới'};
-function showAudio(f){if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(f);audioPreview.src=audioUrl;audioPreview.classList.remove('hidden')}
-const removeBtn=document.getElementById('removeOldAudio');if(removeBtn)removeBtn.onclick=()=>{removeAudio=true;document.getElementById('oldAudioBox').classList.add('hidden');showToast('Sẽ xóa âm thanh cũ')};
-recordBtn.onclick=async()=>{if(recorder?.state==='recording'){recorder.stop();return}try{stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];const types=['audio/mp4','audio/webm;codecs=opus','audio/webm'];const type=types.find(x=>MediaRecorder.isTypeSupported(x))||'';recorder=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream);recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=()=>{const t=recorder.mimeType||type||'audio/webm';newAudio=new File([new Blob(chunks,{type:t})],t.includes('mp4')?'voice.m4a':'voice.webm',{type:t});showAudio(newAudio);stream.getTracks().forEach(x=>x.stop());recordText.textContent='Ghi âm mới';recordStatus.textContent='Đã ghi xong'};recorder.start();recordText.textContent='Dừng';recordStatus.textContent='Đang ghi...'}catch(e){alert('Không mở được microphone')}};
-topSave.onclick=()=>form.requestSubmit();
-form.onsubmit=async e=>{e.preventDefault();if(recorder?.state==='recording')return alert('Hãy dừng ghi âm trước khi lưu');saveBtn.disabled=topSave.disabled=true;saveBtn.textContent='Đang lưu...';const fd=new FormData();fd.append('message',msg.value);fd.append('theme','instagram');newImages.forEach(f=>fd.append('images',f));if(newAudio)fd.append('audio',newAudio);fd.append('removeOldAudio',String(removeAudio));deletedImages.forEach(x=>fd.append('deleteImages',x));try{const r=await fetch('/api/gift/update/'+encodeURIComponent(uid),{method:'POST',body:fd});if(!r.ok)throw new Error(await r.text());showToast('Đã lưu thay đổi');setTimeout(()=>location.href='/gift/view/'+encodeURIComponent(uid),500)}catch(err){alert(err.message);saveBtn.disabled=topSave.disabled=false;saveBtn.textContent='Lưu thay đổi'}};
-updateZone();
-</script>
-<script>
-(function(){
-  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const openPage=()=>{
+// ================= INTRO CURTAIN =================
+(function initCurtain(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const openNow = () => {
     document.body.classList.add('opened');
     document.body.classList.remove('locked');
   };
-  if(reduce){openPage();return;}
-  window.addEventListener('load',()=>setTimeout(openPage,350));
+  if (reduce){
+    document.querySelectorAll('.curtain-panel,.curtain-mark').forEach(el=>el.style.transition='none');
+    openNow();
+    return;
+  }
+  window.addEventListener('load', () => {
+    setTimeout(openNow, 350);
+    setTimeout(() => {
+      document.body.classList.remove('locked');
+    }, 1700);
+  });
 })();
+
+// ================= PETAL FIELD (twinkles + shooting stars + falling sakura petals) =================
+(function initStars(){
+  const field = document.getElementById('leafField');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // static twinkling sparkles
+  const starCount = 40;
+  for(let i=0;i<starCount;i++){
+    const s = document.createElement('span');
+    s.className = 'star-twinkle';
+    const size = (Math.random()*2 + 1).toFixed(1);
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = (Math.random()*100)+'vw';
+    s.style.top = (Math.random()*100)+'vh';
+    s.style.animationDuration = (2 + Math.random()*3).toFixed(1)+'s';
+    s.style.animationDelay = (Math.random()*4).toFixed(1)+'s';
+    field.appendChild(s);
+  }
+
+  if(reduce) return;
+
+  // drifting sakura petals
+  const symbols = ['🌸','🌸','✿'];
+  for(let i=0;i<10;i++){
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    leaf.style.left = (Math.random()*100)+'vw';
+    leaf.style.fontSize = (10+Math.random()*10).toFixed(0)+'px';
+    leaf.style.animationDuration = (16 + Math.random()*14)+'s';
+    leaf.style.animationDelay = (Math.random()*14)+'s';
+    leaf.style.setProperty('--drift', (Math.random()*80-40).toFixed(0)+'px');
+    field.appendChild(leaf);
+  }
+
+  // shooting sparkle streaks
+  for(let i=0;i<2;i++){
+    const sh = document.createElement('span');
+    sh.className = 'shooting-star';
+    sh.style.top = (10 + Math.random()*30)+'vh';
+    sh.style.right = (-10)+'vw';
+    sh.style.animationDelay = (i*3 + Math.random()*4)+'s';
+    field.appendChild(sh);
+  }
+})();
+
+// ================= SCROLL REVEAL =================
+(function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(el=>el.classList.add('in'));
+    return;
+  }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:.15});
+  els.forEach(el=>io.observe(el));
+})();
+
+// ================= CAPTION TEXT =================
+// Nội dung hiển thị nguyên văn, không còn con trỏ nhấp nháy/typewriter.
+
+// ================= RIPPLE ON BUTTONS =================
+(function initRipple(){
+  document.querySelectorAll('.ripple-btn').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      const rect = btn.getBoundingClientRect();
+      const dot = document.createElement('span');
+      const size = Math.max(rect.width, rect.height);
+      dot.className = 'ripple-dot';
+      dot.style.width = dot.style.height = size+'px';
+      dot.style.left = ((e.clientX ?? rect.left+rect.width/2) - rect.left - size/2)+'px';
+      dot.style.top = ((e.clientY ?? rect.top+rect.height/2) - rect.top - size/2)+'px';
+      btn.style.position = btn.style.position || 'relative';
+      btn.style.overflow = 'hidden';
+      btn.appendChild(dot);
+      setTimeout(()=>dot.remove(), 600);
+    });
+  });
+})();
+
+// ================= TRIPLE-PRESS MEMORY GIFT -> EDIT PAGE =================
+(function initTripleClickEdit(){
+  const titleEl = document.getElementById('boothTitle');
+  if(!titleEl) return;
+
+  let clickCount = 0;
+  let resetTimer = null;
+  const WINDOW_MS = 700; // thời gian tối đa giữa các lần bấm để tính là "bấm liên tiếp"
+
+  function registerTitlePress(){
+
+    clickCount++;
+    clearTimeout(resetTimer);
+
+    if(clickCount >= 3){
+      clickCount = 0;
+      const editUrl = titleEl.getAttribute('data-edit-url');
+      if(editUrl){
+        window.location.href = editUrl;
+      }
+      return;
+    }
+
+    resetTimer = setTimeout(() => { clickCount = 0; }, WINDOW_MS);
+  }
+
+  titleEl.addEventListener('click', registerTitlePress);
+  titleEl.addEventListener('keydown', function(event){
+    if(event.key === 'Enter' || event.key === ' '){
+      event.preventDefault();
+      registerTitlePress();
+    }
+  });
+})();
+
+/* ── AUDIO / TAPE PLAYER ── */
+const audio = document.getElementById('hiddenAudio');
+if(audio){
+    audio.addEventListener("loadedmetadata", () => {
+        console.log("duration", audio.duration);
+    });
+    audio.addEventListener("error", () => {
+        console.log(audio.error);
+    });
+}
+
+const reelL = document.getElementById('reelL');
+const reelR = document.getElementById('reelR');
+const tapeUnit = document.getElementById('tapeUnit');
+
+function fmt(s){ const m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
+
+if(audio){
+    audio.addEventListener('timeupdate',()=>{
+        const pct = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
+        document.getElementById('audioBar').style.width = pct+'%';
+        document.getElementById('curTime').textContent = fmt(audio.currentTime);
+    });
+    audio.addEventListener('loadedmetadata',()=>{
+        document.getElementById('durTime').textContent = fmt(audio.duration);
+    });
+    audio.addEventListener('ended',()=>{
+        document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
+        if(tapeUnit) tapeUnit.classList.remove('playing');
+    });
+}
+function toggleAudio(){
+    if(!audio) return;
+    if(audio.paused){
+        audio.play().catch(err => alert('Lỗi phát audio: ' + err.name + ' - ' + err.message));
+        document.getElementById('playIco').className='bi bi-pause-fill';
+        reelL.classList.add('spin');
+        reelR.classList.add('spin');
+        if(tapeUnit) tapeUnit.classList.add('playing');
+    } else {
+        audio.pause();
+        document.getElementById('playIco').className='bi bi-play-fill';
+        reelL.classList.remove('spin');
+        reelR.classList.remove('spin');
+        if(tapeUnit) tapeUnit.classList.remove('playing');
+    }
+}
+function seekAudio(e){
+    if(!audio || !audio.duration) return;
+    const rect = document.getElementById('progressBar').getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+}
+
+
+
+// ================= INSTAGRAM-STYLE IMAGE CAROUSEL =================
+(function initInstagramCarousel(){
+  const swiper = document.getElementById('swiper');
+  if(!swiper) return;
+
+  const slides = Array.from(swiper.querySelectorAll('.ig-slide'));
+  const dotsWrap = document.getElementById('igDots');
+  const prevBtn = document.getElementById('igPrevBtn');
+  const nextBtn = document.getElementById('igNextBtn');
+
+  if(!slides.length) return;
+
+  let currentIndex = 0;
+  let scrollTimer = null;
+
+  function goTo(index){
+    currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+
+    slides[currentIndex].scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+
+    updateControls();
+  }
+
+  function updateControls(){
+    if(dotsWrap){
+      dotsWrap.querySelectorAll('.ig-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+        dot.setAttribute('aria-current', index === currentIndex ? 'true' : 'false');
+      });
+    }
+
+    if(prevBtn) prevBtn.disabled = currentIndex === 0;
+    if(nextBtn) nextBtn.disabled = currentIndex === slides.length - 1;
+  }
+
+  if(dotsWrap){
+    slides.forEach((_, index) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'ig-dot';
+      dot.setAttribute('aria-label', 'Xem ảnh ' + (index + 1));
+      dot.addEventListener('click', () => goTo(index));
+      dotsWrap.appendChild(dot);
+    });
+  }
+
+  prevBtn?.addEventListener('click', () => goTo(currentIndex - 1));
+  nextBtn?.addEventListener('click', () => goTo(currentIndex + 1));
+
+  swiper.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+
+    scrollTimer = setTimeout(() => {
+      const slideWidth = swiper.clientWidth || 1;
+      currentIndex = Math.round(swiper.scrollLeft / slideWidth);
+      currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
+      updateControls();
+    }, 70);
+  }, {passive:true});
+
+  window.addEventListener('resize', () => {
+    swiper.scrollLeft = currentIndex * swiper.clientWidth;
+  });
+
+  updateControls();
+})();
+
+
+/* ================= IMAGE LIGHTBOX / SLIDESHOW ================= */
+(function initImageLightbox(){
+  const slides = Array.from(document.querySelectorAll('.ig-slide img'));
+  const lightbox = document.getElementById('imageLightbox');
+  const lightboxImage = document.getElementById('lightboxImage');
+  const counter = document.getElementById('lightboxCounter');
+  const closeBtn = document.getElementById('lightboxClose');
+  const prevBtn = document.getElementById('lightboxPrev');
+  const nextBtn = document.getElementById('lightboxNext');
+
+  if (!slides.length || !lightbox || !lightboxImage) return;
+
+  let currentIndex = 0;
+  let touchStartX = 0;
+
+  function showImage(index){
+    currentIndex = (index + slides.length) % slides.length;
+    lightboxImage.src = slides[currentIndex].currentSrc || slides[currentIndex].src;
+    lightboxImage.alt = slides[currentIndex].alt || ('Ảnh ' + (currentIndex + 1));
+    counter.textContent = (currentIndex + 1) + ' / ' + slides.length;
+
+    const hideNavigation = slides.length <= 1;
+    prevBtn.style.display = hideNavigation ? 'none' : 'flex';
+    nextBtn.style.display = hideNavigation ? 'none' : 'flex';
+  }
+
+  function openLightbox(index){
+    showImage(index);
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-lock');
+    closeBtn.focus();
+  }
+
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-lock');
+  }
+
+  function previousImage(){
+    showImage(currentIndex - 1);
+  }
+
+  function nextImage(){
+    showImage(currentIndex + 1);
+  }
+
+  slides.forEach((img, index) => {
+    const slide = img.closest('.ig-slide');
+
+    slide.addEventListener('click', () => openLightbox(index));
+
+    slide.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter' || event.key === ' '){
+        event.preventDefault();
+        openLightbox(index);
+      }
+    });
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', previousImage);
+  nextBtn.addEventListener('click', nextImage);
+
+  lightbox.addEventListener('click', (event) => {
+    if(event.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if(!lightbox.classList.contains('open')) return;
+
+    if(event.key === 'Escape') closeLightbox();
+    if(event.key === 'ArrowLeft') previousImage();
+    if(event.key === 'ArrowRight') nextImage();
+  });
+
+  lightbox.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].clientX;
+  }, {passive:true});
+
+  lightbox.addEventListener('touchend', (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX;
+
+    if(Math.abs(deltaX) < 45) return;
+    deltaX > 0 ? previousImage() : nextImage();
+  }, {passive:true});
+})();
+
 </script>
 
-</body></html>
+
+<!-- IMAGE LIGHTBOX / SLIDESHOW -->
+<div class="image-lightbox" id="imageLightbox" aria-hidden="true">
+  <div class="lightbox-inner">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Đóng ảnh">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <button type="button" class="lightbox-prev" id="lightboxPrev" aria-label="Ảnh trước">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+
+    <img class="lightbox-image" id="lightboxImage" alt="Ảnh phóng to">
+
+    <button type="button" class="lightbox-next" id="lightboxNext" aria-label="Ảnh tiếp theo">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+
+    <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+  </div>
+</div>
+
+</body>
+</html>
