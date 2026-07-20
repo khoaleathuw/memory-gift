@@ -1762,9 +1762,11 @@ body::after{
 }
 
 .ig-photo-item{
+    position:relative !important;
+    overflow:hidden !important;
     aspect-ratio:4/5 !important;
-    padding:7px 7px 26px !important;
-    border-radius:8px 8px 20px 8px !important;
+    padding:0 !important;
+    border-radius:16px !important;
     border:1px solid rgba(13,109,168,.14) !important;
     background:#fffdf8 !important;
     box-shadow:0 12px 27px rgba(9,92,144,.17) !important;
@@ -1780,12 +1782,19 @@ body::after{
 }
 
 .ig-photo-item img{
-    border-radius:5px 5px 14px 5px !important;
+    position:absolute !important;
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    display:block !important;
+    border-radius:inherit !important;
 }
 
 .del-btn{
-    top:10px !important;
-    right:10px !important;
+    top:8px !important;
+    right:8px !important;
+    z-index:10 !important;
     width:30px !important;
     height:30px !important;
     background:rgba(8,58,88,.72) !important;
@@ -1946,7 +1955,7 @@ body::after{
     }
 
     .ig-photo-item{
-        padding:6px 6px 22px !important;
+        padding:0 !important;
     }
 
     .booth-title{

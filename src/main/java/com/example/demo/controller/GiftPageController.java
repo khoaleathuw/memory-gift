@@ -26,19 +26,16 @@ public class GiftPageController {
             Model model
     ) {
 
-        Gift gift = giftService.getByUid(uid);
-
-        if (gift == null) {
-            gift = giftService.createEmptyGift(uid);
-        }
+        Gift gift = getOrCreateGift(uid);
 
         addCommonModel(model, gift, uid);
 
-        // Chưa chọn theme thì vào trang theme.html
+        // Chưa chọn giao diện
         if (!isValidTheme(gift.getTheme())) {
             return "theme";
         }
 
+        // Đã có giao diện thì vào trang view
         return getGiftView(gift.getTheme());
     }
 
@@ -52,11 +49,7 @@ public class GiftPageController {
             Model model
     ) {
 
-        Gift gift = giftService.getByUid(uid);
-
-        if (gift == null) {
-            gift = giftService.createEmptyGift(uid);
-        }
+        Gift gift = getOrCreateGift(uid);
 
         addCommonModel(model, gift, uid);
 
@@ -64,7 +57,7 @@ public class GiftPageController {
     }
 
     // ==================================================
-    // INDEX SAU KHI CHỌN THEME
+    // TRANG INDEX SAU KHI CHỌN THEME
     // ==================================================
 
     @GetMapping("/gift/index/{uid}")
@@ -74,43 +67,26 @@ public class GiftPageController {
             Model model
     ) {
 
-        Gift gift = giftService.getByUid(uid);
+        Gift gift = getOrCreateGift(uid);
 
-        if (gift == null) {
-            gift = giftService.createEmptyGift(uid);
-        }
+        String selectedTheme = resolveTheme(gift, theme);
 
-        /*
-         * Ví dụ:
-         * /gift/index/nfc001?theme=instagram
-         */
-        if (theme != null && !theme.isBlank()) {
-
-            String selectedTheme = normalizeTheme(theme);
-
-            if (!isValidTheme(selectedTheme)) {
-                return "redirect:/gift/theme/" + uid;
-            }
-
-            /*
-             * Gán theme tạm thời để mở đúng trang index.
-             * Theme sẽ được lưu xuống DB khi người dùng bấm lưu.
-             */
-            gift.setTheme(selectedTheme);
-        }
-
-        if (!isValidTheme(gift.getTheme())) {
+        if (!isValidTheme(selectedTheme)) {
             return "redirect:/gift/theme/" + uid;
         }
 
+        /*
+         * Gán theme vào Gift để Thymeleaf nhận đúng theme.
+         *
+         * Theme sẽ được lưu xuống database khi người dùng
+         * gửi form lưu Gift.
+         */
+        gift.setTheme(selectedTheme);
+
         addCommonModel(model, gift, uid);
+        model.addAttribute("selectedTheme", selectedTheme);
 
-        model.addAttribute(
-                "selectedTheme",
-                normalizeTheme(gift.getTheme())
-        );
-
-        return getIndexView(gift.getTheme());
+        return getIndexView(selectedTheme);
     }
 
     // ==================================================
@@ -129,13 +105,18 @@ public class GiftPageController {
             return "not-found";
         }
 
-        if (!isValidTheme(gift.getTheme())) {
+        String selectedTheme = normalizeTheme(gift.getTheme());
+
+        if (!isValidTheme(selectedTheme)) {
             return "redirect:/gift/theme/" + uid;
         }
 
-        addCommonModel(model, gift, uid);
+        gift.setTheme(selectedTheme);
 
-        return getGiftView(gift.getTheme());
+        addCommonModel(model, gift, uid);
+        model.addAttribute("selectedTheme", selectedTheme);
+
+        return getGiftView(selectedTheme);
     }
 
     // ==================================================
@@ -149,39 +130,61 @@ public class GiftPageController {
             Model model
     ) {
 
+        Gift gift = getOrCreateGift(uid);
+
+        String selectedTheme = resolveTheme(gift, theme);
+
+        if (!isValidTheme(selectedTheme)) {
+            return "redirect:/gift/theme/" + uid;
+        }
+
+        gift.setTheme(selectedTheme);
+
+        addCommonModel(model, gift, uid);
+        model.addAttribute("selectedTheme", selectedTheme);
+
+        return getEditView(selectedTheme);
+    }
+
+    // ==================================================
+    // LẤY HOẶC TẠO GIFT
+    // ==================================================
+
+    private Gift getOrCreateGift(String uid) {
+
         Gift gift = giftService.getByUid(uid);
 
         if (gift == null) {
             gift = giftService.createEmptyGift(uid);
         }
 
-        /*
-         * Ví dụ:
-         * /gift/edit/nfc001?theme=instagram
-         */
-        if (theme != null && !theme.isBlank()) {
+        return gift;
+    }
 
-            String selectedTheme = normalizeTheme(theme);
+    // ==================================================
+    // XÁC ĐỊNH THEME
+    // ==================================================
 
-            if (!isValidTheme(selectedTheme)) {
-                return "redirect:/gift/theme/" + uid;
+    private String resolveTheme(
+            Gift gift,
+            String requestTheme
+    ) {
+
+        // Ưu tiên theme trên URL
+        if (requestTheme != null && !requestTheme.isBlank()) {
+
+            String normalizedRequestTheme =
+                    normalizeTheme(requestTheme);
+
+            if (isValidTheme(normalizedRequestTheme)) {
+                return normalizedRequestTheme;
             }
 
-            gift.setTheme(selectedTheme);
+            return "";
         }
 
-        if (!isValidTheme(gift.getTheme())) {
-            return "redirect:/gift/theme/" + uid;
-        }
-
-        addCommonModel(model, gift, uid);
-
-        model.addAttribute(
-                "selectedTheme",
-                normalizeTheme(gift.getTheme())
-        );
-
-        return getEditView(gift.getTheme());
+        // Nếu URL không truyền theme thì lấy theme trong DB
+        return normalizeTheme(gift.getTheme());
     }
 
     // ==================================================
@@ -195,6 +198,8 @@ public class GiftPageController {
     ) {
 
         model.addAttribute("gift", gift);
+
+        // Giữ cả hai tên để các giao diện cũ vẫn hoạt động
         model.addAttribute("nfcUid", uid);
         model.addAttribute("uid", uid);
     }
@@ -207,17 +212,22 @@ public class GiftPageController {
 
         return switch (normalizeTheme(theme)) {
 
-            case "sakura" -> "sakura/index";
+            case "sakura" ->
+                    "sakura/index";
 
-            case "matcha" -> "matcha/index";
+            case "matcha" ->
+                    "matcha/index";
 
-            case "sky" -> "sky/index";
+            case "sky" ->
+                    "sky/index";
 
-            case "instagram" -> "instagram/index";
+            case "instagram" ->
+                    "instagram/index";
 
-            default -> throw new IllegalArgumentException(
-                    "Theme không hợp lệ: " + theme
-            );
+            default ->
+                    throw new IllegalArgumentException(
+                            "Theme không hợp lệ: " + theme
+                    );
         };
     }
 
@@ -229,17 +239,22 @@ public class GiftPageController {
 
         return switch (normalizeTheme(theme)) {
 
-            case "sakura" -> "sakura/gift";
+            case "sakura" ->
+                    "sakura/gift";
 
-            case "matcha" -> "matcha/gift";
+            case "matcha" ->
+                    "matcha/gift";
 
-            case "sky" -> "sky/gift";
+            case "sky" ->
+                    "sky/gift";
 
-            case "instagram" -> "instagram/gift";
+            case "instagram" ->
+                    "instagram/gift";
 
-            default -> throw new IllegalArgumentException(
-                    "Theme không hợp lệ: " + theme
-            );
+            default ->
+                    throw new IllegalArgumentException(
+                            "Theme không hợp lệ: " + theme
+                    );
         };
     }
 
@@ -251,36 +266,43 @@ public class GiftPageController {
 
         return switch (normalizeTheme(theme)) {
 
-            case "sakura" -> "sakura/gift-edit";
+            case "sakura" ->
+                    "sakura/gift-edit";
 
-            case "matcha" -> "matcha/gift-edit";
+            case "matcha" ->
+                    "matcha/gift-edit";
 
-            case "sky" -> "sky/gift-edit";
+            case "sky" ->
+                    "sky/gift-edit";
 
-            case "instagram" -> "instagram/gift-edit";
+            case "instagram" ->
+                    "instagram/gift-edit";
 
-            default -> throw new IllegalArgumentException(
-                    "Theme không hợp lệ: " + theme
-            );
+            default ->
+                    throw new IllegalArgumentException(
+                            "Theme không hợp lệ: " + theme
+                    );
         };
     }
 
     // ==================================================
-    // VALIDATE THEME
+    // KIỂM TRA THEME
     // ==================================================
 
     private boolean isValidTheme(String theme) {
 
-        if (theme == null || theme.isBlank()) {
-            return false;
-        }
+        String normalizedTheme =
+                normalizeTheme(theme);
 
-        String normalizedTheme = normalizeTheme(theme);
+        return switch (normalizedTheme) {
 
-        return normalizedTheme.equals("sakura")
-                || normalizedTheme.equals("sky")
-                || normalizedTheme.equals("matcha")
-                || normalizedTheme.equals("instagram");
+            case "sakura",
+                 "matcha",
+                 "sky",
+                 "instagram" -> true;
+
+            default -> false;
+        };
     }
 
     // ==================================================
@@ -293,6 +315,8 @@ public class GiftPageController {
             return "";
         }
 
-        return theme.trim().toLowerCase();
+        return theme
+                .trim()
+                .toLowerCase();
     }
 }
